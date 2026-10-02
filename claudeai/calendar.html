@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Calendar | BYU Freshman Guide</title><link rel="stylesheet" href="styles.css"></head>
+<body data-page="cal"><main>
+<h1>BYU &amp; Provo Events</h1>
+<div class="filters" id="filters"></div>
+<div class="card"><div class="cal-head"><button class="btn alt" id="prev">&larr;</button><h2 id="title"></h2><button class="btn alt" id="next">&rarr;</button></div>
+<div class="grid" id="grid"></div></div>
+</main>
+<div class="overlay" id="evOv"><div class="modal"><button class="close" id="evX">&times;</button><div id="evBody"></div></div></div>
+<script src="app.js"></script>
+<script>
+const cats=['Campus','Provo','Social'];const on=new Set(cats);
+const events=[[2026,9,6,'Orientation Info Session','Campus','https://www.byu.edu'],[2026,9,10,'Freshman Social Night','Social','https://www.byu.edu'],[2026,9,17,'Provo Farmers Market','Provo','https://www.provo.org'],[2026,9,22,'Scholarship Workshop','Campus','https://www.byu.edu'],[2026,10,3,'Hike at Y Mountain','Provo','https://www.byu.edu']];
+let y=2026,m=9;
+const $=id=>document.getElementById(id);
+$('filters').innerHTML=cats.map(c=>`<label><input type="checkbox" checked value="${c}" style="width:auto"> ${c}</label>`).join('');
+$('filters').onchange=e=>{e.target.checked?on.add(e.target.value):on.delete(e.target.value);draw();};
+const evs=(d)=>events.filter(e=>e[0]==y&&e[1]==m&&e[2]==d&&on.has(e[4]));
+function draw(){
+ $('title').textContent=new Date(y,m).toLocaleString('en',{month:'long',year:'numeric'});
+ let h=['S','M','T','W','T','F','S'].map(d=>`<div class="dow">${d}</div>`).join('');
+ const first=new Date(y,m,1).getDay(),n=new Date(y,m+1,0).getDate();
+ for(let i=0;i<first;i++)h+='<div></div>';
+ for(let d=1;d<=n;d++)h+=`<div class="day" data-d="${d}">${d}${evs(d).map(e=>`<span class="dot ${e[4]}">${e[3]}</span>`).join('')}</div>`;
+ $('grid').innerHTML=h;}
+$('grid').onclick=e=>{const c=e.target.closest('.day');if(!c)return;const d=+c.dataset.d,l=evs(d);
+ $('evBody').innerHTML=`<h2>${new Date(y,m,d).toDateString()}</h2>`+(l.length?l.map(e=>`<p><strong>${e[3]}</strong> (${e[4]})<br><a href="${e[5]}" target="_blank" rel="noopener">Details / sign up</a></p>`).join(''):'<p>There are no events for this day.</p>');
+ $('evOv').classList.add('open');};
+$('evX').onclick=()=>$('evOv').classList.remove('open');
+$('prev').onclick=()=>{m--;if(m<0){m=11;y--;}draw();};
+$('next').onclick=()=>{m++;if(m>11){m=0;y++;}draw();};
+draw();
+</script></body></html>

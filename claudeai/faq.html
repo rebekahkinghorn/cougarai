@@ -1,0 +1,19 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FAQ | BYU Freshman Guide</title><link rel="stylesheet" href="styles.css"></head>
+<body data-page="faq"><main>
+<h1>Top Freshman FAQs</h1>
+<input id="s" placeholder="Search keywords..." aria-label="Search FAQs">
+<div id="list">
+<details><summary>How do I apply for housing?</summary><p>Log in to your BYU account and complete the housing application after you are admitted. <a href="https://www.byu.edu" target="_blank" rel="noopener">BYU website</a></p></details>
+<details><summary>When do I register for classes?</summary><p>Registration dates depend on your admit term and are posted on your MyMap.</p></details>
+<details><summary>How do I apply for scholarships?</summary><p>Complete the general scholarship application and check department scholarships.</p></details>
+<details><summary>What is freshman orientation?</summary><p>Orientation introduces you to campus, advisement, and student life.</p></details>
+<details><summary>I'm a missionary. How do I prepare to attend BYU?</summary><p>Confirm your return date, deferral status, and admission requirements early.</p></details>
+</div>
+<div id="none" class="card" hidden>No results found. <a class="btn" href="chatbot.html">Ask the chatbot</a></div>
+</main>
+<script src="app.js"></script>
+<script>
+s.oninput=()=>{const v=s.value.toLowerCase();let n=0;
+ document.querySelectorAll('#list details').forEach(d=>{const m=d.textContent.toLowerCase().includes(v);d.hidden=!m;if(m)n++;});
+ document.getElementById('none').hidden=n>0;};
+</script></body></html>

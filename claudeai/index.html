@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome | BYU Freshman Guide</title><link rel="stylesheet" href="styles.css"></head>
+<body data-page="home"><main>
+<section class="card hero"><h1>Welcome to BYU!</h1><p>Everything incoming freshmen and missionaries need, in one place.</p>
+<div class="login" id="loginBox"><h3>Log in or sign up</h3>
+<input id="u" placeholder="Username (demo: student)"><input id="p" type="password" placeholder="Password (demo: byu123)">
+<div class="error" id="loginErr"></div>
+<button class="btn" id="loginBtn">Log in</button> <button class="btn alt" id="signBtn">Sign up</button>
+<p><a href="chatbot.html">Continue as guest</a></p></div>
+<div class="nav-btns"><a class="btn" href="chatbot.html">Ask the Chatbot</a><a class="btn" href="faq.html">View FAQ</a><a class="btn" href="calendar.html">See Calendar</a></div>
+</section></main>
+<script src="app.js"></script>
+<script>
+const e=document.getElementById('loginErr');
+document.getElementById('loginBtn').onclick=()=>{
+ if(u.value==='student'&&p.value==='byu123'){loginBox.innerHTML='<p class="ok">Welcome back! You are signed in.</p>';}
+ else e.textContent='Your login credentials were not entered correctly. Please try again.';};
+document.getElementById('signBtn').onclick=()=>{e.className='ok';e.textContent='Sign-up is coming soon in this prototype.';};
+</script></body></html>

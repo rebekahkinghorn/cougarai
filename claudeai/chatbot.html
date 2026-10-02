@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chatbot | BYU Freshman Guide</title><link rel="stylesheet" href="styles.css"></head>
+<body data-page="chat"><main>
+<h1>BYU Chatbot</h1>
+<div class="chat-box" id="box"><div class="msg bot">Hi! Ask me anything about starting at BYU. You can <a href="index.html">log in</a> or keep going as a guest.</div></div>
+<div class="error" id="err"></div>
+<div class="chat-form"><input id="q" placeholder="Type your question..." aria-label="Question"><button class="btn" id="send">Send</button></div>
+</main>
+<script src="app.js"></script>
+<script>
+const box=document.getElementById('box'),q=document.getElementById('q'),err=document.getElementById('err');
+const add=(t,c)=>{const d=document.createElement('div');d.className='msg '+c;d.innerHTML=t;box.appendChild(d);box.scrollTop=box.scrollHeight;return d;};
+const topics=/byu|provo|admission|apply|class|register|housing|tuition|scholar|financial|mission|orientation|campus|freshman|advis|checklist|major|deadline|event|mentor|aid/i;
+const bad=/hate|kill|porn|stupid/i;
+function send(){
+ const t=q.value.trim();err.textContent='';
+ if(!t){err.textContent='Error code 400: please type a question before sending.';return;}
+ add(t.replace(/</g,'&lt;'),'user');q.value='';
+ if(bad.test(t)){add('Please do not engage in inappropriate conversations. <a href="index.html">Sign up / log in</a> or continue as a guest.','bot');return;}
+ const wait=add('...','bot');
+ const tip=setTimeout(()=>add('Peer mentor tip: visit your advisement center early to plan your first semester!','tip'),3000);
+ setTimeout(()=>{clearTimeout(tip);wait.remove();
+  add(topics.test(t)?'Great question! For official steps, see the <a href="https://www.byu.edu" target="_blank" rel="noopener">BYU website</a>. (Prototype response)':'Invalid question: I can only answer BYU-related questions.','bot');},1200);
+}
+document.getElementById('send').onclick=send;
+q.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+</script></body></html>
