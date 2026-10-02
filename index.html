@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BYU Guide | Welcome</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="welcome">
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="BYU Guide home"><span class="brand-mark">✦</span><span class="brand-copy"><strong>BYU Guide</strong><span>Start strong at BYU</span></span></a>
+      <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link" data-page="welcome" href="index.html">Welcome</a>
+        <a class="nav-link" data-page="chatbot" href="chatbot.html">Chatbot</a>
+        <a class="nav-link" data-page="faq" href="faq.html">FAQs</a>
+        <a class="nav-link" data-page="calendar" href="calendar.html">Calendar</a>
+      </nav>
+      <div class="nav-actions"><button class="button secondary small" data-toast="Sign-in is ready for the next prototype iteration.">Sign in</button><button class="button primary small" data-toast="Welcome! You’re exploring as a guest.">Continue as guest</button></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="container hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Your first semester, simplified</span>
+        <h1>Know what to do next.</h1>
+        <p class="lede">A friendly guide for accepted BYU students and the people helping them get ready. Ask questions, find trusted resources, and see what is happening around campus.</p>
+        <div class="button-row"><a class="button primary" href="chatbot.html">Ask the chatbot <span>→</span></a><a class="button secondary" href="faq.html">Browse FAQs</a></div>
+      </div>
+      <div class="hero-art" aria-label="Preview of the BYU Guide app">
+        <span class="orb one"></span><span class="orb two"></span><span class="orb three"></span>
+        <div class="phone-card">
+          <div class="phone-top"><span>9:41</span><span>● ● ●</span></div>
+          <div class="phone-screen">
+            <div class="mini-welcome"><small>Good morning, future Cougar</small><strong>Let’s get you ready for campus.</strong></div>
+            <div class="mini-pill">Where do I start with housing?</div>
+            <div class="mini-pill right">I can help with that.</div>
+            <div class="mini-pill">Explore housing timelines, MyMap, events, and more.</div>
+            <div class="mini-input"><span>Ask a question...</span><b>↑</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section">
+      <div class="section-heading"><div><span class="eyebrow">Find your starting point</span><h2>Everything you need, in one place.</h2></div><p>Skip the vague email maze. Start with the question on your mind and we’ll point you toward the next useful step.</p></div>
+      <div class="card-grid">
+        <article class="feature-card"><div class="icon-box blue">✦</div><h3>Ask the BYU Guide</h3><p>Get clear answers about housing, MyMap, requirements, advising, and campus life.</p><a class="card-link" href="chatbot.html">Start a conversation →</a></article>
+        <article class="feature-card"><div class="icon-box mint">☷</div><h3>Browse common questions</h3><p>Find quick answers to the questions new students ask most often, organized by topic.</p><a class="card-link" href="faq.html">Explore FAQs →</a></article>
+        <article class="feature-card"><div class="icon-box gold">◷</div><h3>See what’s happening</h3><p>Discover BYU and Provo events, then filter by the things you’re interested in.</p><a class="card-link" href="calendar.html">Open the calendar →</a></article>
+      </div>
+    </section>
+    <section class="container callout"><div><h3>Not sure where to begin?</h3><p>That’s exactly what the guide is for. You can use it as a guest and come back when you’re ready.</p></div><a class="button" href="chatbot.html">Ask a question</a></section>
+  </main>
+
+  <footer class="footer"><div class="container footer-inner"><span>© 2026 BYU Guide prototype</span><div class="footer-links"><button class="button ghost small" data-open-modal>Report an issue</button><a href="faq.html">Help center</a></div></div></footer>
+  <button class="floating-chat" aria-label="Open chatbot" onclick="location.href='chatbot.html'">✦</button>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title"><div class="modal"><div class="modal-header"><div><h2 id="issue-title">Report an issue</h2><p>Tell us what went wrong and we’ll use it to improve the guide.</p></div><button class="modal-close" data-close-modal aria-label="Close">×</button></div><form class="modal-form"><label for="issue-email">Email (optional)</label><input id="issue-email" type="email" placeholder="you@example.com"><label for="issue-description">What happened?</label><textarea id="issue-description" required placeholder="Describe the issue..."></textarea><button class="button primary" type="submit">Send report</button></form></div></div>
+  <script src="app.js"></script>
+</body>
+</html>
