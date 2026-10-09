@@ -17,7 +17,7 @@
         <a class="nav-link" data-page="faq" href="faq.html">FAQs</a>
         <a class="nav-link" data-page="calendar" href="calendar.html">Calendar</a>
       </nav>
-      <div class="nav-actions"><button class="button secondary small" data-toast="Sign-in is ready for the next prototype iteration.">Sign in</button><button class="button primary small" data-toast="Welcome! You’re exploring as a guest.">Continue as guest</button></div>
+      <div class="nav-actions"><button class="button primary small" type="button" data-open-signup>Sign up</button><button class="button secondary small" data-toast="Sign-in is ready for the next prototype iteration.">Sign in</button><button class="button primary small" data-toast="Welcome! You’re exploring as a guest.">Continue as guest</button></div>
     </div>
   </header>
 
@@ -59,6 +59,100 @@
   <button class="floating-chat" aria-label="Open chatbot" onclick="location.href='chatbot.html'">✦</button>
   <div class="toast" role="status" aria-live="polite"></div>
   <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title"><div class="modal"><div class="modal-header"><div><h2 id="issue-title">Report an issue</h2><p>Tell us what went wrong and we’ll use it to improve the guide.</p></div><button class="modal-close" data-close-modal aria-label="Close">×</button></div><form class="modal-form"><label for="issue-email">Email (optional)</label><input id="issue-email" type="email" placeholder="you@example.com"><label for="issue-description">What happened?</label><textarea id="issue-description" required placeholder="Describe the issue..."></textarea><button class="button primary" type="submit">Send report</button></form></div></div>
-  <script src="app.js"></script>
+  <div class="modal-backdrop signup-backdrop" role="dialog" aria-modal="true" aria-labelledby="signup-title" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div><h2 id="signup-title">Create your account</h2><p>Choose a username and sign up with your email and password.</p></div>
+      <button class="modal-close" type="button" data-close-signup aria-label="Close">×</button>
+    </div>
+    <form class="modal-form" id="signup-form">
+      <label for="signup-username">Username</label>
+      <input id="signup-username" name="username" type="text" autocomplete="username" minlength="3" maxlength="24" required>
+      <label for="signup-email">Email</label>
+      <input id="signup-email" name="email" type="email" autocomplete="email" required>
+      <label for="signup-password">Password</label>
+      <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+      <button class="button primary" type="submit">Create account</button>
+      <p id="signup-message" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+<script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://xyyhccpivxxgiatptwko.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_t0KWbxH_-fm7OfklTKJ40A_9IjQCumg";
+    const USE_SUPABASE = true;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const backdrop = document.querySelector(".signup-backdrop");
+      const form = document.querySelector("#signup-form");
+      const message = document.querySelector("#signup-message");
+      const openButton = document.querySelector("[data-open-signup]");
+      const closeButton = document.querySelector("[data-close-signup]");
+      if (!backdrop || !form || !message || !openButton) return;
+
+      const showMessage = (text, kind) => {
+        message.textContent = text;
+        message.style.color = kind === "error" ? "#b42318" : "#16794a";
+      };
+      const openSignup = () => {
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+        document.querySelector("#signup-username").focus();
+      };
+      const closeSignup = () => {
+        backdrop.classList.remove("show");
+        backdrop.setAttribute("aria-hidden", "true");
+        showMessage("", "");
+      };
+
+      openButton.addEventListener("click", openSignup);
+      closeButton.addEventListener("click", closeSignup);
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeSignup();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && backdrop.classList.contains("show")) closeSignup();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!USE_SUPABASE || !window.supabase) {
+          showMessage("The Supabase connection is not available. Check the page scripts.", "error");
+          return;
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        const values = new FormData(form);
+        const username = String(values.get("username")).trim();
+        const email = String(values.get("email")).trim();
+        const password = String(values.get("password"));
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        submitButton.disabled = true;
+        showMessage("Creating your account…", "");
+
+        try {
+          const { data, error } = await client.auth.signUp({
+            email,
+            password,
+            options: { data: { username } }
+          });
+          if (error) throw error;
+          form.reset();
+          if (data.session) {
+            showMessage("Your account is ready. You’re signed in!", "success");
+          } else {
+            showMessage("Account created. Check your email for a confirmation link.", "success");
+          }
+        } catch (error) {
+          showMessage(error.message || "We couldn’t create your account. Please try again.", "error");
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+    });
+  </script>
 </body>
 </html>
+
