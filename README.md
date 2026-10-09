@@ -1,6 +1,6 @@
-TECH STACK <br>
-Front end: HTML/CSS/Javascript <br>
-Database & Backend: Supabase <br>
+#TECH STACK <br>
+##Front end: HTML/CSS/Javascript <br>
+###Database & Backend: Supabase <br>
 AI app builder: CODEX <br>
 
 #ERD
