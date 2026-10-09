@@ -1,4 +1,8 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome | BYU Freshman Guide</title><link rel="stylesheet" href="styles.css"></head>
+<!DOCTYPE html><html lang="en">
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome | BYU Freshman Guide</title><link rel="stylesheet" href="styles.css">
+    </head>
 <body data-page="home"><main>
 <section class="card hero"><h1>Welcome to BYU!</h1><p>Everything incoming freshmen and missionaries need, in one place.</p>
 <div class="login" id="loginBox"><h3>Log in or sign up</h3>
@@ -15,4 +19,17 @@ document.getElementById('loginBtn').onclick=()=>{
  if(u.value==='student'&&p.value==='byu123'){loginBox.innerHTML='<p class="ok">Welcome back! You are signed in.</p>';}
  else e.textContent='Your login credentials were not entered correctly. Please try again.';};
 document.getElementById('signBtn').onclick=()=>{e.className='ok';e.textContent='Sign-up is coming soon in this prototype.';};
-</script></body></html>
+
+// =============================================================
+//  YOUR SUPABASE CREDENTIALS
+//  Step 1: Paste your Project URL below (from Supabase dashboard)
+//  Step 2: Paste your anon/public key below
+//  Step 3: Change USE_SUPABASE to true
+// =============================================================
+
+const SUPABASE_URL = 'https://xyyhccpivxxgiatptwko.supabase.co'   // <-- paste here
+const SUPABASE_KEY = 'sb_publishable_t0KWbxH_-fm7OfklTKJ40A_9IjQCumg'      // <-- paste here
+const USE_SUPABASE = true // <-- change to true once credentials are filled in
+
+</script>
+</body></html>
