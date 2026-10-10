@@ -79,12 +79,10 @@
 </div>
 <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
   <script>
-    const SUPABASE_URL = "https://xyyhccpivxxgiatptwko.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_t0KWbxH_-fm7OfklTKJ40A_9IjQCumg";
-    const USE_SUPABASE = true;
-
     document.addEventListener("DOMContentLoaded", () => {
+      const { client, showGreeting } = window.cougarAuth;
       const backdrop = document.querySelector(".signup-backdrop");
       const form = document.querySelector("#signup-form");
       const message = document.querySelector("#signup-message");
@@ -118,7 +116,7 @@
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        if (!USE_SUPABASE || !window.supabase) {
+        if (!client) {
           showMessage("The Supabase connection is not available. Check the page scripts.", "error");
           return;
         }
@@ -128,7 +126,6 @@
         const username = String(values.get("username")).trim();
         const email = String(values.get("email")).trim();
         const password = String(values.get("password"));
-        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         submitButton.disabled = true;
         showMessage("Creating your account…", "");
 
@@ -140,11 +137,14 @@
           });
           if (error) throw error;
           form.reset();
-          if (data.session) {
-            showMessage("Your account is ready. You’re signed in!", "success");
-          } else {
-            showMessage("Account created. Check your email for a confirmation link.", "success");
-          }
+          closeSignup();
+          // Account is created: replace the Sign up / Sign in buttons with "Hello, [name]!"
+          showGreeting(data.user || { user_metadata: { username } });
+          window.showToast?.(
+            data.session
+              ? `Your account is ready. Welcome, ${username}!`
+              : "Account created. Check your email for a confirmation link."
+          );
         } catch (error) {
           showMessage(error.message || "We couldn’t create your account. Please try again.", "error");
         } finally {
@@ -155,4 +155,3 @@
   </script>
 </body>
 </html>
-
