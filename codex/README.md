@@ -21,3 +21,33 @@ AI app builder: CODEX <br>
 ## ERD
 
 <img width="1677" height="1026" alt="Cougar AI ERD-2" src="https://github.com/user-attachments/assets/dbedbe00-b875-41ca-9a49-28a5e3e22043" />
+
+## Step-by-Step Instructions<br>
+
+1. Clone the repository<br>
+Clone a fresh copy of the code from GitHub to your local machine<br>
+
+2. Configure Supabase (Backend & Database) 
+The project connects to a Supabase backend for user authentication and database storage.
+- Go to Supabase and sign in or create an account.<br>
+  - Click New Project, select your organization, and fill out your project details (name, database password, and region).
+  - Wait a couple of minutes for Supabase to provision your database and project resources. 
+- Retrieve Your API Credentials
+  - Once your project is ready, navigate to the Project Settings (gear icon on the left sidebar).
+  - Click on API under the project settings menu.
+  - Copy your unique Project URL and your anon / public API key.
+  - Open auth.js in your project codebase and paste these values into the configuration constants. Example below:
+    - const SUPABASE_URL = "YOUR_SUPABASE_URL_HERE";
+    - const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";  
+
+- Lanching the project locally
+  - Open the project folder in your code editor (e.g., VS Code), if it isn't already
+  - If you are using VS Code, right-click on index.html and select "Open with Live Server".
+
+- Test the Vertical Slice (Sign Up & Dynamic Greeting)
+  - Click the "Sign up" button in the top right navigation bar of the app.   
+  - Fill out the modal form with a Username, Email, and Password, then submit.   
+  - Supabase will process the registration, create the account in your database, and automatically swap the top-right header buttons from "Sign up / Sign in" to a dynamic greeting reading: "Hello, 'username'!" (along with a Sign out button).
+  - Hit refresh in the browser to confirm that it still says "Hello, 'username'!" in the top right corner. If it does then your database and backend is sucessfully working!
+
+
