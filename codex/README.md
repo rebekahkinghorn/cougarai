@@ -54,3 +54,8 @@ AI app builder: CODEX
   - Fill out the modal form with a Username, Email, and Password, then submit.
   - Supabase will process the registration, create the account in your database, and automatically swap the top-right header buttons from "Sign up / Sign in" to a dynamic greeting reading: "Hello, 'username'!" (along with a Sign out button).
   - Hit refresh in the browser to confirm that it still says "Hello, 'username'!" in the top right corner. If it does then your database and backend is sucessfully working!
+
+
+  Link to the video that shows our vertical slice!
+
+  https://drive.google.com/file/d/1ZJ5SMiYKdshsCJ5elqJUNJtQgBcxx98J/view?usp=sharing
