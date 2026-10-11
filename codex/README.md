@@ -58,4 +58,4 @@ AI app builder: CODEX
 
   Link to the video that shows our vertical slice!
 
-  https://drive.google.com/file/d/1ZJ5SMiYKdshsCJ5elqJUNJtQgBcxx98J/view?usp=sharing
+  https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing
