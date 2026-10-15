@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BYU Guide | Welcome</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="welcome">
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="BYU Guide home"><span class="brand-mark">✦</span><span class="brand-copy"><strong>BYU Guide</strong><span>Start strong at BYU</span></span></a>
+      <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link" data-page="welcome" href="index.html">Welcome</a>
+        <a class="nav-link" data-page="chatbot" href="chatbot.html">Chatbot</a>
+        <a class="nav-link" data-page="faq" href="faq.html">FAQs</a>
+        <a class="nav-link" data-page="calendar" href="calendar.html">Calendar</a>
+      </nav>
+      <div class="nav-actions"><button class="button primary small" type="button" data-open-signup>Sign up</button><button class="button secondary small" data-toast="Sign-in is ready for the next prototype iteration.">Sign in</button><button class="button primary small" data-toast="Welcome! You’re exploring as a guest.">Continue as guest</button></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="container hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Your first semester, simplified</span>
+        <h1>Know what to do next.</h1>
+        <p class="lede">A friendly guide for accepted BYU students and the people helping them get ready. Ask questions, find trusted resources, and see what is happening around campus.</p>
+        <div class="button-row"><a class="button primary" href="chatbot.html">Ask the chatbot <span>→</span></a><a class="button secondary" href="faq.html">Browse FAQs</a></div>
+      </div>
+      <div class="hero-art" aria-label="Preview of the BYU Guide app">
+        <span class="orb one"></span><span class="orb two"></span><span class="orb three"></span>
+        <div class="phone-card">
+          <div class="phone-top"><span>9:41</span><span>● ● ●</span></div>
+          <div class="phone-screen">
+            <div class="mini-welcome"><small>Good morning, future Cougar</small><strong>Let’s get you ready for campus.</strong></div>
+            <div class="mini-pill">Where do I start with housing?</div>
+            <div class="mini-pill right">I can help with that.</div>
+            <div class="mini-pill">Explore housing timelines, MyMap, events, and more.</div>
+            <div class="mini-input"><span>Ask a question...</span><b>↑</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section">
+      <div class="section-heading"><div><span class="eyebrow">Find your starting point</span><h2>Everything you need, in one place.</h2></div><p>Skip the vague email maze. Start with the question on your mind and we’ll point you toward the next useful step.</p></div>
+      <div class="card-grid">
+        <article class="feature-card"><div class="icon-box blue">✦</div><h3>Ask the BYU Guide</h3><p>Get clear answers about housing, MyMap, requirements, advising, and campus life.</p><a class="card-link" href="chatbot.html">Start a conversation →</a></article>
+        <article class="feature-card"><div class="icon-box mint">☷</div><h3>Browse common questions</h3><p>Find quick answers to the questions new students ask most often, organized by topic.</p><a class="card-link" href="faq.html">Explore FAQs →</a></article>
+        <article class="feature-card"><div class="icon-box gold">◷</div><h3>See what’s happening</h3><p>Discover BYU and Provo events, then filter by the things you’re interested in.</p><a class="card-link" href="calendar.html">Open the calendar →</a></article>
+      </div>
+    </section>
+    <section class="container callout"><div><h3>Not sure where to begin?</h3><p>That’s exactly what the guide is for. You can use it as a guest and come back when you’re ready.</p></div><a class="button" href="chatbot.html">Ask a question</a></section>
+  </main>
+
+  <footer class="footer"><div class="container footer-inner"><span>© 2026 BYU Guide prototype</span><div class="footer-links"><button class="button ghost small" data-open-modal>Report an issue</button><a href="faq.html">Help center</a></div></div></footer>
+  <button class="floating-chat" aria-label="Open chatbot" onclick="location.href='chatbot.html'">✦</button>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title"><div class="modal"><div class="modal-header"><div><h2 id="issue-title">Report an issue</h2><p>Tell us what went wrong and we’ll use it to improve the guide.</p></div><button class="modal-close" data-close-modal aria-label="Close">×</button></div><form class="modal-form"><label for="issue-email">Email (optional)</label><input id="issue-email" type="email" placeholder="you@example.com"><label for="issue-description">What happened?</label><textarea id="issue-description" required placeholder="Describe the issue..."></textarea><button class="button primary" type="submit">Send report</button></form></div></div>
+  <div class="modal-backdrop signup-backdrop" role="dialog" aria-modal="true" aria-labelledby="signup-title" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-header">
+      <div><h2 id="signup-title">Create your account</h2><p>Choose a username and sign up with your email and password.</p></div>
+      <button class="modal-close" type="button" data-close-signup aria-label="Close">×</button>
+    </div>
+    <form class="modal-form" id="signup-form">
+      <label for="signup-username">Username</label>
+      <input id="signup-username" name="username" type="text" autocomplete="username" minlength="3" maxlength="24" required>
+      <label for="signup-email">Email</label>
+      <input id="signup-email" name="email" type="email" autocomplete="email" required>
+      <label for="signup-password">Password</label>
+      <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+      <button class="button primary" type="submit">Create account</button>
+      <p id="signup-message" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+<script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const { client, showGreeting } = window.cougarAuth;
+      const backdrop = document.querySelector(".signup-backdrop");
+      const form = document.querySelector("#signup-form");
+      const message = document.querySelector("#signup-message");
+      const openButton = document.querySelector("[data-open-signup]");
+      const closeButton = document.querySelector("[data-close-signup]");
+      if (!backdrop || !form || !message || !openButton) return;
+
+      const showMessage = (text, kind) => {
+        message.textContent = text;
+        message.style.color = kind === "error" ? "#b42318" : "#16794a";
+      };
+      const openSignup = () => {
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+        document.querySelector("#signup-username").focus();
+      };
+      const closeSignup = () => {
+        backdrop.classList.remove("show");
+        backdrop.setAttribute("aria-hidden", "true");
+        showMessage("", "");
+      };
+
+      openButton.addEventListener("click", openSignup);
+      closeButton.addEventListener("click", closeSignup);
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeSignup();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && backdrop.classList.contains("show")) closeSignup();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!client) {
+          showMessage("The Supabase connection is not available. Check the page scripts.", "error");
+          return;
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        const values = new FormData(form);
+        const username = String(values.get("username")).trim();
+        const email = String(values.get("email")).trim();
+        const password = String(values.get("password"));
+        submitButton.disabled = true;
+        showMessage("Creating your account…", "");
+
+        try {
+          const { data, error } = await client.auth.signUp({
+            email,
+            password,
+            options: { data: { username } }
+          });
+          if (error) throw error;
+          form.reset();
+          closeSignup();
+          // Account is created: replace the Sign up / Sign in buttons with "Hello, [name]!"
+          showGreeting(data.user || { user_metadata: { username } });
+          window.showToast?.(
+            data.session
+              ? `Your account is ready. Welcome, ${username}!`
+              : "Account created. Check your email for a confirmation link."
+          );
+        } catch (error) {
+          showMessage(error.message || "We couldn’t create your account. Please try again.", "error");
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
