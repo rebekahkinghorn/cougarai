@@ -58,7 +58,27 @@
   <footer class="footer"><div class="container footer-inner"><span>© 2026 BYU Guide prototype</span><div class="footer-links"><button class="button ghost small" data-open-modal>Report an issue</button><a href="faq.html">Help center</a></div></div></footer>
   <button class="floating-chat" aria-label="Open chatbot" onclick="location.href='chatbot.html'">✦</button>
   <div class="toast" role="status" aria-live="polite"></div>
-  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title"><div class="modal"><div class="modal-header"><div><h2 id="issue-title">Report an issue</h2><p>Tell us what went wrong and we’ll use it to improve the guide.</p></div><button class="modal-close" data-close-modal aria-label="Close">×</button></div><form class="modal-form"><label for="issue-email">Email (optional)</label><input id="issue-email" type="email" placeholder="you@example.com"><label for="issue-description">What happened?</label><textarea id="issue-description" required placeholder="Describe the issue..."></textarea><button class="button primary" type="submit">Send report</button></form></div></div>
+
+  <!-- form for the report an issue button -->
+<div class="modal-backdrop" id="issue-modal" role="dialog" aria-modal="true" aria-labelledby="issue-title">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="issue-title">Report an issue</h2>
+        <p>Tell us what went wrong and we’ll use it to improve the guide.</p>
+      </div>
+      <button class="modal-close" data-close-modal aria-label="Close">×</button>
+    </div>
+    <form class="modal-form" id="issue-form">
+      <label for="issue-email">Email (optional)</label>
+      <input id="issue-email" type="email" placeholder="you@example.com">
+      <label for="issue-description">What happened?</label>
+      <textarea id="issue-description" required placeholder="Describe the issue..."></textarea>
+      <button class="button primary" type="submit">Send report</button>
+    </form>
+  </div>
+</div>
+
   <div class="modal-backdrop signup-backdrop" role="dialog" aria-modal="true" aria-labelledby="signup-title" aria-hidden="true">
   <div class="modal">
     <div class="modal-header">
@@ -152,6 +172,68 @@
         }
       });
     });
+
+// taking info from the report an issue form and sending it to the database
+  
+// Submit issue report to Supabase
+document.addEventListener("DOMContentLoaded", () => {
+  const issueModal = document.querySelector("#issue-modal");
+  const issueForm = document.querySelector("#issue-form");
+
+  if (!issueForm) return;
+
+  issueForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const client = window.cougarAuth?.client;
+
+    if (!client) {
+      window.showToast?.("Database connection not available.");
+      return;
+    }
+
+    const description = document
+      .querySelector("#issue-description")
+      .value.trim();
+
+    if (!description) return;
+
+    const submitButton = issueForm.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+
+    try {
+      const { data: sessionData, error: sessionError } =
+        await client.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      const userId = sessionData?.session?.user?.id || null;
+
+      const { error } = await client
+        .from("issue_report")
+        .insert({
+        description: description,
+        user_id: userId,
+        status: "Pending"
+  });
+
+      if (error) throw error;
+
+      issueForm.reset();
+      issueModal.classList.remove("show");
+
+      window.showToast?.("Your issue report was successfully submitted!");
+
+    } catch (error) {
+      console.error("Issue submission error:", error);
+      window.showToast?.("Error: " + error.message);
+
+    } finally {
+      submitButton.disabled = false;
+    }
+  }, true);
+});
   </script>
 </body>
 </html>
