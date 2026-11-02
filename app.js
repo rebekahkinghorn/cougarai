@@ -102,13 +102,48 @@ document.addEventListener("DOMContentLoaded", () => {
     if (normalized.includes("event") || normalized.includes("around provo")) return responseMap.events;
     return "I can help with housing, MyMap and class registration, academic advising, BYU requirements, and events around Provo. Try asking about one of those topics.";
   };
-  const submitChat = (value) => {
-    const question = value.trim();
-    if (!question) return;
-    addMessage(question, "user");
-    if (chatInput) chatInput.value = "";
-    setTimeout(() => addMessage(getResponse(question)), 350);
-  };
+
+  // replace this function on ChatGPT instructions....
+
+  // const submitChat = (value) => {
+  //   const question = value.trim();
+  //   if (!question) return;
+  //   addMessage(question, "user");
+  //   if (chatInput) chatInput.value = "";
+  //   setTimeout(() => addMessage(getResponse(question)), 350);
+  // };
+
+
+
+  // ChatGPT function to 
+  const submitChat = async (value) => {
+  const question = value.trim();
+  if (!question) return;
+
+  addMessage(question, "user");
+  if (chatInput) chatInput.value = "";
+
+  const client = window.cougarAuth?.client;
+  if (!client) {
+    addMessage("Chat connection is not set up on this page yet.");
+    return;
+  }
+
+  const { data, error } = await client.functions.invoke("chatbot", {
+    body: { message: question },
+  });
+
+  if (error || !data?.reply) {
+    addMessage("Sorry, I couldn't get an answer right now.");
+    console.error("Chat function error:", error || data);
+    return;
+  }
+
+  addMessage(data.reply);
+};
+
+
+
   chatForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     submitChat(chatInput.value);
