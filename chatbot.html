@@ -11,5 +11,23 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 <script src="auth.js"></script>
-    </main><footer class="footer"><div class="container footer-inner"><span>BYU Guide prototype</span><div class="footer-links"><a href="index.html">Back to welcome</a><button class="button ghost small" data-open-modal>Report an issue</button></div></div></footer><div class="toast" role="status" aria-live="polite"></div><script src="app.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="auth.js"></script>
+    </main><footer class="footer"><div class="container footer-inner"><span>BYU Guide prototype</span><div class="footer-links"><a href="index.html">Back to welcome</a><button class="button ghost small" data-open-modal>Report an issue</button></div></div></footer><div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="issue-title">Report an issue</h2>
+        <p>Tell us what went wrong and we’ll use it to improve the guide.</p>
+      </div>
+      <button class="modal-close" data-close-modal aria-label="Close">×</button>
+    </div>
+    <form class="modal-form">
+      <label for="issue-email">Email (optional)</label>
+      <input id="issue-email" type="email" placeholder="you@example.com">
+      <label for="issue-description">What happened?</label>
+      <textarea id="issue-description" required placeholder="Describe the issue..."></textarea>
+      <button class="button primary" type="submit">Send report</button>
+    </form>
+  </div>
+</div>
+<div class="toast" role="status" aria-live="polite"></div><script src="app.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="auth.js"></script>
 </body></html>
