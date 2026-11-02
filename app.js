@@ -34,12 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
   modalBackdrop?.addEventListener("click", (event) => {
     if (event.target === modalBackdrop) closeModal();
   });
-  document.querySelector(".modal-form")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    closeModal();
-    showToast("Thanks—your issue was recorded for the prototype.");
-    event.target.reset();
-  });
 
   document.querySelectorAll(".faq-question").forEach((button) => {
     button.addEventListener("click", () => {
