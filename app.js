@@ -29,11 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalBackdrop = document.querySelector(".modal-backdrop");
   const openModal = () => modalBackdrop?.classList.add("show");
   const closeModal = () => modalBackdrop?.classList.remove("show");
-  document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", openModal));
-  document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", closeModal));
+
+  document.querySelectorAll("[data-open-modal]").forEach((button) =>
+    button.addEventListener("click", openModal)
+  );
+  document.querySelectorAll("[data-close-modal]").forEach((button) =>
+    button.addEventListener("click", closeModal)
+  );
+
   modalBackdrop?.addEventListener("click", (event) => {
     if (event.target === modalBackdrop) closeModal();
   });
+
   document.querySelector(".modal-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
     closeModal();
@@ -52,117 +59,187 @@ document.addEventListener("DOMContentLoaded", () => {
   const faqSearch = document.querySelector("#faq-search");
   const faqItems = [...document.querySelectorAll(".faq-item")];
   const faqEmpty = document.querySelector(".faq-empty");
+
   const filterFaqs = () => {
     if (!faqSearch) return;
+
     const query = faqSearch.value.trim().toLowerCase();
     let visibleCount = 0;
+
     faqItems.forEach((item) => {
       const matches = !query || item.textContent.toLowerCase().includes(query);
       item.hidden = !matches;
       if (matches) visibleCount += 1;
     });
+
     faqEmpty?.classList.toggle("show", visibleCount === 0);
   };
+
   faqSearch?.addEventListener("input", filterFaqs);
+
   document.querySelectorAll(".filter[data-filter]").forEach((filter) => {
     filter.addEventListener("click", () => {
-      document.querySelectorAll(".filter[data-filter]").forEach((button) => button.classList.remove("active"));
+      document
+        .querySelectorAll(".filter[data-filter]")
+        .forEach((button) => button.classList.remove("active"));
+
       filter.classList.add("active");
+
       const category = filter.dataset.filter;
       faqItems.forEach((item) => {
         const matches = category === "all" || item.dataset.category === category;
         item.hidden = !matches;
       });
-      if (faqEmpty) faqEmpty.classList.toggle("show", !faqItems.some((item) => !item.hidden));
+
+      if (faqEmpty) {
+        faqEmpty.classList.toggle(
+          "show",
+          !faqItems.some((item) => !item.hidden)
+        );
+      }
     });
   });
 
   const chatMessages = document.querySelector("#chat-messages");
   const chatForm = document.querySelector("#chat-form");
   const chatInput = document.querySelector("#chat-input");
+
   const responseMap = {
-    housing: "A good first step is to review the housing timeline and apply for on-campus housing as soon as your application opens. If you are waitlisted, compare off-campus options before the semester gets close.",
-    mymap: "MyMap lets you build a class schedule. Add classes to your cart, check for conflicts, and submit when registration opens. It is normal for a few classes to fill, so review your schedule right after submission.",
-    advisor: "You can connect with an academic advisor through BYU’s advising directory. Start with your college or intended major so you reach the right office.",
-    events: "The calendar shows BYU and Provo events. Use the filters to narrow the list, then select an event for details and registration links.",
+    housing:
+      "A good first step is to review the housing timeline and apply for on-campus housing as soon as your application opens. If you are waitlisted, compare off-campus options before the semester gets close.",
+    mymap:
+      "MyMap lets you build a class schedule. Add classes to your cart, check for conflicts, and submit when registration opens. It is normal for a few classes to fill, so review your schedule right after submission.",
+    advisor:
+      "You can connect with an academic advisor through BYU’s advising directory. Start with your college or intended major so you reach the right office.",
+    events:
+      "The calendar shows BYU and Provo events. Use the filters to narrow the list, then select an event for details and registration links.",
   };
+
   const addMessage = (text, type = "bot") => {
     if (!chatMessages) return;
+
     const message = document.createElement("div");
     message.className = `message${type === "user" ? " user" : ""}`;
-    message.innerHTML = `${text}<small>${type === "user" ? "You" : "BYU Guide"} · just now</small>`;
+    message.textContent = text;
+
+    const details = document.createElement("small");
+    details.textContent = `${type === "user" ? "You" : "BYU Guide"} · just now`;
+    message.appendChild(details);
+
     chatMessages.appendChild(message);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   };
+
   const getResponse = (question) => {
     const normalized = question.toLowerCase();
+
     if (normalized.includes("hous")) return responseMap.housing;
-    if (normalized.includes("mymap") || normalized.includes("class") || normalized.includes("schedule")) return responseMap.mymap;
-    if (normalized.includes("advisor") || normalized.includes("major")) return responseMap.advisor;
-    if (normalized.includes("event") || normalized.includes("around provo")) return responseMap.events;
+    if (
+      normalized.includes("mymap") ||
+      normalized.includes("class") ||
+      normalized.includes("schedule")
+    ) {
+      return responseMap.mymap;
+    }
+    if (normalized.includes("advisor") || normalized.includes("major")) {
+      return responseMap.advisor;
+    }
+    if (normalized.includes("event") || normalized.includes("around provo")) {
+      return responseMap.events;
+    }
+
     return "I can help with housing, MyMap and class registration, academic advising, BYU requirements, and events around Provo. Try asking about one of those topics.";
   };
 
-  // replace this function on ChatGPT instructions....
+  const getConversationStorageKey = async (client) => {
+    const { data } = await client.auth.getSession();
+    const userId = data?.session?.user?.id || "guest";
+    return `cougarai_conversation_${userId}`;
+  };
 
-  // const submitChat = (value) => {
-  //   const question = value.trim();
-  //   if (!question) return;
-  //   addMessage(question, "user");
-  //   if (chatInput) chatInput.value = "";
-  //   setTimeout(() => addMessage(getResponse(question)), 350);
-  // };
-
-
-
-  // ChatGPT function to 
   const submitChat = async (value) => {
-  const question = value.trim();
-  if (!question) return;
+    const question = value.trim();
+    if (!question) return;
 
-  addMessage(question, "user");
-  if (chatInput) chatInput.value = "";
+    addMessage(question, "user");
+    if (chatInput) chatInput.value = "";
 
-  const client = window.cougarAuth?.client;
-  if (!client) {
-    addMessage("Chat connection is not set up on this page yet.");
-    return;
-  }
+    const client = window.cougarAuth?.client;
+    if (!client) {
+      addMessage("Chat connection is not set up on this page yet.");
+      return;
+    }
 
-  const { data, error } = await client.functions.invoke("chatbot", {
-    body: { message: question },
-  });
+    const storageKey = await getConversationStorageKey(client);
+    const conversationId = sessionStorage.getItem(storageKey);
 
-  if (error || !data?.reply) {
-    addMessage("Sorry, I couldn't get an answer right now.");
-    console.error("Chat function error:", error || data);
-    return;
-  }
+    const { data, error } = await client.functions.invoke("chatbot", {
+      body: {
+        message: question,
+        conversation_id: conversationId,
+      },
+    });
 
-  addMessage(data.reply);
-};
+    if (error || !data?.reply) {
+      addMessage("Sorry, I couldn't get an answer right now.");
+      console.error("Chat function error:", error || data);
+      return;
+    }
 
+    if (data.conversation_id) {
+      sessionStorage.setItem(storageKey, data.conversation_id);
+    }
 
+    addMessage(data.reply);
+  };
 
   chatForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    submitChat(chatInput.value);
+    submitChat(chatInput?.value ?? "");
   });
-  document.querySelectorAll("[data-question]").forEach((button) => button.addEventListener("click", () => submitChat(button.dataset.question)));
-  document.querySelector("[data-clear-chat]")?.addEventListener("click", () => {
-    if (chatMessages) chatMessages.innerHTML = '<div class="message">Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo.<small>BYU Guide · just now</small></div>';
-    showToast("Conversation cleared.");
+
+  document.querySelectorAll("[data-question]").forEach((button) => {
+    button.addEventListener("click", () => {
+      submitChat(button.dataset.question);
+    });
   });
+
+  document
+    .querySelector("[data-clear-chat]")
+    ?.addEventListener("click", async () => {
+      const client = window.cougarAuth?.client;
+
+      if (client) {
+        const storageKey = await getConversationStorageKey(client);
+        sessionStorage.removeItem(storageKey);
+      }
+
+      if (chatMessages) {
+        chatMessages.innerHTML =
+          '<div class="message">Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo.<small>BYU Guide · just now</small></div>';
+      }
+
+      showToast("Conversation cleared.");
+    });
 
   const categoryButtons = document.querySelectorAll(".category-filter");
   const eventCards = document.querySelectorAll(".event-card");
-  categoryButtons.forEach((button) => button.addEventListener("click", () => {
-    categoryButtons.forEach((item) => item.classList.remove("active"));
-    button.classList.add("active");
-    const category = button.dataset.category;
-    eventCards.forEach((card) => { card.hidden = category !== "all" && card.dataset.category !== category; });
-  }));
-  document.querySelectorAll("[data-event]").forEach((event) => event.addEventListener("click", () => {
-    showToast(`${event.dataset.event} selected. Event details would open here.`);
-  }));
+
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      categoryButtons.forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+
+      const category = button.dataset.category;
+      eventCards.forEach((card) => {
+        card.hidden = category !== "all" && card.dataset.category !== category;
+      });
+    });
+  });
+
+  document.querySelectorAll("[data-event]").forEach((event) => {
+    event.addEventListener("click", () => {
+      showToast(`${event.dataset.event} selected. Event details would open here.`);
+    });
+  });
 });
