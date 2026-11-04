@@ -38,12 +38,16 @@
         <h1>What can I help you figure out?</h1>
         <p class="lede">Ask in your own words. I’ll point you toward clear next steps and trusted BYU resources.</p>
       </div>
-      <span class="status-chip"><span class="status-dot"></span>Guide online</span>
+      <span class="status-chip">
+        <span class="status-dot"></span>
+        Guide online
+      </span>
     </div>
 
     <div class="chat-layout">
       <aside class="panel side-panel">
         <h3>Try asking about...</h3>
+
         <div class="suggestion-list">
           <button class="suggestion" data-question="Where should I start with housing?">
             <span class="suggestion-icon">⌂</span>
@@ -51,7 +55,7 @@
           </button>
           <button class="suggestion" data-question="How does MyMap work?">
             <span class="suggestion-icon">▦</span>
-            <span>MyMap & classes</span>
+            <span>MyMap &amp; classes</span>
           </button>
           <button class="suggestion" data-question="How do I find an academic advisor?">
             <span class="suggestion-icon">◎</span>
@@ -79,6 +83,7 @@
           </div>
           <button class="button ghost small" data-clear-chat>Clear chat</button>
         </div>
+
         <div class="chat-messages" id="chat-messages">
           <div class="message">
             Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo.
@@ -93,21 +98,40 @@
             <small>BYU Guide · just now</small>
           </div>
         </div>
+
         <form class="chat-form" id="chat-form">
           <input id="chat-input" autocomplete="off" placeholder="Ask a question..." aria-label="Ask the BYU Guide a question">
           <button class="send-button" type="submit" aria-label="Send question">↑</button>
         </form>
+
+        <!-- One-time satisfaction survey with five accessible star ratings. -->
+        <section class="satisfaction-survey" id="chat-satisfaction" hidden aria-labelledby="satisfaction-question">
+          <fieldset>
+            <legend id="satisfaction-question">How helpful has this conversation been so far?</legend>
+            <div class="satisfaction-stars" role="radiogroup" aria-label="Rate helpfulness from 1 to 5 stars">
+              <label><input type="radio" name="chat-satisfaction" value="1"><span class="star" aria-hidden="true">★</span><span class="sr-only">1 star</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="2"><span class="star" aria-hidden="true">★</span><span class="sr-only">2 stars</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="3"><span class="star" aria-hidden="true">★</span><span class="sr-only">3 stars</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="4"><span class="star" aria-hidden="true">★</span><span class="sr-only">4 stars</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="5"><span class="star" aria-hidden="true">★</span><span class="sr-only">5 stars</span></label>
+            </div>
+          </fieldset>
+          <p id="satisfaction-status" role="status" aria-live="polite"></p>
+        </section>
       </section>
     </div>
   </main>
 
   <footer class="footer">
     <div class="container footer-inner">
-      <span>BYU Guide prototype</span>
-      <div class="footer-links">
-        <a href="index.html">Back to welcome</a>
+      <span>© 2026 BYU Guide prototype</span>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Welcome</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="faq.html">FAQs</a>
         <button class="button ghost small" data-open-modal>Report an issue</button>
-      </div>
+      </nav>
     </div>
   </footer>
 
