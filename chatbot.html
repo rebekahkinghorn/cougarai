@@ -22,13 +22,14 @@
       <nav class="main-nav" aria-label="Main navigation">
         <a class="nav-link" data-page="welcome" href="index.html">Welcome</a>
         <a class="nav-link" data-page="chatbot" href="chatbot.html">Chatbot</a>
-        <a class="nav-link" data-page="faq" href="faq.html">FAQs</a>
         <a class="nav-link" data-page="calendar" href="calendar.html">Calendar</a>
+        <a class="nav-link" data-page="faq" href="faq.html">FAQs</a>
       </nav>
 
       <div class="nav-actions">
+        <a class="button primary small" href="index.html#signup">Sign up</a>
         <button class="button secondary small" data-toast="Sign-in is ready for the next prototype iteration.">Sign in</button>
-        <button class="button primary small" data-toast="Welcome! You’re exploring as a guest.">Guest mode</button>
+        <button class="button secondary small" data-toast="Welcome! You’re exploring as a guest.">Continue as guest</button>
       </div>
     </div>
   </header>
@@ -69,9 +70,9 @@
           </button>
         </div>
 
-        <div class="callout" style="display:block;margin:28px 0 0;padding:18px;background:var(--sky);">
-          <h3 style="color:var(--navy);font-size:1rem;">Helpful hint</h3>
-          <p style="color:var(--muted);font-size:.82rem;">You can ask follow-up questions or use the links in an answer to learn more.</p>
+        <div class="callout chat-hint">
+          <h3>Helpful hint</h3>
+          <p>You can ask follow-up questions or use the links in an answer to learn more.</p>
         </div>
       </aside>
 
@@ -127,11 +128,14 @@
 
   <footer class="footer">
     <div class="container footer-inner">
-      <span>BYU Guide prototype</span>
-      <div class="footer-links">
-        <a href="index.html">Back to welcome</a>
+      <span>© 2026 BYU Guide prototype</span>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Welcome</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="faq.html">FAQs</a>
         <button class="button ghost small" data-open-modal>Report an issue</button>
-      </div>
+      </nav>
     </div>
   </footer>
 
