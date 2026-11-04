@@ -1,5 +1,31 @@
 {
   "devDependencies": {
     "supabase": "^2.120.0"
-  }
+  },
+  "dependencies": {
+    "body-parser": "^2.4.0",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "knex": "^3.3.0",
+    "pg": "^8.23.1"
+  },
+  "name": "cougarai",
+  "version": "1.0.0",
+  "description": "There isn’t a clear process for freshmen incoming to BYU to find all the information in one place\r on the BYU website. Many times, they need to click one link, redirect to another site, refer to\r another, and only then have they completed one step of their freshman checklist. Why is\r information vague and not all in the same place where everybody can access what they need in\r the most efficient way possible? This is a problem for not only freshman coming straight out of\r high school, but also for current missionaries trying to prepare with limited time and resources.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rebekahkinghorn/cougarai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/rebekahkinghorn/cougarai/issues"
+  },
+  "homepage": "https://github.com/rebekahkinghorn/cougarai#readme"
 }
