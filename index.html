@@ -181,67 +181,6 @@
       });
     });
 
-// taking info from the report an issue form and sending it to the database
-  
-// Submit issue report to Supabase
-document.addEventListener("DOMContentLoaded", () => {
-  const issueModal = document.querySelector("#issue-modal");
-  const issueForm = document.querySelector("#issue-form");
-
-  if (!issueForm) return;
-
-  issueForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-
-    const client = window.cougarAuth?.client;
-
-    if (!client) {
-      window.showToast?.("Database connection not available.");
-      return;
-    }
-
-    const description = document
-      .querySelector("#issue-description")
-      .value.trim();
-
-    if (!description) return;
-
-    const submitButton = issueForm.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-
-    try {
-      const { data: sessionData, error: sessionError } =
-        await client.auth.getSession();
-
-      if (sessionError) throw sessionError;
-
-      const userId = sessionData?.session?.user?.id || null;
-
-      const { error } = await client
-        .from("issue_report")
-        .insert({
-        description: description,
-        user_id: userId,
-        status: "Pending"
-  });
-
-      if (error) throw error;
-
-      issueForm.reset();
-      issueModal.classList.remove("show");
-
-      window.showToast?.("Your issue report was successfully submitted!");
-
-    } catch (error) {
-      console.error("Issue submission error:", error);
-      window.showToast?.("Error: " + error.message);
-
-    } finally {
-      submitButton.disabled = false;
-    }
-  }, true);
-});
   </script>
 </body>
 </html>
