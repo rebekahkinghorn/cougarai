@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Highlight the current page and control the mobile navigation.
   const currentPage = document.body.dataset.page;
   document.querySelectorAll(".nav-link").forEach((link) => {
     if (link.dataset.page === currentPage) link.classList.add("active");
@@ -11,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     menuToggle.setAttribute("aria-expanded", String(isOpen));
   });
 
+  // Show brief status messages throughout the app.
   const toast = document.querySelector(".toast");
   let toastTimer;
   const showToast = (message) => {
@@ -26,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("click", () => showToast(button.dataset.toast));
   });
 
+  // Open and close the shared report-an-issue modal.
   const modalBackdrop = document.querySelector(".modal-backdrop");
   const openModal = () => modalBackdrop?.classList.add("show");
   const closeModal = () => modalBackdrop?.classList.remove("show");
@@ -41,13 +44,61 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.target === modalBackdrop) closeModal();
   });
 
-  document.querySelector(".modal-form")?.addEventListener("submit", (event) => {
+  // Save issue reports to Supabase, from all pages. 
+  const issueModal = document.querySelector(".modal-backdrop[aria-labelledby=\"issue-title\"]");
+  const issueForm = issueModal?.querySelector(".modal-form");
+  issueForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    closeModal();
-    showToast("Thanks—your issue was recorded for the prototype.");
-    event.target.reset();
-  });
+    event.stopImmediatePropagation();
 
+    const description = issueForm.querySelector("#issue-description")?.value.trim();
+    if (!description) return;
+
+    const client = window.cougarAuth?.client;
+    if (!client) {
+      showToast("Database connection not available.");
+      return;
+    }
+
+    const submitButton = issueForm.querySelector("button[type=\"submit\"]");
+    if (submitButton) submitButton.disabled = true;
+
+    try {
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+      const userId = sessionData?.session?.user?.id || null;
+      if (!userId) {
+        showToast("You must be logged in to report an issue.");
+        return;
+      }
+
+      const submittedAt = new Date();
+      const mountainParts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+        timeZoneName: "longOffset"
+      }).formatToParts(submittedAt);
+      const mountainTime = Object.fromEntries(mountainParts.map(({ type, value }) => [type, value]));
+      const mountainOffset = mountainTime.timeZoneName.replace("GMT", "");
+      const dateSubmitted = `${mountainTime.year}-${mountainTime.month}-${mountainTime.day}T${mountainTime.hour}:${mountainTime.minute}:${mountainTime.second}${mountainOffset}`;
+
+      const { error } = await client.from("issue_report").insert({
+        description, user_id: userId, status: "Pending", date_submitted: dateSubmitted
+      });
+      if (error) throw error;
+
+      issueForm.reset();
+      issueModal.classList.remove("show");
+      showToast("Your issue report was successfully submitted!");
+    } catch (error) {
+      console.error("Issue submission error:", error);
+      showToast("Error: " + error.message);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  }, true);
+
+  // Expand and collapse individual FAQ answers.
   document.querySelectorAll(".faq-question").forEach((button) => {
     button.addEventListener("click", () => {
       const item = button.closest(".faq-item");
@@ -56,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Search and filter FAQ entries by text or category.
   const faqSearch = document.querySelector("#faq-search");
   const faqItems = [...document.querySelectorAll(".faq-item")];
   const faqEmpty = document.querySelector(".faq-empty");
@@ -100,9 +152,101 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Set up chatbot elements and common example responses.
   const chatMessages = document.querySelector("#chat-messages");
   const chatForm = document.querySelector("#chat-form");
   const chatInput = document.querySelector("#chat-input");
+
+  // Ask for a one-time star rating after two chatbot answers or 30 seconds.
+  // Track the active chat so the selected rating can be linked to its conversation.
+  const satisfactionSurvey = document.querySelector("#chat-satisfaction");
+  const satisfactionStatus = document.querySelector("#satisfaction-status");
+  const satisfactionRatings = satisfactionSurvey?.querySelectorAll('input[name="chat-satisfaction"]') ?? [];
+  let surveyShown = false;
+  let botAnswerCount = 0;
+  let surveyTimer;
+  let activeConversationId = null;
+  let pendingFeedbackRating = null;
+  let feedbackSaved = false;
+  let feedbackSaving = false;
+
+  // Insert the selected rating once a conversation ID is available.
+  const saveConversationFeedback = async () => {
+    if (!pendingFeedbackRating || !activeConversationId || feedbackSaved || feedbackSaving) return;
+
+    const client = window.cougarAuth?.client;
+    if (!client) {
+      pendingFeedbackRating = null;
+      satisfactionSurvey.dataset.rating = "";
+      satisfactionRatings.forEach((rating) => {
+        rating.checked = false;
+        rating.disabled = false;
+      });
+      if (satisfactionStatus) {
+        satisfactionStatus.textContent = "Database connection unavailable. Please choose a star to try again.";
+      }
+      return;
+    }
+
+    feedbackSaving = true;
+    if (satisfactionStatus) satisfactionStatus.textContent = "Saving your feedback…";
+
+    try {
+      const { error } = await client.from("chat_feedback").insert({
+        conversation_id: activeConversationId,
+        rating: pendingFeedbackRating
+      });
+      if (error) throw error;
+
+      feedbackSaved = true;
+      if (satisfactionStatus) satisfactionStatus.textContent = "Thanks for your feedback!";
+    } catch (error) {
+      console.error("Feedback submission error:", error);
+      pendingFeedbackRating = null;
+      satisfactionSurvey.dataset.rating = "";
+      satisfactionRatings.forEach((rating) => {
+        rating.checked = false;
+        rating.disabled = false;
+      });
+      if (satisfactionStatus) {
+        satisfactionStatus.textContent = "Could not save your rating. Please choose a star to try again.";
+      }
+    } finally {
+      feedbackSaving = false;
+    }
+  };
+
+  // Reveal the survey only once and cancel the timer if an answer triggered it first.
+  const showSatisfactionSurvey = () => {
+    if (surveyShown || !satisfactionSurvey) return;
+    surveyShown = true;
+    clearTimeout(surveyTimer);
+    satisfactionSurvey.hidden = false;
+  };
+
+  const startSatisfactionTimer = () => {
+    if (!satisfactionSurvey || surveyTimer) return;
+    // Start the 30-second fallback when the user sends their first question.
+    surveyTimer = window.setTimeout(showSatisfactionSurvey, 30000);
+  };
+
+  if (satisfactionSurvey) {
+    satisfactionRatings.forEach((input) => {
+      // Keep the selected value locally until it can be saved to Supabase.
+      input.addEventListener("change", () => {
+        if (!input.checked || feedbackSaved) return;
+        pendingFeedbackRating = Number(input.value);
+        satisfactionSurvey.dataset.rating = input.value;
+        satisfactionRatings.forEach((rating) => {
+          rating.disabled = true;
+        });
+        if (!activeConversationId && satisfactionStatus) {
+          satisfactionStatus.textContent = "Saving your feedback when this chat is ready…";
+        }
+        saveConversationFeedback();
+      });
+    });
+  }
 
   const responseMap = {
     housing:
@@ -115,6 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "The calendar shows BYU and Provo events. Use the filters to narrow the list, then select an event for details and registration links.",
   };
 
+  // Add a user or bot message to the chat window.
   const addMessage = (text, type = "bot") => {
     if (!chatMessages) return;
 
@@ -130,6 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   };
 
+  // Choose a built-in response for supported topics.
   const getResponse = (question) => {
     const normalized = question.toLowerCase();
 
@@ -151,17 +297,20 @@ document.addEventListener("DOMContentLoaded", () => {
     return "I can help with housing, MyMap and class registration, academic advising, BYU requirements, and events around Provo. Try asking about one of those topics.";
   };
 
+  // Keep each signed-in user or guest conversation under a separate key.
   const getConversationStorageKey = async (client) => {
     const { data } = await client.auth.getSession();
     const userId = data?.session?.user?.id || "guest";
     return `cougarai_conversation_${userId}`;
   };
 
+  // Send a chat question to the Supabase chatbot function and display its reply.
   const submitChat = async (value) => {
     const question = value.trim();
     if (!question) return;
 
     addMessage(question, "user");
+    startSatisfactionTimer();
     if (chatInput) chatInput.value = "";
 
     const client = window.cougarAuth?.client;
@@ -172,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const storageKey = await getConversationStorageKey(client);
     const conversationId = sessionStorage.getItem(storageKey);
+    activeConversationId = conversationId;
 
     const { data, error } = await client.functions.invoke("chatbot", {
       body: {
@@ -187,10 +337,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (data.conversation_id) {
+      activeConversationId = data.conversation_id;
       sessionStorage.setItem(storageKey, data.conversation_id);
+      // Save a rating that was selected before this conversation ID arrived.
+      saveConversationFeedback();
     }
 
     addMessage(data.reply);
+    // Show the survey as soon as the second chatbot answer is displayed.
+    botAnswerCount += 1;
+    if (botAnswerCount >= 2) showSatisfactionSurvey();
   };
 
   chatForm?.addEventListener("submit", (event) => {
@@ -204,6 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Clear the saved conversation and restore the initial chat message.
   document
     .querySelector("[data-clear-chat]")
     ?.addEventListener("click", async () => {
@@ -222,6 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("Conversation cleared.");
     });
 
+  // Filter calendar event cards by the selected category.
   const categoryButtons = document.querySelectorAll(".category-filter");
   const eventCards = document.querySelectorAll(".event-card");
 
@@ -237,6 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Show a confirmation toast when an event card is selected.
   document.querySelectorAll("[data-event]").forEach((event) => {
     event.addEventListener("click", () => {
       showToast(`${event.dataset.event} selected. Event details would open here.`);

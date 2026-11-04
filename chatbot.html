@@ -107,6 +107,21 @@
           <input id="chat-input" autocomplete="off" placeholder="Ask a question..." aria-label="Ask the BYU Guide a question">
           <button class="send-button" type="submit" aria-label="Send question">↑</button>
         </form>
+
+        <!-- One-time satisfaction survey with five accessible star ratings. -->
+        <section class="satisfaction-survey" id="chat-satisfaction" hidden aria-labelledby="satisfaction-question">
+          <fieldset>
+            <legend id="satisfaction-question">How helpful has this conversation been so far?</legend>
+            <div class="satisfaction-stars" role="radiogroup" aria-label="Rate helpfulness from 1 to 5 stars">
+              <label><input type="radio" name="chat-satisfaction" value="1"><span class="star" aria-hidden="true">★</span><span class="sr-only">1 star</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="2"><span class="star" aria-hidden="true">★</span><span class="sr-only">2 stars</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="3"><span class="star" aria-hidden="true">★</span><span class="sr-only">3 stars</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="4"><span class="star" aria-hidden="true">★</span><span class="sr-only">4 stars</span></label>
+              <label><input type="radio" name="chat-satisfaction" value="5"><span class="star" aria-hidden="true">★</span><span class="sr-only">5 stars</span></label>
+            </div>
+          </fieldset>
+          <p id="satisfaction-status" role="status" aria-live="polite"></p>
+        </section>
       </section>
     </div>
   </main>
