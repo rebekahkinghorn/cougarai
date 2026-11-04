@@ -41,58 +41,23 @@
     </div>
 
     <section class="panel" style="padding:26px;">
-      <div class="calendar-toolbar">
-        <h2>September 2026</h2>
-        <div class="month-controls">
-          <button class="icon-button" data-toast="Previous month selected." aria-label="Previous month">←</button>
-          <button class="button secondary small" data-toast="Today selected.">Today</button>
-          <button class="icon-button" data-toast="Next month selected." aria-label="Next month">→</button>
-        </div>
-      </div>
+          
+    <div class="calendar-toolbar">
+      <h2 id="calendar-month">September 2026</h2>
 
-      <div class="calendar-grid" aria-label="September 2026 calendar">
-        <div class="day-label">Sun</div>
-        <div class="day-label">Mon</div>
-        <div class="day-label">Tue</div>
-        <div class="day-label">Wed</div>
-        <div class="day-label">Thu</div>
-        <div class="day-label">Fri</div>
-        <div class="day-label">Sat</div>
-        <div class="day muted-day"><span class="day-number">30</span></div>
-        <div class="day"><span class="day-number">1</span></div>
-        <div class="day"><span class="day-number">2</span><span class="event-dot green">Club fair</span></div>
-        <div class="day"><span class="day-number">3</span></div>
-        <div class="day"><span class="day-number">4</span><span class="event-dot gold">Food trucks</span></div>
-        <div class="day"><span class="day-number">5</span></div>
-        <div class="day"><span class="day-number">6</span></div>
-        <div class="day"><span class="day-number">7</span><span class="event-dot">Study group</span></div>
-        <div class="day"><span class="day-number">8</span></div>
-        <div class="day today"><span class="day-number">9</span><span class="event-dot coral">Art night</span></div>
-        <div class="day"><span class="day-number">10</span></div>
-        <div class="day"><span class="day-number">11</span><span class="event-dot green">Game night</span></div>
-        <div class="day"><span class="day-number">12</span></div>
-        <div class="day"><span class="day-number">13</span></div>
-        <div class="day"><span class="day-number">14</span><span class="event-dot">Volunteer</span></div>
-        <div class="day"><span class="day-number">15</span></div>
-        <div class="day"><span class="day-number">16</span></div>
-        <div class="day"><span class="day-number">17</span><span class="event-dot gold">Farmers market</span></div>
-        <div class="day"><span class="day-number">18</span></div>
-        <div class="day"><span class="day-number">19</span></div>
-        <div class="day"><span class="day-number">20</span></div>
-        <div class="day"><span class="day-number">21</span><span class="event-dot green">Open mic</span></div>
-        <div class="day"><span class="day-number">22</span></div>
-        <div class="day"><span class="day-number">23</span></div>
-        <div class="day"><span class="day-number">24</span></div>
-        <div class="day"><span class="day-number">25</span><span class="event-dot coral">Cougar kickoff</span></div>
-        <div class="day"><span class="day-number">26</span></div>
-        <div class="day"><span class="day-number">27</span></div>
-        <div class="day"><span class="day-number">28</span></div>
-        <div class="day"><span class="day-number">29</span></div>
-        <div class="day"><span class="day-number">30</span></div>
-        <div class="day muted-day"><span class="day-number">1</span></div>
-        <div class="day muted-day"><span class="day-number">2</span></div>
-        <div class="day muted-day"><span class="day-number">3</span></div>
+      <div class="month-controls">
+        <button class="icon-button" id="prev-month" aria-label="Previous month">←</button>
+        <button class="button secondary small" id="today-button">Today</button>
+        <button class="icon-button" id="next-month" aria-label="Next month">→</button>
       </div>
+    </div>
+
+
+      
+<div class="calendar-grid" id="calendar-grid" aria-label="September 2026 calendar">
+  <!-- JavaScript will generate the dates here -->
+</div>
+
 
       <div class="event-section">
         <div class="section-heading" style="margin-bottom:15px;">
@@ -199,6 +164,155 @@
   </div>
 
   <div class="toast" role="status" aria-live="polite"></div>
+
+  
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const calendarGrid = document.getElementById("calendar-grid");
+  const monthHeading = document.getElementById("calendar-month");
+  const prevButton = document.getElementById("prev-month");
+  const nextButton = document.getElementById("next-month");
+  const todayButton = document.getElementById("today-button");
+
+  // September through December 2026
+  const minMonth = 8;  // September (JavaScript months start at 0)
+  const maxMonth = 11; // December
+  const year = 2026;
+
+  let currentMonth = 8;
+
+  // Preserve the existing September calendar events.
+  const events = {
+    "2026-09-02": [{ name: "Club fair", color: "green" }],
+    "2026-09-04": [{ name: "Food trucks", color: "gold" }],
+    "2026-09-07": [{ name: "Study group", color: "" }],
+    "2026-09-09": [{ name: "Art night", color: "coral" }],
+    "2026-09-11": [{ name: "Game night", color: "green" }],
+    "2026-09-14": [{ name: "Volunteer", color: "" }],
+    "2026-09-17": [{ name: "Farmers market", color: "gold" }],
+    "2026-09-21": [{ name: "Open mic", color: "green" }],
+    "2026-09-25": [{ name: "Cougar kickoff", color: "coral" }]
+  };
+
+  function renderCalendar() {
+    calendarGrid.innerHTML = "";
+
+    const firstDay = new Date(year, currentMonth, 1);
+    const daysInMonth = new Date(year, currentMonth + 1, 0).getDate();
+    const startingDay = firstDay.getDay();
+
+    const monthName = firstDay.toLocaleString("en-US", {
+      month: "long",
+      year: "numeric"
+    });
+
+    monthHeading.textContent = monthName;
+    calendarGrid.setAttribute("aria-label", monthName + " calendar");
+
+    // Generate weekday headings.
+    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    weekdays.forEach(day => {
+      const label = document.createElement("div");
+      label.className = "day-label";
+      label.textContent = day;
+      calendarGrid.appendChild(label);
+    });
+
+    // Generate the dates, including adjacent-month dates.
+    const totalCells = Math.ceil((startingDay + daysInMonth) / 7) * 7;
+
+    for (let i = 0; i < totalCells; i++) {
+      const dayNumber = i - startingDay + 1;
+      const date = new Date(year, currentMonth, dayNumber);
+
+      const dayCell = document.createElement("div");
+      dayCell.className = "day";
+
+      if (date.getMonth() !== currentMonth) {
+        dayCell.classList.add("muted-day");
+      }
+
+      // Highlight the actual current date.
+      const today = new Date();
+
+      if (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      ) {
+        dayCell.classList.add("today");
+      }
+
+      const number = document.createElement("span");
+      number.className = "day-number";
+      number.textContent = date.getDate();
+      dayCell.appendChild(number);
+
+      // Display any events for this date.
+      const dateKey = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+      ].join("-");
+
+      if (date.getMonth() === currentMonth && events[dateKey]) {
+        events[dateKey].forEach(event => {
+          const eventDot = document.createElement("span");
+          eventDot.className = "event-dot";
+
+          if (event.color) {
+            eventDot.classList.add(event.color);
+          }
+
+          eventDot.textContent = event.name;
+          dayCell.appendChild(eventDot);
+        });
+      }
+
+      calendarGrid.appendChild(dayCell);
+    }
+
+    // Disable navigation at the September/December boundaries.
+    prevButton.disabled = currentMonth === minMonth;
+    nextButton.disabled = currentMonth === maxMonth;
+  }
+
+  nextButton.addEventListener("click", () => {
+    if (currentMonth < maxMonth) {
+      currentMonth++;
+      renderCalendar();
+    }
+  });
+
+  prevButton.addEventListener("click", () => {
+    if (currentMonth > minMonth) {
+      currentMonth--;
+      renderCalendar();
+    }
+  });
+
+  todayButton.addEventListener("click", () => {
+    const today = new Date();
+
+    if (today.getFullYear() === year &&
+        today.getMonth() >= minMonth &&
+        today.getMonth() <= maxMonth) {
+      currentMonth = today.getMonth();
+    } else {
+      currentMonth = minMonth;
+    }
+
+    renderCalendar();
+  });
+
+  // Display September when the page first loads.
+  renderCalendar();
+
+});
+</script>
+
 
   <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
