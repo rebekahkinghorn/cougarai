@@ -20,12 +20,13 @@
       <nav class="main-nav" aria-label="Main navigation">
         <a class="nav-link" data-page="welcome" href="index.html">Welcome</a
           ><a class="nav-link" data-page="chatbot" href="chatbot.html">Chatbot</a>
-          <a class="nav-link" data-page="faq" href="faq.html">FAQs</a>
           <a class="nav-link" data-page="calendar" href="calendar.html">Calendar</a>
+          <a class="nav-link" data-page="faq" href="faq.html">FAQs</a>
         </nav>
         <div class="nav-actions">
+            <a class="button primary small" href="index.html#signup">Sign up</a>
             <button class="button secondary small" data-toast="Sign-in is ready for the next prototype iteration.">Sign in</button>
-            <a class="button primary small" href="chatbot.html">Ask the guide</a>
+            <button class="button secondary small" data-toast="Welcome! You’re exploring as a guest.">Continue as guest</button>
           </div>
         </div>
       </header>
@@ -218,18 +219,17 @@
   </main>
   <footer class="footer">
     <div class="container footer-inner">
-      <span>BYU Guide prototype</span>
-      <div class="footer-links">
-        <a href="faq.html">Browse FAQs</a>
+      <span>© 2026 BYU Guide prototype</span>
+      <nav class="footer-links" aria-label="Footer navigation">
         <a href="index.html">Welcome</a>
-      </div>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="calendar.html">Calendar</a>
+        <a href="faq.html">FAQs</a>
+        <button class="button ghost small" data-open-modal>Report an issue</button>
+      </nav>
     </div>
   </footer>
-  <div class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="auth.js"></script>
-  </main><footer class="footer"><div class="container footer-inner"><span>BYU Guide prototype</span><div class="footer-links"><a href="faq.html">Browse FAQs</a><a href="index.html">Welcome</a><button class="button ghost small" data-open-modal>Report an issue</button></div></div></footer><div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title">
+  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title">
   <div class="modal">
     <div class="modal-header">
       <div>
@@ -247,5 +247,8 @@
     </form>
   </div>
 </div>
-<div class="toast" role="status" aria-live="polite"></div><script src="app.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="auth.js"></script>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
 </body></html>

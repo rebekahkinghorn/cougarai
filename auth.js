@@ -1,5 +1,5 @@
-// Shared auth helper: creates one Supabase client and swaps the Sign up / Sign in
-// buttons in the header for a "Hello, [name]!" greeting once a user exists.
+// Shared auth helper: switches the signed-out header to the signed-in header
+// whenever a Supabase user session exists.
 // Load AFTER the Supabase CDN script and app.js on every page.
 (() => {
   const SUPABASE_URL = "https://xyyhccpivxxgiatptwko.supabase.co";
@@ -28,7 +28,12 @@
       location.reload();
     });
 
-    actions.replaceChildren(greeting, signOut);
+    const chatbotLink = document.createElement("a");
+    chatbotLink.className = "button primary small";
+    chatbotLink.href = "chatbot.html";
+    chatbotLink.textContent = "Ask the guide";
+
+    actions.replaceChildren(greeting, signOut, chatbotLink);
   };
 
   // If someone is already signed in (e.g. they navigated from another page), greet them right away.
