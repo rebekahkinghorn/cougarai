@@ -67,6 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const { data: sessionData, error: sessionError } = await client.auth.getSession();
       if (sessionError) throw sessionError;
       const userId = sessionData?.session?.user?.id || null;
+      if (!userId) {
+        showToast("You must be logged in to report an issue.");
+        return;
+      }
 
       const submittedAt = new Date();
       const mountainParts = new Intl.DateTimeFormat("en-CA", {
@@ -153,6 +157,97 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatForm = document.querySelector("#chat-form");
   const chatInput = document.querySelector("#chat-input");
 
+  // Ask for a one-time star rating after two chatbot answers or 30 seconds.
+  // Track the active chat so the selected rating can be linked to its conversation.
+  const satisfactionSurvey = document.querySelector("#chat-satisfaction");
+  const satisfactionStatus = document.querySelector("#satisfaction-status");
+  const satisfactionRatings = satisfactionSurvey?.querySelectorAll('input[name="chat-satisfaction"]') ?? [];
+  let surveyShown = false;
+  let botAnswerCount = 0;
+  let surveyTimer;
+  let activeConversationId = null;
+  let pendingFeedbackRating = null;
+  let feedbackSaved = false;
+  let feedbackSaving = false;
+
+  // Insert the selected rating once a conversation ID is available.
+  const saveConversationFeedback = async () => {
+    if (!pendingFeedbackRating || !activeConversationId || feedbackSaved || feedbackSaving) return;
+
+    const client = window.cougarAuth?.client;
+    if (!client) {
+      pendingFeedbackRating = null;
+      satisfactionSurvey.dataset.rating = "";
+      satisfactionRatings.forEach((rating) => {
+        rating.checked = false;
+        rating.disabled = false;
+      });
+      if (satisfactionStatus) {
+        satisfactionStatus.textContent = "Database connection unavailable. Please choose a star to try again.";
+      }
+      return;
+    }
+
+    feedbackSaving = true;
+    if (satisfactionStatus) satisfactionStatus.textContent = "Saving your feedback…";
+
+    try {
+      const { error } = await client.from("chat_feedback").insert({
+        conversation_id: activeConversationId,
+        rating: pendingFeedbackRating
+      });
+      if (error) throw error;
+
+      feedbackSaved = true;
+      if (satisfactionStatus) satisfactionStatus.textContent = "Thanks for your feedback!";
+    } catch (error) {
+      console.error("Feedback submission error:", error);
+      pendingFeedbackRating = null;
+      satisfactionSurvey.dataset.rating = "";
+      satisfactionRatings.forEach((rating) => {
+        rating.checked = false;
+        rating.disabled = false;
+      });
+      if (satisfactionStatus) {
+        satisfactionStatus.textContent = "Could not save your rating. Please choose a star to try again.";
+      }
+    } finally {
+      feedbackSaving = false;
+    }
+  };
+
+  // Reveal the survey only once and cancel the timer if an answer triggered it first.
+  const showSatisfactionSurvey = () => {
+    if (surveyShown || !satisfactionSurvey) return;
+    surveyShown = true;
+    clearTimeout(surveyTimer);
+    satisfactionSurvey.hidden = false;
+  };
+
+  const startSatisfactionTimer = () => {
+    if (!satisfactionSurvey || surveyTimer) return;
+    // Start the 30-second fallback when the user sends their first question.
+    surveyTimer = window.setTimeout(showSatisfactionSurvey, 30000);
+  };
+
+  if (satisfactionSurvey) {
+    satisfactionRatings.forEach((input) => {
+      // Keep the selected value locally until it can be saved to Supabase.
+      input.addEventListener("change", () => {
+        if (!input.checked || feedbackSaved) return;
+        pendingFeedbackRating = Number(input.value);
+        satisfactionSurvey.dataset.rating = input.value;
+        satisfactionRatings.forEach((rating) => {
+          rating.disabled = true;
+        });
+        if (!activeConversationId && satisfactionStatus) {
+          satisfactionStatus.textContent = "Saving your feedback when this chat is ready…";
+        }
+        saveConversationFeedback();
+      });
+    });
+  }
+
   const responseMap = {
     housing:
       "A good first step is to review the housing timeline and apply for on-campus housing as soon as your application opens. If you are waitlisted, compare off-campus options before the semester gets close.",
@@ -215,6 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!question) return;
 
     addMessage(question, "user");
+    startSatisfactionTimer();
     if (chatInput) chatInput.value = "";
 
     const client = window.cougarAuth?.client;
@@ -225,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const storageKey = await getConversationStorageKey(client);
     const conversationId = sessionStorage.getItem(storageKey);
+    activeConversationId = conversationId;
 
     const { data, error } = await client.functions.invoke("chatbot", {
       body: {
@@ -240,10 +337,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (data.conversation_id) {
+      activeConversationId = data.conversation_id;
       sessionStorage.setItem(storageKey, data.conversation_id);
+      // Save a rating that was selected before this conversation ID arrived.
+      saveConversationFeedback();
     }
 
     addMessage(data.reply);
+    // Show the survey as soon as the second chatbot answer is displayed.
+    botAnswerCount += 1;
+    if (botAnswerCount >= 2) showSatisfactionSurvey();
   };
 
   chatForm?.addEventListener("submit", (event) => {
