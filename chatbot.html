@@ -29,7 +29,6 @@
       <div class="nav-actions">
         <a class="button primary small" href="index.html#signup">Sign up</a>
         <button class="button secondary small" data-toast="Sign-in is ready for the next prototype iteration.">Sign in</button>
-        <button class="button secondary small" data-toast="Welcome! You’re exploring as a guest.">Continue as guest</button>
       </div>
     </div>
   </header>
@@ -49,31 +48,12 @@
 
     <div class="chat-layout">
       <aside class="panel side-panel">
-        <h3>Try asking about...</h3>
-
-        <div class="suggestion-list">
-          <button class="suggestion" data-question="Where should I start with housing?">
-            <span class="suggestion-icon">⌂</span>
-            <span>Housing timeline</span>
-          </button>
-          <button class="suggestion" data-question="How does MyMap work?">
-            <span class="suggestion-icon">▦</span>
-            <span>MyMap &amp; classes</span>
-          </button>
-          <button class="suggestion" data-question="How do I find an academic advisor?">
-            <span class="suggestion-icon">◎</span>
-            <span>Academic advising</span>
-          </button>
-          <button class="suggestion" data-question="What events are happening around Provo?">
-            <span class="suggestion-icon">◷</span>
-            <span>Events around Provo</span>
-          </button>
+        <div class="history-heading">
+          <h3>Chat history</h3>
         </div>
-
-        <div class="callout chat-hint">
-          <h3>Helpful hint</h3>
-          <p>You can ask follow-up questions or use the links in an answer to learn more.</p>
-        </div>
+        <br><br>
+        <p class="history-status" id="chat-history-status" role="status" aria-live="polite">Loading your chats…</p>
+        <div class="chat-history" id="chat-history" aria-label="Saved conversations"></div>
       </aside>
 
       <section class="panel chat-panel" aria-label="BYU Guide chat">
@@ -85,23 +65,10 @@
               <small>Answers about getting ready for campus</small>
             </div>
           </div>
-          <button class="button ghost small" data-clear-chat>Clear chat</button>
+          <button class="button primary small" type="button" data-new-chat>New chat</button>
         </div>
 
-        <div class="chat-messages" id="chat-messages">
-          <div class="message">
-            Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo.
-            <small>BYU Guide · just now</small>
-          </div>
-          <div class="message user">
-            What should I do first?
-            <small>You · just now</small>
-          </div>
-          <div class="message">
-            Start with the deadline or decision that feels most urgent. Housing and class planning are good places to begin, and I can walk through either one.
-            <small>BYU Guide · just now</small>
-          </div>
-        </div>
+        <div class="chat-messages" id="chat-messages" aria-live="polite" aria-label="Conversation messages"></div>
 
         <form class="chat-form" id="chat-form">
           <input id="chat-input" autocomplete="off" placeholder="Ask a question..." aria-label="Ask the BYU Guide a question">
@@ -166,5 +133,81 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
   <script src="auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const { client, showGreeting } = window.cougarAuth;
+      const backdrop = document.querySelector(".signup-backdrop");
+      const form = document.querySelector("#signup-form");
+      const message = document.querySelector("#signup-message");
+      const openButton = document.querySelector("[data-open-signup]");
+      const closeButton = document.querySelector("[data-close-signup]");
+      if (!backdrop || !form || !message || !openButton) return;
+
+      const showMessage = (text, kind) => {
+        message.textContent = text;
+        message.style.color = kind === "error" ? "#b42318" : "#16794a";
+      };
+
+      const openSignup = () => {
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+        document.querySelector("#signup-username").focus();
+      };
+
+      const closeSignup = () => {
+        backdrop.classList.remove("show");
+        backdrop.setAttribute("aria-hidden", "true");
+        showMessage("", "");
+      };
+
+      openButton.addEventListener("click", openSignup);
+      closeButton.addEventListener("click", closeSignup);
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeSignup();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && backdrop.classList.contains("show")) closeSignup();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!client) {
+          showMessage("The Supabase connection is not available. Check the page scripts.", "error");
+          return;
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        const values = new FormData(form);
+        const username = String(values.get("username")).trim();
+        const email = String(values.get("email")).trim();
+        const password = String(values.get("password"));
+        submitButton.disabled = true;
+        showMessage("Creating your account…", "");
+
+        try {
+          const { data, error } = await client.auth.signUp({
+            email,
+            password,
+            options: { data: { username } }
+          });
+          if (error) throw error;
+          form.reset();
+          closeSignup();
+          // Account is created: replace the Sign up / Sign in buttons with "Hello, [name]!"
+          showGreeting(data.user || { user_metadata: { username } });
+          window.showToast?.(
+            data.session
+              ? `Your account is ready. Welcome, ${username}!`
+              : "Account created. Check your email for a confirmation link."
+          );
+        } catch (error) {
+          showMessage(error.message || "We couldn’t create your account. Please try again.", "error");
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+    });
+  </script>
 </body>
 </html>
