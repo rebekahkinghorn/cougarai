@@ -194,8 +194,8 @@
           if (error) throw error;
           form.reset();
           closeSignup();
-          // Account is created: replace the Sign up / Sign in buttons with "Hello, [name]!"
-          showGreeting(data.user || { user_metadata: { username } });
+          // Only show the signed-in header when Supabase returned an active session.
+          if (data.session?.user) showGreeting(data.session.user);
           window.showToast?.(
             data.session
               ? `Your account is ready. Welcome, ${username}!`
