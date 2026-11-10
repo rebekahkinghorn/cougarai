@@ -1,4 +1,4 @@
-# CougarAI 
+# CougarAI
 
 ## App Summary
 
@@ -13,19 +13,14 @@ This is the probelem that our app solves. CougarAI has a built in chatbot that i
 
 We also realize that BYU freshman struggle not only with figuring out the academic side of BYU, but the social side as well. For this purpose our app also has a calendar page which will include events happening on and off campus. Users will be able to filter this calendar to show them events that they are most interested in.
 
-## Tech Stack 
+## Tech Stack
 
-Front end: HTML/CSS/Javascript 
-Database & Backend: Supabase 
+Front end: HTML, CSS, Javascript 
+Database, Backend & Autentication: Supabase 
 AI app builder: CODEX 
 
 
-
-## ERD
-
-<img width="1677" height="1026" alt="Cougar AI ERD-2" src="https://github.com/user-attachments/assets/dbedbe00-b875-41ca-9a49-28a5e3e22043" />
-
-## Step-by-Step Instructions
+## Project Setup
 
 1. Clone the repository
    Clone a fresh copy of the code from GitHub to your local machine
@@ -59,3 +54,69 @@ AI app builder: CODEX
   Link to the video that shows our vertical slice!
 
   https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing
+
+## Sprint Vertical Slices
+
+The sprint list contains **11 vertical slices** (although it was introduced as 10). Status below reflects the code currently in this repository. Supabase-backed slices also require the matching deployed tables, policies, and functions; those live services have not been independently smoke-tested as part of this README update.
+
+### 1. Report an issue — Implemented in the front end; requires sign-in and Supabase
+
+A signed-in user can submit a description through the “Report an issue” form. The app inserts the report into the `issue_report` table with the user's ID, a `Pending` status, and a timestamp in Mountain Time. Signed-out users are asked to sign in.
+
+**Verifying the vertical slice:** Sign in, open “Report an issue,” enter a description, and submit. Confirm the success toast. Refresh the page, then check the Supabase Table Editor for the new row in `issue_report`; the report is stored in the database and does not need to remain visible in the form after refresh. Confirm the row has the expected user, status, description, and timestamp.
+
+### 2. Sign in — Not implemented
+
+The Sign in buttons currently show a prototype message. There is no password sign-in form or `signInWithPassword` handler yet, so this slice cannot currently be verified.
+
+### 3. Sign up — Implemented in the front end; requires Supabase Auth
+
+The sign-up form creates a Supabase Auth account with a username saved as user metadata. Depending on the project's email-confirmation settings, the user may need to confirm their email before a session is created. When a session is returned, the header changes to a greeting and sign-out control.
+
+**Verifying the vertical slice:** Use a new email address in the “Sign up” form, submit a username, email, and password, and complete any email-confirmation step required by Supabase. Once signed in, confirm the greeting appears. Refresh the page and confirm the greeting remains, showing that the Supabase session is restored. If the project requires email confirmation, account creation alone may not sign the user in.
+
+### 4. Chatbot history saves — Partially implemented
+
+The browser sends a conversation ID to the Supabase `chatbot` Edge Function and saves a returned ID in `sessionStorage`, using a separate key for each signed-in user (or guest). Subsequent messages in the same browser tab send that ID again. The current page does not rebuild prior message bubbles after a refresh, and actual server-side transcript persistence depends on the deployed Edge Function.
+
+**Verifying the vertical slice:** Send a question and confirm the function returns a conversation ID. In browser developer tools, check Application/Storage → Session Storage for a `cougarai_conversation_<user-id>` (or guest) entry. Refresh the same tab and confirm the ID remains; send another question and confirm the same ID is sent to the function. To verify that the transcript itself is saved, inspect the backend's conversation storage or logs. Previous messages are not currently re-rendered in the chat after refresh.
+
+### 5. Chat history — Pull up old conversations from a user — Not implemented
+
+There is no conversation list or UI for selecting and reopening prior conversations for a signed-in user.
+
+### 6. New chat — Implemented as “Clear chat”; requires Supabase for a fresh conversation ID
+
+“Clear chat” removes the current conversation ID from session storage and resets the visible chat to its opening message. The next submitted prompt starts without the previous conversation ID, allowing the chatbot function to create a new conversation.
+
+**Verifying the vertical slice:** Send a question and note the current conversation ID in Session Storage. Select “Clear chat” and confirm the opening message returns. Confirm the conversation ID key is removed. Send a new question and confirm the chatbot function returns a new conversation ID. Refresh and confirm the new ID is still stored for that tab. The current UI does not restore prior message bubbles after a refresh.
+
+### 7. Feedback star rating — Implemented in the front end; requires Supabase
+
+The chatbot shows a one-time five-star helpfulness survey after the second chatbot answer, or after 30 seconds from the first question. Selecting a star inserts the rating and conversation ID into `chat_feedback`.
+
+**Verifying the vertical slice:** Send chatbot questions until the survey appears (or wait 30 seconds after the first question). Select a star and confirm the “Thanks for your feedback!” status. Refresh the page and check the Supabase Table Editor for the saved row in `chat_feedback`, including its rating and conversation ID. The survey is one-time per page load/conversation flow; the persisted rating is confirmed in the table.
+
+### 8. Admin — Suggested event shows up for approval — Not implemented
+
+The calendar’s “Suggest an Event” button currently displays a prototype message. There is no event submission form, approval queue, or admin review workflow.
+
+### 9. Admin — Aggregated chatbot feedback (average rating) — Not implemented
+
+Ratings can be submitted to `chat_feedback`, but there is no admin view or aggregate average-rating display.
+
+### 10. Admin — Percentage of messages that provide a valid response — Not implemented
+
+The current app does not record whether a chatbot response is valid or calculate a percentage of valid responses.
+
+### 11. Admin — How often users return — Not implemented
+
+The current app does not track or display returning-user frequency in an admin dashboard.
+
+## ERD
+
+<img width="1677" height="1026" alt="Cougar AI ERD-2" src="https://github.com/user-attachments/assets/dbedbe00-b875-41ca-9a49-28a5e3e22043" />
+
+## Demo
+
+[Vertical slice demo video](https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing)
