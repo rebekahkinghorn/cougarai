@@ -348,3 +348,94 @@ body.welcome-calm-preview .welcome-callout .button {
   box-shadow: none;
 }
 
+
+/* ==========================================
+   COUGAR AI - CLICKABLE CALENDAR EVENTS
+   ========================================== */
+
+/* Make calendar event labels clickable */
+button.event-dot {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 4px;
+    border: none;
+    font: inherit;
+    font-size: var(--type-xs);
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 150ms ease, filter 150ms ease;
+}
+
+/* Hover effect */
+button.event-dot:hover {
+    filter: brightness(0.94);
+    transform: translateY(-1px);
+}
+
+/* Keyboard accessibility */
+button.event-dot:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+}
+
+/* ==========================================
+   EVENT DETAILS POPUP
+   ========================================== */
+
+/* Keep popup comfortable on smaller screens */
+.event-backdrop .modal {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Event details layout */
+.event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Event information */
+.event-details p {
+    margin: 0;
+    color: var(--muted);
+    line-height: var(--leading-body);
+}
+
+/* Make labels stand out */
+.event-details strong {
+    color: var(--navy);
+    font-weight: var(--weight-bold);
+}
+
+/* About this event heading */
+.event-details h3 {
+    margin: 12px 0 0;
+    color: var(--navy);
+}
+
+/* Close button */
+.event-details .button {
+    margin-top: 16px;
+    align-self: flex-start;
+}
+
+/* Mobile adjustments */
+@media (max-width: 700px) {
+    button.event-dot {
+        padding: 4px;
+        font-size: var(--type-micro);
+    }
+
+    .event-backdrop .modal {
+        padding: 22px;
+    }
+
+    .event-details {
+        gap: 10px;
+    }
+}
+
