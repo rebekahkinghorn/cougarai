@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await window.siteLayoutReady;
   // Highlight the current page and control the mobile navigation.
   const currentPage = document.body.dataset.page;
   document.querySelectorAll(".nav-link").forEach((link) => {
@@ -563,23 +564,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       typingIndicator?.remove();
     }
-
-      addMessage(data.reply);
-      // Show the survey as soon as the second chatbot answer is displayed.
-      botAnswerCount += 1;
-      if (botAnswerCount >= 2) showSatisfactionSurvey();
-    } catch (error) {
-      console.error("Chat function error:", error);
-      addMessage("Sorry, I couldn't get an answer right now.");
-    } finally {
-      typingIndicator?.remove();
-    }
-
-    await loadChatHistory(client);
-    addMessage(data.reply);
-    // Show the survey as soon as the second chatbot answer is displayed.
-    botAnswerCount += 1;
-    if (botAnswerCount >= 2) showSatisfactionSurvey();
   };
 
   chatForm?.addEventListener("submit", (event) => {
