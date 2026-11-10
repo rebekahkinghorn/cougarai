@@ -474,6 +474,20 @@ document.addEventListener("DOMContentLoaded", () => {
     return `cougarai_conversation_${userId}`;
   };
 
+  // Show an accessible typing indicator while the chatbot is formulating a reply.
+  const addTypingIndicator = () => {
+    if (!chatMessages) return null;
+
+    const indicator = document.createElement("div");
+    indicator.className = "message typing-indicator";
+    indicator.setAttribute("role", "status");
+    indicator.setAttribute("aria-label", "BYU Guide is thinking");
+    indicator.innerHTML = '<span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span>';
+    chatMessages.appendChild(indicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return indicator;
+  };
+
   // Send a chat question to the Supabase chatbot function and display its reply.
   const submitChat = async (value) => {
     const question = value.trim();
@@ -489,48 +503,76 @@ document.addEventListener("DOMContentLoaded", () => {
       addMessage("Chat connection is not set up on this page yet.");
       return;
     }
+    const typingIndicator = addTypingIndicator();
 
-    const storageKey = await getConversationStorageKey(client);
-    historyStorageKey = storageKey;
-    const storedConversationId = sessionStorage.getItem(storageKey);
-    const conversationId = storedConversationId === NEW_CHAT_SESSION_MARKER
-      ? null
-      : storedConversationId;
-    activeConversationId = conversationId;
+    try {
+      const storageKey = await getConversationStorageKey(client);
+      historyStorageKey = storageKey;
 
-    const { data: authData, error: authError } = await client.auth.getSession();
-    if (authError) console.error("Could not read the current auth session:", authError);
-    const accessToken = authData?.session?.access_token;
+      const storedConversationId = sessionStorage.getItem(storageKey);
+      const conversationId =
+        storedConversationId === NEW_CHAT_SESSION_MARKER
+          ? null
+          : storedConversationId;
+      activeConversationId = conversationId;
 
-    const { data, error } = await client.functions.invoke("chatbot", {
-      body: {
-        message: question,
-        conversation_id: conversationId,
-      },
-      ...(accessToken
-        ? { headers: { Authorization: `Bearer ${accessToken}` } }
-        : {}),
-    });
+      const { data: authData, error: authError } =
+        await client.auth.getSession();
+      if (authError) {
+        console.error("Could not read the current auth session:", authError);
+      }
 
-    if (requestVersion !== chatRequestVersion) {
+      const accessToken = authData?.session?.access_token;
+      const { data, error } = await client.functions.invoke("chatbot", {
+        body: {
+          message: question,
+          conversation_id: conversationId,
+        },
+        ...(accessToken
+          ? { headers: { Authorization: `Bearer ${accessToken}` } }
+          : {}),
+      });
+
+      if (requestVersion !== chatRequestVersion) {
+        await loadChatHistory(client);
+        return;
+      }
+
+      if (error || !data?.reply) {
+        // The function may have saved the conversation before answer generation failed.
+        await loadChatHistory(client);
+        addMessage("Sorry, I couldn't get an answer right now.");
+        console.error("Chat function error:", error || data);
+        return;
+      }
+
+      if (data.conversation_id) {
+        activeConversationId = data.conversation_id;
+        sessionStorage.setItem(storageKey, data.conversation_id);
+        saveConversationFeedback();
+      }
+
       await loadChatHistory(client);
-      return;
-    }
+      addMessage(data.reply);
 
-    if (error || !data?.reply) {
-      // The Edge Function may have saved the conversation before answer
-      // generation failed, so still refresh the history list on errors.
-      await loadChatHistory(client);
+      botAnswerCount += 1;
+      if (botAnswerCount >= 2) showSatisfactionSurvey();
+    } catch (error) {
+      console.error("Chat function error:", error);
       addMessage("Sorry, I couldn't get an answer right now.");
-      console.error("Chat function error:", error || data);
-      return;
+    } finally {
+      typingIndicator?.remove();
     }
 
-    if (data.conversation_id) {
-      activeConversationId = data.conversation_id;
-      sessionStorage.setItem(storageKey, data.conversation_id);
-      // Save a rating that was selected before this conversation ID arrived.
-      saveConversationFeedback();
+      addMessage(data.reply);
+      // Show the survey as soon as the second chatbot answer is displayed.
+      botAnswerCount += 1;
+      if (botAnswerCount >= 2) showSatisfactionSurvey();
+    } catch (error) {
+      console.error("Chat function error:", error);
+      addMessage("Sorry, I couldn't get an answer right now.");
+    } finally {
+      typingIndicator?.remove();
     }
 
     await loadChatHistory(client);
