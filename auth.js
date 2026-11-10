@@ -44,4 +44,73 @@
   });
 
   window.cougarAuth = { client, showGreeting };
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+    const backdrop = document.querySelector(".signin-backdrop");
+    const form = document.querySelector("#signin-form");
+    const message = document.querySelector("#signin-message");
+    const openButton = document.querySelector("[data-open-signin]");
+    const closeButton = document.querySelector("[data-close-signin]");
+
+    if (!backdrop || !form || !message || !openButton || !closeButton) return;
+
+    const showMessage = (text, isError = false) => {
+      message.textContent = text;
+      message.style.color = isError ? "#b42318" : "#16794a";
+    };
+
+    const closeSignin = () => {
+      backdrop.classList.remove("show");
+      backdrop.setAttribute("aria-hidden", "true");
+      form.reset();
+      showMessage("");
+    };
+
+    openButton.addEventListener("click", () => {
+      backdrop.classList.add("show");
+      backdrop.setAttribute("aria-hidden", "false");
+      document.querySelector("#signin-email").focus();
+    });
+
+    closeButton.addEventListener("click", closeSignin);
+
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) closeSignin();
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!client) {
+        showMessage("Sign-in is unavailable. Check the Supabase connection.", true);
+        return;
+      }
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      showMessage("Signing in…");
+
+      try {
+        const email = form.elements.email.value.trim();
+        const password = form.elements.password.value;
+
+        const { data, error } = await client.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        closeSignin();
+        showGreeting(data.user);
+      } catch (error) {
+        console.error("Sign-in error:", error);
+        showMessage(error.message || "Could not sign in. Check your email and password.", true);
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+  });
 })();
