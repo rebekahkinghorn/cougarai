@@ -195,6 +195,59 @@
     </div>
   </div>
 
+  
+<!-- Event Details Modal -->
+<div class="modal-backdrop event-backdrop"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="event-modal-title"
+     aria-hidden="true">
+
+  <div class="modal">
+
+    <div class="modal-header">
+      <div>
+        <span class="eyebrow" id="event-modal-category">
+          Event
+        </span>
+        <h2 id="event-modal-title">Event Details</h2>
+      </div>
+
+      <button class="modal-close"
+              type="button"
+              id="close-event-modal"
+              aria-label="Close event details">
+        &times;
+      </button>
+    </div>
+
+    <div class="event-details">
+      <p><strong>Date:</strong>
+        <span id="event-modal-date"></span>
+      </p>
+
+      <p><strong>Time:</strong>
+        <span id="event-modal-time"></span>
+      </p>
+
+      <p><strong>Location:</strong>
+        <span id="event-modal-location"></span>
+      </p>
+
+      <h3>About this event</h3>
+      <p id="event-modal-description"></p>
+
+      <button class="button primary"
+              type="button"
+              id="event-modal-close-button">
+        Close
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
   <div class="toast" role="status" aria-live="polite"></div>
 
   
@@ -208,24 +261,161 @@ document.addEventListener("DOMContentLoaded", () => {
   const todayButton = document.getElementById("today-button");
 
   // September through December 2026
-  const minMonth = 8;  // September (JavaScript months start at 0)
-  const maxMonth = 11; // December
-  const year = 2026;
+  // September through December 2026
+const minMonth = 8;
+const maxMonth = 11;
+const year = 2026;
 
-  let currentMonth = 8;
+// Get the actual current date
+const today = new Date();
+
+// Default to the current month if within our calendar range
+let currentMonth;
+
+if (
+    today.getFullYear() === year &&
+    today.getMonth() >= minMonth &&
+    today.getMonth() <= maxMonth
+) {
+    currentMonth = today.getMonth();
+} else {
+    currentMonth = minMonth;
+}
 
   // Preserve the existing September calendar events.
-  const events = {
-    "2026-09-02": [{ name: "Club fair", color: "green" }],
-    "2026-09-04": [{ name: "Food trucks", color: "gold" }],
-    "2026-09-07": [{ name: "Study group", color: "" }],
-    "2026-09-09": [{ name: "Art night", color: "coral" }],
-    "2026-09-11": [{ name: "Game night", color: "green" }],
-    "2026-09-14": [{ name: "Volunteer", color: "" }],
-    "2026-09-17": [{ name: "Farmers market", color: "gold" }],
-    "2026-09-21": [{ name: "Open mic", color: "green" }],
-    "2026-09-25": [{ name: "Cougar kickoff", color: "coral" }]
-  };
+  
+const events = {
+  // SEPTEMBER 2026 - Existing events
+  "2026-09-02": [{ name: "Club fair", color: "green" }],
+  "2026-09-04": [{ name: "Food trucks", color: "gold" }],
+  "2026-09-07": [{ name: "Study group", color: "" }],
+  "2026-09-09": [{ name: "Art night", color: "coral" }],
+  "2026-09-11": [{ name: "Game night", color: "green" }],
+  "2026-09-14": [{ name: "Volunteer", color: "" }],
+  "2026-09-17": [{ name: "Farmers market", color: "gold" }],
+  "2026-09-21": [{ name: "Open mic", color: "green" }],
+  "2026-09-25": [{ name: "Cougar kickoff", color: "coral" }],
+
+  // NOVEMBER 2026
+  "2026-11-10": [{
+    name: "BYU Basketball vs. Queens",
+    color: "green",
+    category: "byu",
+    time: "7:00 PM",
+    location: "Marriott Center",
+    description: "BYU men's basketball takes on Queens."
+  }],
+
+  "2026-11-11": [{
+    name: "Veterans Day Concert",
+    color: "green",
+    category: "byu",
+    time: "7:30 PM",
+    location: "BYU Music Building",
+    description: "BYU Wind Symphony featuring Laura Osnes."
+  }],
+
+  "2026-11-14": [{
+    name: "BYU Football vs. Baylor",
+    color: "green",
+    category: "byu",
+    time: "TBD",
+    location: "LaVell Edwards Stadium",
+    description: "BYU football hosts Baylor."
+  }],
+
+  "2026-11-16": [{
+    name: "Orchard Christmas Lighting",
+    color: "gold",
+    category: "community",
+    time: "6:00 PM - 8:00 PM",
+    location: "University Place, Orem",
+    description: "Holiday lights, fireworks, and a Christmas market."
+  }],
+
+  "2026-11-21": [{
+    name: "Winter Farmers Market",
+    color: "gold",
+    category: "community",
+    time: "10:00 AM - 3:00 PM",
+    location: "Provo Towne Centre",
+    description: "Opening day of Provo's indoor winter farmers market."
+  }],
+
+  "2026-11-30": [{
+    name: "BYU Christmas Tree Lighting",
+    color: "green",
+    category: "byu",
+    time: "6:00 PM - 8:00 PM",
+    location: "Brigham Square, BYU",
+    description: "Celebrate the start of the Christmas season on campus."
+  }],
+
+  // DECEMBER 2026
+  "2026-12-02": [{
+    name: "Joy of Christmas Concert",
+    color: "green",
+    category: "byu",
+    time: "7:30 PM",
+    location: "BYU Music Building",
+    description: "Christmas music from the BYU Symphony Orchestra."
+  }],
+
+  "2026-12-04": [{
+    name: "Christmas Around the World",
+    color: "green",
+    category: "byu",
+    time: "7:30 PM",
+    location: "Marriott Center",
+    description: "International folk dance and Christmas music."
+  }],
+
+  "2026-12-05": [{
+    name: "Provo Christmas Tree Lighting",
+    color: "gold",
+    category: "community",
+    time: "4:00 PM - 7:30 PM",
+    location: "Pioneer Park, Provo",
+    description: "Christmas market, entertainment, Santa, and tree lighting."
+  }],
+
+  "2026-12-09": [{
+    name: "BYU Basketball vs. Utah State",
+    color: "green",
+    category: "byu",
+    time: "8:00 PM",
+    location: "Marriott Center",
+    description: "BYU hosts in-state rival Utah State."
+  }],
+
+  "2026-12-10": [{
+    name: "Christkindlmarkt",
+    color: "gold",
+    category: "community",
+    time: "12:00 PM - 9:00 PM",
+    location: "Provo Historic Courthouse",
+    description: "German-inspired Christmas market, December 10-12."
+  }],
+
+  "2026-12-11": [{
+    name: "The Nutcracker",
+    color: "coral",
+    category: "community",
+    time: "See performance schedule",
+    location: "Covey Center for the Arts",
+    description: "Utah Metropolitan Ballet performs December 11-21."
+  }],
+
+  "2026-12-14": [{
+    name: "Live Nativity",
+    color: "gold",
+    category: "community",
+    time: "6:00 PM - 8:00 PM",
+    location: "University Place, Orem",
+    description: "Community nativity with holiday treats."
+  }]
+};
+
 
   function renderCalendar() {
     calendarGrid.innerHTML = "";
@@ -289,19 +479,30 @@ document.addEventListener("DOMContentLoaded", () => {
         String(date.getDate()).padStart(2, "0")
       ].join("-");
 
+      
       if (date.getMonth() === currentMonth && events[dateKey]) {
         events[dateKey].forEach(event => {
-          const eventDot = document.createElement("span");
-          eventDot.className = "event-dot";
 
-          if (event.color) {
-            eventDot.classList.add(event.color);
-          }
+    // Create a clickable event button
+        const eventDot = document.createElement("button");
+        eventDot.type = "button";
+        eventDot.className = "event-dot";
 
-          eventDot.textContent = event.name;
-          dayCell.appendChild(eventDot);
+        if (event.color) {
+          eventDot.classList.add(event.color);
+        }
+
+        eventDot.textContent = event.name;
+
+        // Open event details when clicked
+        eventDot.addEventListener("click", () => {
+          openEventModal(event, dateKey);
         });
-      }
+
+        dayCell.appendChild(eventDot);
+      });
+    }
+
 
       calendarGrid.appendChild(dayCell);
     }
@@ -338,6 +539,86 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderCalendar();
   });
+
+      
+    // EVENT DETAILS MODAL
+
+    const eventBackdrop = document.querySelector(".event-backdrop");
+    const closeEventButton = document.getElementById("close-event-modal");
+    const bottomCloseButton = document.getElementById("event-modal-close-button");
+
+    let previousFocus = null;
+
+    // Open the event modal
+    function openEventModal(event, dateKey) {
+
+      previousFocus = document.activeElement;
+
+      const eventDate = new Date(dateKey + "T12:00:00");
+
+      const formattedDate = eventDate.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+
+      document.getElementById("event-modal-title").textContent =
+        event.name;
+
+      document.getElementById("event-modal-category").textContent =
+        event.category || "Event";
+
+      document.getElementById("event-modal-date").textContent =
+        formattedDate;
+
+      document.getElementById("event-modal-time").textContent =
+        event.time || "Time not available";
+
+      document.getElementById("event-modal-location").textContent =
+        event.location || "Location not available";
+
+      document.getElementById("event-modal-description").textContent =
+        event.description || "More details coming soon.";
+
+      eventBackdrop.classList.add("show");
+      eventBackdrop.setAttribute("aria-hidden", "false");
+
+      closeEventButton.focus();
+    }
+
+    // Close the event modal
+    function closeEventModal() {
+      eventBackdrop.classList.remove("show");
+      eventBackdrop.setAttribute("aria-hidden", "true");
+
+      if (previousFocus && previousFocus.isConnected) {
+        previousFocus.focus();
+      }
+    }
+
+    // Close using the X button
+    closeEventButton.addEventListener("click", closeEventModal);
+
+    // Close using the bottom button
+    bottomCloseButton.addEventListener("click", closeEventModal);
+
+    // Close when clicking outside the popup
+    eventBackdrop.addEventListener("click", (event) => {
+      if (event.target === eventBackdrop) {
+        closeEventModal();
+      }
+    });
+
+    // Close when pressing Escape
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        eventBackdrop.classList.contains("show")
+      ) {
+        closeEventModal();
+      }
+    });
+
 
   // Display September when the page first loads.
   renderCalendar();
