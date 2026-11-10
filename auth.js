@@ -28,12 +28,16 @@
       location.reload();
     });
 
-    const chatbotLink = document.createElement("a");
-    chatbotLink.className = "button primary small";
-    chatbotLink.href = "chatbot.html";
-    chatbotLink.textContent = "Ask the guide";
+    const signedInActions = [greeting, signOut];
+    if (document.body.dataset.page !== "chatbot") {
+      const chatbotLink = document.createElement("a");
+      chatbotLink.className = "button primary small";
+      chatbotLink.href = "chatbot.html";
+      chatbotLink.textContent = "Ask the guide";
+      signedInActions.push(chatbotLink);
+    }
 
-    actions.replaceChildren(greeting, signOut, chatbotLink);
+    actions.replaceChildren(...signedInActions);
   };
 
   // If someone is already signed in (e.g. they navigated from another page), greet them right away.

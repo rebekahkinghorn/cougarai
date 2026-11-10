@@ -46,30 +46,12 @@
 
     <div class="chat-layout">
       <aside class="panel side-panel">
-        <h3>Try asking about...</h3>
-
-        <div class="suggestion-list">
-          <button class="suggestion" data-question="Where should I start with housing?">
-            <span class="suggestion-icon">⌂</span>
-            <span>Housing timeline</span>
-          </button>
-          <button class="suggestion" data-question="How does MyMap work?">
-            <span class="suggestion-icon">▦</span>
-            <span>MyMap &amp; classes</span>
-          </button>
-          <button class="suggestion" data-question="How do I find an academic advisor?">
-            <span class="suggestion-icon">◎</span>
-            <span>Academic advising</span>
-          </button>
-          <button class="suggestion" data-question="What events are happening around Provo?">
-            <span class="suggestion-icon">◷</span>
-            <span>Events around Provo</span>
-          </button>
+        <div class="history-heading">
+          <h3>Chat history</h3>
         </div>
-        <div class="callout" style="display:block;margin:28px 0 0;padding:18px;background:var(--sky);">
-          <h3 style="color:var(--navy);font-size:1rem;">Helpful hint</h3>
-          <p style="color:var(--muted);font-size:.82rem;">You can ask follow-up questions or use the links in an answer to learn more.</p>
-        </div>
+        <br><br>
+        <p class="history-status" id="chat-history-status" role="status" aria-live="polite">Loading your chats…</p>
+        <div class="chat-history" id="chat-history" aria-label="Saved conversations"></div>
       </aside>
 
       <section class="panel chat-panel" aria-label="BYU Guide chat">
@@ -81,23 +63,10 @@
               <small>Answers about getting ready for campus</small>
             </div>
           </div>
-          <button class="button ghost small" data-clear-chat>Clear chat</button>
+          <button class="button primary small" type="button" data-new-chat>New chat</button>
         </div>
 
-        <div class="chat-messages" id="chat-messages">
-          <div class="message">
-            Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo.
-            <small>BYU Guide · just now</small>
-          </div>
-          <div class="message user">
-            What should I do first?
-            <small>You · just now</small>
-          </div>
-          <div class="message">
-            Start with the deadline or decision that feels most urgent. Housing and class planning are good places to begin, and I can walk through either one.
-            <small>BYU Guide · just now</small>
-          </div>
-        </div>
+        <div class="chat-messages" id="chat-messages" aria-live="polite" aria-label="Conversation messages"></div>
 
         <form class="chat-form" id="chat-form">
           <input id="chat-input" autocomplete="off" placeholder="Ask a question..." aria-label="Ask the BYU Guide a question">
@@ -277,8 +246,8 @@
           if (error) throw error;
           form.reset();
           closeSignup();
-          // Account is created: replace the Sign up / Sign in buttons with "Hello, [name]!"
-          showGreeting(data.user || { user_metadata: { username } });
+          // Only show the signed-in header when Supabase returned an active session.
+          if (data.session?.user) showGreeting(data.session.user);
           window.showToast?.(
             data.session
               ? `Your account is ready. Welcome, ${username}!`
