@@ -599,3 +599,54 @@ button.event-dot:focus-visible {
         flex-direction: column;
     }
 }
+
+
+/* ==========================================
+   DYNAMIC UPCOMING EVENT CARDS
+   ========================================== */
+
+.event-card {
+    text-align: left;
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.event-card:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+}
+
+/* BYU - Blue */
+.event-card-blue .date-badge {
+    background: var(--blue);
+    color: white;
+}
+
+/* Community - Gold */
+.event-card-gold .date-badge {
+    background: var(--gold);
+    color: var(--navy);
+}
+
+/* Arts & Culture - Coral */
+.event-card-coral .date-badge {
+    background: var(--coral);
+    color: white;
+}
+
+/* Wellness - Green */
+.event-card-green .date-badge {
+    background: var(--mint-dark);
+    color: white;
+}
+
+/* Uncategorized */
+.event-card-uncategorized .date-badge {
+    background: var(--muted);
+    color: white;
+}
