@@ -9,7 +9,7 @@
 <body data-page="metrics">
   <div id="site-header"></div>
 
-  <main class="container page-shell">
+  <main class="container page-shell" id="metrics-dashboard" hidden>
     <div class="page-intro">
       <div>
         <span class="eyebrow">Chatbot quality</span>
@@ -77,11 +77,24 @@
     <section class="panel metrics-panel metrics-panel-coral metrics-section" aria-labelledby="monthly-use-title">
       <div class="metrics-panel-heading">
         <h2 id="monthly-use-title">Monthly chatbot usage</h2>
-        <p class="muted">Share of monthly chatbot users who use the chatbot more than once.</p>
+        <p id="repeat-usage-status" class="muted" role="status" aria-live="polite">Loading repeat usage…</p>
       </div>
-      <div class="metrics-data-placeholder" role="status">
-        <span aria-hidden="true">—</span>
-        <p>Data will appear here when monthly usage tracking is connected.</p>
+      <div class="metrics-table-wrap">
+        <table class="metrics-table">
+          <caption class="visually-hidden">Repeat chatbot use by time window</caption>
+          <thead>
+            <tr>
+              <th scope="col">Time window</th>
+              <th scope="col">Active users</th>
+              <th scope="col">Repeat users</th>
+              <th scope="col">Repeat use</th>
+              <th scope="col">OKR target</th>
+            </tr>
+          </thead>
+          <tbody id="repeat-usage-body">
+            <tr><td class="metrics-placeholder" colspan="5">Loading repeat usage…</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
   </main>

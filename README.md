@@ -28,13 +28,23 @@ AI app builder: CODEX
 - Starting a new chat clears the visible conversation and starts the next submitted prompt without the previous conversation ID. A conversation is saved when the first message is sent.
 - Signed-in users can sign back in with email and password. The header restores the signed-in greeting and sign-out action from the Supabase session.
 
+### November 10 — Admin metrics sign-in
+
+- Reused the site's shared sign-in form for the metrics page. The Metrics link appears only for accounts with trusted `app_metadata.role = admin`; direct visits to `metrics.html` prompt for sign-in and keep the dashboard hidden unless the account has that role.
+- Admin status must be assigned to the approved Supabase Auth account by a trusted administrator using the Auth Admin API or dashboard `app_metadata`; users cannot grant themselves access. The login checks the trusted `app_metadata.role` claim, never editable `user_metadata`.
+- The page gate controls the dashboard UI, and the `admin-metrics` Edge Function independently verifies the signed-in user's trusted `app_metadata.role` before returning project-wide aggregate results. It reads only the two summary views with the server-side service-role key; that key is never sent to the browser.
+
+
+4.
+
 ### November 10 — Shared layout and metrics dashboard
 
 - Replaced repeated page headers and footers on the main pages with `partials/header.html` and `partials/footer.html`, loaded by `layout.js`. The shared navigation includes a link to `metrics.html`.
 - Fixed a duplicated block and unmatched `catch` in `app.js` that caused a JavaScript syntax error and prevented that script from running.
 - Added a styled metrics dashboard with live tables for `chatbot_answer_validity_summary` and `chat_feedback_summary`, plus one **Refresh all metrics** button.
-- Added two visual placeholders for planned session activity metrics and monthly repeat chatbot use. These placeholders do not collect or query data yet.
-- Both Supabase summary views use `security_invoker=on`. Their Data API results therefore follow the signed-in user's RLS access to the underlying tables. In a diagnostic query, the answer view returned 6 valid answers for the current user, while the SQL export showed 58 valid answers project-wide. The metrics page is not admin-restricted, and no admin-only Edge Function has been added yet.
+
+
+
 
 
 ## Project Setup
@@ -118,17 +128,69 @@ The chatbot shows a one-time five-star helpfulness survey after the second chatb
 
 The calendar’s “Suggest an Event” button currently displays a prototype message. There is no event submission form, approval queue, or admin review workflow.
 
-### 9. Chat feedback summary — Partially implemented; global admin access is pending
+### 9. Chat feedback summary — Implemented for admins; requires the deployed `admin-metrics` Edge Function
 
-The metrics dashboard reads `chat_feedback_summary`, which provides total responses, average rating, and one- through five-star counts. The view runs with `security_invoker=on`, so the result follows the signed-in user's RLS access to `chat_feedback`; global admin-only access is not implemented yet.
+The metrics dashboard gets `chat_feedback_summary` through the `admin-metrics` Edge Function. The function checks the trusted admin role and uses a server-side key to read only the summary view, returning total responses, average rating, and one- through five-star counts. The function must be deployed to the linked Supabase project.
 
-### 10. Chatbot answer validity summary — Partially implemented; global admin access is pending
+### 10. Chatbot answer validity summary — Implemented for admins; requires the deployed `admin-metrics` Edge Function
 
-The metrics dashboard reads `chatbot_answer_validity_summary`, which provides valid/no-answer counts and percentages. The view runs with `security_invoker=on` and reads `chat_messages`, so its output is scoped by the user's RLS access. The dashboard does not yet provide project-wide metrics through an admin-only Edge Function.
+The metrics dashboard gets `chatbot_answer_validity_summary` through the `admin-metrics` Edge Function. The function checks the trusted admin role and uses a server-side key to read the aggregate view, returning valid/no-answer counts and percentages. The function must be deployed to the linked Supabase project.
 
-### 11. Engagement and returning users — Planned; placeholders only
+### 11. Engagement and returning users — Partially implemented
 
-The metrics page has visual placeholders for session activity (FAQ time on page, popular chatbot questions, and external link clicks) and monthly repeat chatbot use. Session data collection, monthly aggregation, and admin-only access are not implemented.
+The metrics page has a placeholder for session activity (FAQ time on page, popular chatbot questions, and external link clicks). The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it. Session activity collection and aggregation are not implemented.
+
+
+### How admin login works
+- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, and monthly repeat-use summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app. 
+- Session activity remains a visual placeholder. The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
+- Both Supabase summary views use `security_invoker=on`. Direct browser queries therefore follow the signed-in user's RLS access to the underlying tables. Project-wide aggregate access is now routed through the admin-only `admin-metrics` Edge Function.
+
+
+#### Add another admin account
+
+1. In the Supabase Dashboard, open **Authentication → Users** and find the account by email. If the person does not have an account yet, select **Add user → Send invitation** and have them finish setting it up.
+2. Open **SQL Editor → New query**. Replace `admin@example.com` in this read-only query with the account's email, run it, and confirm it returns the intended user:
+   ```sql
+   select
+     id,
+     email,
+     role as supabase_role,
+     raw_app_meta_data ->> 'role' as cougarai_role
+   from auth.users
+   where lower(email) = lower('admin@example.com');
+   ```
+
+3. To grant the CougarAI admin role, replace the example email in this query and run it:
+   ```sql
+   update auth.users
+   set raw_app_meta_data =
+     coalesce(raw_app_meta_data, '{}'::jsonb)
+     || jsonb_build_object('role', 'admin')
+   where lower(email) = lower('admin@example.com')
+   returning
+     email,
+     role as supabase_role,
+     raw_app_meta_data ->> 'role' as cougarai_role;
+   ```
+
+   Confirm one row is returned with `cougarai_role` equal to `admin` and `supabase_role` still equal to `authenticated`. Do not change the top-level `auth.users.role`; that is Supabase's database role, not CougarAI's admin role.
+    
+    Have the admin sign out and sign back in, then open **Metrics**. The Metrics links appear only for accounts whose `app_metadata.role` is `admin`; the dashboard also checks the role when opened directly.
+
+    This is a one-off change in the Supabase SQL Editor. For production user provisioning, use Supabase's Auth Admin API from a trusted server; never put a Supabase secret/service-role key in browser code. [Supabase `updateUserById` guidance](https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid)
+
+#### How the admin metrics Edge Function works
+
+The browser calls `supabase/functions/admin-metrics/index.ts` through `client.functions.invoke("admin-metrics")` and sends the current Supabase login session. The function verifies that session with Supabase Auth, then checks the trusted `app_metadata.role` value. Requests from users without `role: "admin"` receive HTTP 403. The browser-side page check controls navigation and visibility; the Edge Function performs the server-side authorization that protects the data.
+
+After the role check, the function uses its server-side service-role key to query only the summary views, and returns their aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying chat or feedback tables. The Supabase project configuration keeps JWT verification enabled for this function.
+
+#### Deno and editing Edge Functions
+
+Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-compatible Edge Runtime. Deno is the runtime and toolchain behind APIs used here, such as `Deno.serve()` and `Deno.env.get()`. The Deno VS Code extension provides editor support (including type information and diagnostics); `.vscode/settings.json` enables it for `supabase/functions` only, so the regular website files continue using VS Code's normal JavaScript/TypeScript support.
+
+Teammates can use the site without installing Deno. Teammates who edit Edge Function code should install the Deno VS Code extension. The separate Deno command-line executable is useful for Deno-specific CLI tools; Supabase CLI uses its own Edge Runtime to serve functions locally. If VS Code reports that it cannot resolve the Deno executable, the extension needs the Deno CLI available on PATH or configured with its `deno.path` setting. To deploy this function to the linked Supabase project, use `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` from the repository root.
 
 ## ERD
 

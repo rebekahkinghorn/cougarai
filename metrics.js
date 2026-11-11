@@ -1,4 +1,3 @@
-const METRICS_TABLE = "chatbot_answer_validity_summary";
 const METRIC_COLUMNS = [
   "valid_answers",
   "no_answers",
@@ -41,6 +40,13 @@ const formatMetric = (value, isPercent = false) => {
   return new Intl.NumberFormat().format(numericValue);
 };
 
+const formatPercentPoints = (value) => {
+  if (value === null || value === undefined || value === "") return "—";
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return String(value);
+  return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(numericValue)}%`;
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   await window.siteLayoutReady;
 
@@ -50,7 +56,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   const feedbackHead = document.querySelector("#feedback-metrics-head");
   const feedbackBody = document.querySelector("#feedback-metrics-body");
   const feedbackStatus = document.querySelector("#feedback-metrics-status");
+  const repeatUsageBody = document.querySelector("#repeat-usage-body");
+  const repeatUsageStatus = document.querySelector("#repeat-usage-status");
   const client = window.cougarAuth?.client;
+  const dashboard = document.querySelector("#metrics-dashboard");
+  let adminMetricsRequest;
+
+  const getAdminMetrics = () => {
+    if (!adminMetricsRequest) {
+      adminMetricsRequest = client.functions.invoke("admin-metrics");
+    }
+    return adminMetricsRequest;
+  };
+
+  if (!client) {
+    document.dispatchEvent(new CustomEvent("cougar:admin-auth-required"));
+    return;
+  }
+
+  try {
+    const { data, error } = await client.auth.getUser();
+    if (error || !data?.user) {
+      document.dispatchEvent(new CustomEvent("cougar:admin-auth-required"));
+      return;
+    }
+    if (data.user.app_metadata?.role !== "admin") {
+      document.dispatchEvent(new CustomEvent("cougar:admin-auth-required", {
+        detail: { reason: "admin-required" },
+      }));
+      return;
+    }
+    if (dashboard) dashboard.hidden = false;
+  } catch (error) {
+    console.error("Admin access check failed:", error);
+    document.dispatchEvent(new CustomEvent("cougar:admin-auth-required"));
+    return;
+  }
 
   const setTableMessage = (message) => {
     tableBody.replaceChildren();
@@ -74,11 +115,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     setTableMessage("Loading metrics…");
 
     try {
-      const { data, error } = await client
-        .from(METRICS_TABLE)
-        .select(METRIC_COLUMNS.join(","));
-
+      const { data: result, error } = await getAdminMetrics();
       if (error) throw error;
+      const data = result?.answerValidity;
 
       if (!data?.length) {
         status.textContent = "The summary table returned no rows.";
@@ -100,7 +139,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       status.textContent = `Showing ${data.length} ${data.length === 1 ? "summary row" : "summary rows"}.`;
     } catch (error) {
       console.error("Metrics load error:", error);
-      status.textContent = "Could not load metrics. Check the table’s Data API access, SELECT grant, and RLS policy.";
+      status.textContent = error?.context?.status === 403
+        ? "Admin access is required to load these metrics."
+        : "Could not load metrics. Check that the admin-metrics Edge Function is deployed and the summary views are available.";
       setTableMessage("Metrics are unavailable. Check the browser console for details.");
     }
   };
@@ -128,11 +169,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     setFeedbackMessage("Loading feedback metrics…");
 
     try {
-      const { data, error } = await client
-        .from("chat_feedback_summary")
-        .select(FEEDBACK_COLUMNS.join(","));
-
+      const { data: result, error } = await getAdminMetrics();
       if (error) throw error;
+      const data = result?.chatFeedback;
 
       if (!data?.length) {
         feedbackStatus.textContent = "The feedback summary table returned no rows.";
@@ -162,16 +201,94 @@ document.addEventListener("DOMContentLoaded", async () => {
       feedbackStatus.textContent = `Showing ${data.length} ${data.length === 1 ? "feedback summary row" : "feedback summary rows"}.`;
     } catch (error) {
       console.error("Feedback metrics load error:", error);
-      feedbackStatus.textContent = "Could not load feedback metrics. Check the table’s Data API access, SELECT grant, and RLS policy.";
+      feedbackStatus.textContent = error?.context?.status === 403
+        ? "Admin access is required to load these metrics."
+        : "Could not load feedback metrics. Check that the admin-metrics Edge Function is deployed and the summary views are available.";
       setFeedbackMessage("Feedback metrics are unavailable. Check the browser console for details.");
+    }
+  };
+
+  const setRepeatUsageMessage = (message) => {
+    repeatUsageBody.replaceChildren();
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.className = "metrics-placeholder";
+    cell.colSpan = 5;
+    cell.textContent = message;
+    row.appendChild(cell);
+    repeatUsageBody.appendChild(row);
+  };
+
+  const loadRepeatUsageMetrics = async () => {
+    repeatUsageStatus.textContent = "Loading repeat usage…";
+    setRepeatUsageMessage("Loading repeat usage…");
+
+    try {
+      const { data: result, error } = await getAdminMetrics();
+      if (error) throw error;
+      const rows = result?.repeatUsage;
+      if (!rows?.length) {
+        repeatUsageStatus.textContent = result?.repeatUsageError
+          ? "The monthly repeat-use view is not available yet. Create it in Supabase, then redeploy the Edge Function."
+          : "The monthly repeat-use view has no rows yet.";
+        setRepeatUsageMessage(result?.repeatUsageError
+          ? "The repeat-use summary view could not be read."
+          : "No repeat-use metrics are available yet.");
+        return;
+      }
+
+      const formatDate = (value) => {
+        if (!value) return "";
+        return new Intl.DateTimeFormat(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          timeZone: "UTC",
+        }).format(new Date(`${value}T00:00:00Z`));
+      };
+
+      const renderedRows = rows.map((record) => {
+        const row = document.createElement("tr");
+        const period = document.createElement("td");
+        period.textContent = `${record.period_label} (${formatDate(record.period_start)}–${formatDate(record.period_end)})`;
+        row.appendChild(period);
+        [record.active_users, record.repeat_users].forEach((value) => {
+          const cell = document.createElement("td");
+          cell.textContent = formatMetric(value);
+          row.appendChild(cell);
+        });
+        const repeatPercent = document.createElement("td");
+        repeatPercent.textContent = formatPercentPoints(record.repeat_user_percent);
+        const rate = Number(record.repeat_user_percent);
+        const targetRate = Number(record.goal_percent);
+        if (Number.isFinite(rate) && Number.isFinite(targetRate)) {
+          repeatPercent.className = rate >= targetRate ? "okr-hit" : "okr-miss";
+          repeatPercent.setAttribute(
+            "aria-label",
+            rate >= targetRate ? "OKR target met" : "OKR target not met",
+          );
+        }
+        row.appendChild(repeatPercent);
+        const target = document.createElement("td");
+        target.textContent = formatPercentPoints(record.goal_percent);
+        row.appendChild(target);
+        return row;
+      });
+      repeatUsageBody.replaceChildren(...renderedRows);
+      repeatUsageStatus.textContent = "Repeat users sent chatbot messages on at least two distinct UTC dates. Calendar months run oldest to newest; the current month is month to date, followed by the rolling last 30 days. Green meets the 50% goal; red is below it.";
+    } catch (error) {
+      console.error("Repeat-use metrics load error:", error);
+      repeatUsageStatus.textContent = "Could not load repeat-use metrics. Check the monthly repeat-use view and deployed Edge Function.";
+      setRepeatUsageMessage("Repeat-use metrics are unavailable. Check the Supabase function logs for details.");
     }
   };
 
   const refreshAllMetrics = async () => {
     refreshAllButton.disabled = true;
     refreshAllButton.textContent = "Refreshing…";
+    adminMetricsRequest = null;
     try {
-      await Promise.all([loadMetrics(), loadFeedbackMetrics()]);
+      await Promise.all([loadMetrics(), loadFeedbackMetrics(), loadRepeatUsageMetrics()]);
     } finally {
       refreshAllButton.disabled = false;
       refreshAllButton.textContent = "Refresh all metrics";
