@@ -58,6 +58,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   const feedbackStatus = document.querySelector("#feedback-metrics-status");
   const repeatUsageBody = document.querySelector("#repeat-usage-body");
   const repeatUsageStatus = document.querySelector("#repeat-usage-status");
+  const pendingFaqStatus = document.querySelector("#faq-pending-status");
+  const reviewCount = document.querySelector("#faq-review-count");
+  const reviewQuestion = document.querySelector("#faq-review-question");
+  const reviewAnswer = document.querySelector("#faq-review-answer");
+  const reviewSimilar = document.querySelector("#faq-review-similar");
+  const categoryRecommendation = document.querySelector("#faq-category-recommendation");
+  const categorySelect = document.querySelector("#faq-category-select");
+  const newCategoryName = document.querySelector("#faq-new-category-name");
+  const reviewProgress = document.querySelector("#faq-review-progress");
+  const reviewPrev = document.querySelector("#faq-review-prev");
+  const reviewNext = document.querySelector("#faq-review-next");
+  const reviewApprove = document.querySelector("#faq-review-approve");
+  const reviewReject = document.querySelector("#faq-review-reject");
+  const coveredFaqList = document.querySelector("#faq-covered-list");
+  const coveredFaqCount = document.querySelector("#faq-covered-count");
+  const coveredFaqStatus = document.querySelector("#faq-covered-status");
+  let pendingSuggestions = [];
+  let coveredSuggestions = [];
+  let faqCategories = [];
+  let currentSuggestionIndex = 0;
+  const faqSuggestionCacheKey = "byu-guide-faq-suggestions-v1";
+  const faqSuggestionCacheTtl = 5 * 60 * 1000;
   const client = window.cougarAuth?.client;
   const dashboard = document.querySelector("#metrics-dashboard");
   let adminMetricsRequest;
@@ -283,25 +305,206 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  const refreshAllMetrics = async () => {
+  const renderFaqReview = () => {
+    const total = pendingSuggestions.length;
+    const suggestion = pendingSuggestions[currentSuggestionIndex];
+    const currentCategoryValue = suggestion?.suggested_category_is_new
+      ? "__new__"
+      : suggestion?.suggested_category_id != null
+      ? String(suggestion.suggested_category_id)
+      : "";
+    categorySelect.replaceChildren();
+    const chooseOption = document.createElement("option");
+    chooseOption.value = "";
+    chooseOption.textContent = "Choose a category…";
+    categorySelect.appendChild(chooseOption);
+    faqCategories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = String(category.faq_category_id);
+      option.textContent = category.faq_category_name;
+      categorySelect.appendChild(option);
+    });
+    const newOption = document.createElement("option");
+    newOption.value = "__new__";
+    newOption.textContent = "＋ New category…";
+    categorySelect.appendChild(newOption);
+    categorySelect.value = currentCategoryValue;
+    newCategoryName.value = suggestion?.suggested_category_is_new
+      ? suggestion.suggested_category_name || ""
+      : "";
+    newCategoryName.hidden = categorySelect.value !== "__new__";
+    categoryRecommendation.textContent = !suggestion
+      ? ""
+      : suggestion.suggested_category_is_new
+      ? `Gemini suggests a new category: ${suggestion.suggested_category_name || "name not provided"}`
+      : suggestion.suggested_category_id != null
+      ? `Gemini suggests: ${suggestion.suggested_category_name || "an existing category"}`
+      : "Gemini did not suggest a category. Choose one before approving.";
+    pendingFaqStatus.textContent = `${total} pending suggestion${total === 1 ? "" : "s"}.`;
+    reviewProgress.style.width = total ? `${((currentSuggestionIndex + 1) / total) * 100}%` : "0%";
+    reviewCount.textContent = total ? `${currentSuggestionIndex + 1} of ${total} pending` : "Review complete";
+    reviewQuestion.textContent = suggestion?.question || "You’re all caught up.";
+    reviewAnswer.textContent = suggestion?.answer || (total ? "No suggested answer was provided." : "There are no pending FAQ suggestions to review.");
+    reviewSimilar.textContent = suggestion
+      ? `${formatMetric(suggestion.similar_question_count)} similar question${Number(suggestion.similar_question_count) === 1 ? "" : "s"}`
+      : "New suggestions will appear here when available.";
+    reviewPrev.disabled = !total || currentSuggestionIndex === 0;
+    reviewNext.disabled = !total || currentSuggestionIndex >= total - 1;
+    reviewApprove.disabled = !suggestion;
+    reviewReject.disabled = !suggestion;
+  };
+
+  const setSuggestionStatus = async (status) => {
+    const suggestion = pendingSuggestions[currentSuggestionIndex];
+    if (!suggestion) return;
+    const categoryChoice = categorySelect.value;
+    const categoryName = newCategoryName.value.trim();
+    if (status === "approved" && !categoryChoice) {
+      pendingFaqStatus.textContent = "Choose a category before approving this FAQ.";
+      categorySelect.focus();
+      return;
+    }
+    if (status === "approved" && categoryChoice === "__new__" && !categoryName) {
+      pendingFaqStatus.textContent = "Enter a name for the new category before approving.";
+      newCategoryName.focus();
+      return;
+    }
+    reviewApprove.disabled = true;
+    reviewReject.disabled = true;
+    pendingFaqStatus.textContent = `Saving ${status}…`;
+    try {
+      const { data, error } = await client.functions.invoke("admin-faq-suggestions", {
+        body: {
+          action: "set_status",
+          id: suggestion.id,
+          status,
+          category_id: categoryChoice && categoryChoice !== "__new__"
+            ? Number(categoryChoice)
+            : null,
+          new_category_name: categoryChoice === "__new__" ? categoryName : null,
+        },
+      });
+      if (error) throw error;
+      if (data?.category && !faqCategories.some((category) => Number(category.faq_category_id) === Number(data.category.faq_category_id))) {
+        faqCategories.push(data.category);
+        faqCategories.sort((a, b) => a.faq_category_name.localeCompare(b.faq_category_name));
+      }
+      pendingSuggestions.splice(currentSuggestionIndex, 1);
+      if (currentSuggestionIndex >= pendingSuggestions.length) {
+        currentSuggestionIndex = Math.max(0, pendingSuggestions.length - 1);
+      }
+      saveFaqSuggestionCache();
+      renderFaqReview();
+      pendingFaqStatus.textContent = `Suggestion ${status}. ${pendingSuggestions.length} remaining.`;
+    } catch (error) {
+      console.error("FAQ suggestion update error:", error);
+      pendingFaqStatus.textContent = "Could not save the decision. Check the admin-faq-suggestions function and Supabase logs.";
+      renderFaqReview();
+    }
+  };
+
+  const saveFaqSuggestionCache = () => {
+    try {
+      sessionStorage.setItem(faqSuggestionCacheKey, JSON.stringify({
+        savedAt: Date.now(),
+        pending: pendingSuggestions,
+        alreadyCovered: coveredSuggestions,
+        categories: faqCategories,
+      }));
+    } catch (error) {
+      console.warn("Could not cache FAQ suggestions in this browser session:", error);
+    }
+  };
+
+  const renderCoveredSuggestions = () => {
+    coveredFaqCount.textContent = `(${coveredSuggestions.length})`;
+    coveredFaqList.replaceChildren();
+    coveredSuggestions.forEach((suggestion) => {
+      const item = document.createElement("li");
+      item.textContent = suggestion.question;
+      coveredFaqList.appendChild(item);
+    });
+    coveredFaqStatus.textContent = coveredSuggestions.length
+      ? `${coveredSuggestions.length} already covered.`
+      : "No already-covered questions.";
+  };
+
+  const renderFaqSuggestions = (data) => {
+    pendingSuggestions = data?.pending ?? [];
+    coveredSuggestions = data?.alreadyCovered ?? [];
+    faqCategories = data?.categories ?? faqCategories;
+    currentSuggestionIndex = 0;
+    renderFaqReview();
+    renderCoveredSuggestions();
+  };
+
+  const loadFaqSuggestions = async ({ forceFresh = false } = {}) => {
+    if (!forceFresh) {
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(faqSuggestionCacheKey) || "null");
+        if (cached && Date.now() - cached.savedAt < faqSuggestionCacheTtl) {
+          renderFaqSuggestions(cached);
+          return;
+        }
+      } catch (error) {
+        console.warn("Could not read FAQ suggestion cache:", error);
+      }
+    }
+
+    pendingFaqStatus.textContent = "Loading suggestions…";
+    coveredFaqStatus.textContent = "Loading covered questions…";
+    try {
+      const { data, error } = await client.functions.invoke("admin-faq-suggestions", {
+        body: { action: "list" },
+      });
+      if (error) throw error;
+      faqCategories = data?.categories ?? [];
+      renderFaqSuggestions(data);
+      saveFaqSuggestionCache();
+    } catch (error) {
+      console.error("FAQ suggestions load error:", error);
+      pendingFaqStatus.textContent = "Could not load FAQ suggestions. Check that the admin-faq-suggestions Edge Function is deployed.";
+      reviewQuestion.textContent = "Suggestions are unavailable.";
+      reviewAnswer.textContent = "Check the browser console and Supabase function logs for details.";
+      reviewSimilar.textContent = "";
+      coveredFaqStatus.textContent = "Could not load covered questions.";
+    }
+  };
+
+  reviewPrev.addEventListener("click", () => {
+    if (currentSuggestionIndex > 0) currentSuggestionIndex -= 1;
+    renderFaqReview();
+  });
+  reviewNext.addEventListener("click", () => {
+    if (currentSuggestionIndex < pendingSuggestions.length - 1) currentSuggestionIndex += 1;
+    renderFaqReview();
+  });
+  reviewApprove.addEventListener("click", () => setSuggestionStatus("approved"));
+  reviewReject.addEventListener("click", () => setSuggestionStatus("rejected"));
+  categorySelect.addEventListener("change", () => {
+    newCategoryName.hidden = categorySelect.value !== "__new__";
+    if (categorySelect.value === "__new__") newCategoryName.focus();
+  });
+
+  const refreshAllMetrics = async (forceFreshSuggestions = false) => {
     refreshAllButton.disabled = true;
     refreshAllButton.textContent = "Refreshing…";
     adminMetricsRequest = null;
     try {
-      await Promise.all([loadMetrics(), loadFeedbackMetrics(), loadRepeatUsageMetrics()]);
+      await Promise.all([loadMetrics(), loadFeedbackMetrics(), loadRepeatUsageMetrics(), loadFaqSuggestions({ forceFresh: forceFreshSuggestions })]);
     } finally {
       refreshAllButton.disabled = false;
       refreshAllButton.textContent = "Refresh all metrics";
     }
   };
 
-  refreshAllButton.addEventListener("click", refreshAllMetrics);
+  refreshAllButton.addEventListener("click", () => refreshAllMetrics(true));
   await refreshAllMetrics();
 
   // Refresh after sign-in so policies requiring an authenticated user can apply.
   client?.auth.onAuthStateChange((_event, session) => {
     if (session) {
-      window.setTimeout(refreshAllMetrics, 0);
+      window.setTimeout(() => refreshAllMetrics(true), 0);
     }
   });
 });

@@ -8,96 +8,149 @@
 </head>
 <body data-page="metrics">
   <div id="site-header"></div>
+<main class="container page-shell" id="metrics-dashboard" hidden>
+  <div class="page-intro">
+    <div>
+      <span class="eyebrow">Chatbot quality</span>
+      <h1>Metrics dashboard</h1>
+      <p class="lede">A summary of the chatbot’s answer validity results.</p>
+    </div>
+    <button class="button secondary" id="refresh-all-metrics" type="button">Refresh all metrics</button>
+  </div>
 
-  <main class="container page-shell" id="metrics-dashboard" hidden>
-    <div class="page-intro">
+  <section class="panel metrics-panel metrics-panel-blue" aria-labelledby="metrics-table-title">
+    <div class="metrics-panel-heading">
       <div>
-        <span class="eyebrow">Chatbot quality</span>
-        <h1>Metrics dashboard</h1>
-        <p class="lede">A summary of the chatbot’s answer validity results.</p>
+        <h2 id="metrics-table-title">Answer validity summary</h2>
+        <p id="metrics-status" class="muted" role="status" aria-live="polite">Loading metrics…</p>
       </div>
-      <button class="button secondary" id="refresh-all-metrics" type="button">Refresh all metrics</button>
+    </div>
+    <div class="metrics-table-wrap">
+      <table class="metrics-table">
+        <caption class="visually-hidden">Chatbot answer validity summary from Supabase</caption>
+        <thead>
+          <tr>
+            <th scope="col">Valid answers</th>
+            <th scope="col">No answers</th>
+            <th scope="col">Classified answers</th>
+            <th scope="col">Valid answer percent</th>
+            <th scope="col">No answer percent</th>
+          </tr>
+        </thead>
+        <tbody id="metrics-table-body">
+          <tr><td class="metrics-placeholder" colspan="5">Loading metrics…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel metrics-panel metrics-panel-gold metrics-section" aria-labelledby="faq-pending-title">
+    <div class="metrics-panel-heading">
+      <div>
+        <h2 id="faq-pending-title">FAQ suggestion review</h2>
+        <p id="faq-pending-status" class="muted" role="status" aria-live="polite">Loading suggestions…</p>
+      </div>
     </div>
 
-    <section class="panel metrics-panel metrics-panel-blue" aria-labelledby="metrics-table-title">
-      <div class="metrics-panel-heading">
-        <div>
-          <h2 id="metrics-table-title">Answer validity summary</h2>
-          <p id="metrics-status" class="muted" role="status" aria-live="polite">Loading metrics…</p>
+    <div style="height:6px;margin:0 22px 18px;border-radius:99px;background:var(--line);overflow:hidden">
+      <div id="faq-review-progress" style="height:100%;width:0;background:var(--blue);transition:width 180ms ease"></div>
+    </div>
+
+    <article id="faq-review-card" class="panel" style="margin:0 22px 22px;padding:24px;border:1px solid var(--line);box-shadow:none" aria-live="polite">
+      <p id="faq-review-count" class="eyebrow">Suggestion</p>
+      <h3 id="faq-review-question">Loading suggestion…</h3>
+
+      <div style="display:grid;gap:8px;margin:16px 0">
+        <p id="faq-category-recommendation" class="muted" style="margin:0">Gemini’s category suggestion will appear here.</p>
+        <label for="faq-category-select" style="font-weight:700;color:var(--navy)">Category for this FAQ</label>
+        <select id="faq-category-select" class="search-input" style="max-width:420px">
+          <option value="">Choose a category…</option>
+          <option value="__new__">＋ New category…</option>
+        </select>
+        <input id="faq-new-category-name" type="text" maxlength="80" placeholder="Enter a new category name" aria-label="New category name" hidden style="max-width:420px">
+      </div>
+
+      <div style="padding:18px;border-radius:var(--radius-sm);background:var(--sky)">
+        <strong style="display:block;margin-bottom:8px;color:var(--navy)">Suggested answer</strong>
+        <p id="faq-review-answer" style="margin:0;line-height:1.65"></p>
+      </div>
+
+      <p id="faq-review-similar" class="muted" style="margin:14px 0 0"></p>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px">
+        <div style="display:flex;gap:10px">
+          <button class="button secondary" id="faq-review-prev" type="button">← Previous</button>
+          <button class="button secondary" id="faq-review-next" type="button">Next →</button>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="button secondary" id="faq-review-reject" type="button">Reject</button>
+          <button class="button primary" id="faq-review-approve" type="button">Approve</button>
         </div>
       </div>
-      <div class="metrics-table-wrap">
-        <table class="metrics-table">
-          <caption class="visually-hidden">Chatbot answer validity summary from Supabase</caption>
-          <thead>
-            <tr>
-              <th scope="col">Valid answers</th>
-              <th scope="col">No answers</th>
-              <th scope="col">Classified answers</th>
-              <th scope="col">Valid answer percent</th>
-              <th scope="col">No answer percent</th>
-            </tr>
-          </thead>
-          <tbody id="metrics-table-body">
-            <tr><td class="metrics-placeholder" colspan="5">Loading metrics…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    </article>
 
-    <section class="panel metrics-panel metrics-panel-mint metrics-section" aria-labelledby="feedback-table-title">
-      <div class="metrics-panel-heading metrics-panel-toolbar">
-        <div>
-          <h2 id="feedback-table-title">Chat satisfaction summary</h2>
-          <p id="feedback-metrics-status" class="muted" role="status" aria-live="polite">Loading feedback metrics…</p>
-        </div>
-      </div>
-      <div class="metrics-table-wrap">
-        <table class="metrics-table" id="feedback-metrics-table">
-          <caption class="visually-hidden">Chat feedback summary from Supabase</caption>
-          <thead id="feedback-metrics-head"></thead>
-          <tbody id="feedback-metrics-body">
-            <tr><td class="metrics-placeholder">Loading feedback metrics…</td></tr>
-          </tbody>
-        </table>
-      </div>
+    <section aria-labelledby="faq-covered-heading" style="margin:0 22px 22px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius-sm)">
+      <h3 id="faq-covered-heading" style="margin-bottom:8px;font-size:1.1rem">
+        Already covered <span id="faq-covered-count"></span>
+      </h3>
+      <p id="faq-covered-status" class="muted" role="status" aria-live="polite" hidden></p>
+      <ul id="faq-covered-list" style="display:grid;gap:8px;margin:0;padding-left:20px"></ul>
     </section>
+  </section>
 
-    <section class="panel metrics-panel metrics-panel-gold metrics-section" aria-labelledby="session-metrics-title">
-      <div class="metrics-panel-heading">
-        <h2 id="session-metrics-title">Session activity summary</h2>
-        <p class="muted">Session data</p>
+  <section class="panel metrics-panel metrics-panel-mint metrics-section" aria-labelledby="feedback-table-title">
+    <div class="metrics-panel-heading metrics-panel-toolbar">
+      <div>
+        <h2 id="feedback-table-title">Chat satisfaction summary</h2>
+        <p id="feedback-metrics-status" class="muted" role="status" aria-live="polite">Loading feedback metrics…</p>
       </div>
-      <div class="metrics-data-placeholder" role="status">
-        <span aria-hidden="true">—</span>
-        <p>Data will appear here when session tracking is connected.</p>
-      </div>
-    </section>
+    </div>
+    <div class="metrics-table-wrap">
+      <table class="metrics-table" id="feedback-metrics-table">
+        <caption class="visually-hidden">Chat feedback summary from Supabase</caption>
+        <thead id="feedback-metrics-head"></thead>
+        <tbody id="feedback-metrics-body">
+          <tr><td class="metrics-placeholder">Loading feedback metrics…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-    <section class="panel metrics-panel metrics-panel-coral metrics-section" aria-labelledby="monthly-use-title">
-      <div class="metrics-panel-heading">
-        <h2 id="monthly-use-title">Monthly chatbot usage</h2>
-        <p id="repeat-usage-status" class="muted" role="status" aria-live="polite">Loading repeat usage…</p>
-      </div>
-      <div class="metrics-table-wrap">
-        <table class="metrics-table">
-          <caption class="visually-hidden">Repeat chatbot use by time window</caption>
-          <thead>
-            <tr>
-              <th scope="col">Time window</th>
-              <th scope="col">Active users</th>
-              <th scope="col">Repeat users</th>
-              <th scope="col">Repeat use</th>
-              <th scope="col">OKR target</th>
-            </tr>
-          </thead>
-          <tbody id="repeat-usage-body">
-            <tr><td class="metrics-placeholder" colspan="5">Loading repeat usage…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+  <section class="panel metrics-panel metrics-panel-gold metrics-section" aria-labelledby="session-metrics-title">
+    <div class="metrics-panel-heading">
+      <h2 id="session-metrics-title">Session activity summary</h2>
+      <p class="muted">Session data</p>
+    </div>
+    <div class="metrics-data-placeholder" role="status">
+      <span aria-hidden="true">—</span>
+      <p>Data will appear here when session tracking is connected.</p>
+    </div>
+  </section>
+
+  <section class="panel metrics-panel metrics-panel-coral metrics-section" aria-labelledby="monthly-use-title">
+    <div class="metrics-panel-heading">
+      <h2 id="monthly-use-title">Monthly chatbot usage</h2>
+      <p id="repeat-usage-status" class="muted" role="status" aria-live="polite">Loading repeat usage…</p>
+    </div>
+    <div class="metrics-table-wrap">
+      <table class="metrics-table">
+        <caption class="visually-hidden">Repeat chatbot use by time window</caption>
+        <thead>
+          <tr>
+            <th scope="col">Time window</th>
+            <th scope="col">Active users</th>
+            <th scope="col">Repeat users</th>
+            <th scope="col">Repeat use</th>
+            <th scope="col">OKR target</th>
+          </tr>
+        </thead>
+        <tbody id="repeat-usage-body">
+          <tr><td class="metrics-placeholder" colspan="5">Loading repeat usage…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
 
   <div id="site-footer"></div>
 
