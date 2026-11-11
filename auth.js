@@ -7,11 +7,22 @@
 
   const client = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
+  // Keep admin-only navigation hidden until a trusted Supabase role is available.
+  const updateAdminLinks = (user) => {
+    const isAdmin = user?.app_metadata?.role === "admin";
+    document
+      .querySelectorAll('a[data-page="metrics"], #site-footer a[href="metrics.html"]')
+      .forEach((link) => {
+        link.hidden = !isAdmin;
+      });
+  };
+
   // Prefer the username chosen at sign up; fall back to the part of the email before the @.
   const getDisplayName = (user) =>
     (user?.user_metadata?.username || user?.email?.split("@")[0] || "friend").trim();
 
   const showGreeting = (user) => {
+    updateAdminLinks(user);
     const actions = document.querySelector(".nav-actions");
     if (!actions || !user) return;
 
@@ -43,9 +54,14 @@
   // If someone is already signed in (e.g. they navigated from another page), greet them right away.
   document.addEventListener("DOMContentLoaded", async () => {
     await window.siteLayoutReady;
-    if (!client) return;
+    if (!client) {
+      updateAdminLinks(null);
+      return;
+    }
     const { data } = await client.auth.getSession();
-    if (data?.session?.user) showGreeting(data.session.user);
+    const user = data?.session?.user ?? null;
+    updateAdminLinks(user);
+    if (user) showGreeting(user);
   });
 
   window.cougarAuth = { client, showGreeting };
@@ -59,6 +75,7 @@
     const message = document.querySelector("#signin-message");
     const openButton = document.querySelector("[data-open-signin]");
     const closeButton = document.querySelector("[data-close-signin]");
+    let adminSignInRequested = false;
 
     if (!backdrop || !form || !message || !openButton || !closeButton) return;
 
@@ -73,6 +90,20 @@
       form.reset();
       showMessage("");
     };
+
+    // Metrics pages reuse this shared sign-in form and require the trusted admin role.
+    document.addEventListener("cougar:admin-auth-required", (event) => {
+      adminSignInRequested = true;
+      backdrop.classList.add("show");
+      backdrop.setAttribute("aria-hidden", "false");
+      showMessage(
+        event.detail?.reason === "admin-required"
+          ? "This account does not have admin access. Sign in with an admin account."
+          : "Sign in with an admin account to open the metrics dashboard.",
+        true,
+      );
+      document.querySelector("#signin-email")?.focus();
+    });
 
     openButton.addEventListener("click", () => {
       backdrop.classList.add("show");
@@ -108,6 +139,17 @@
         });
 
         if (error) throw error;
+
+        if (adminSignInRequested) {
+          const { data, error: userError } = await client.auth.getUser();
+          if (userError) throw userError;
+          if (data.user?.app_metadata?.role !== "admin") {
+            showMessage("This account is signed in but has not been granted the admin role.", true);
+            return;
+          }
+          location.replace("metrics.html");
+          return;
+        }
 
         closeSignin();
         showGreeting(data.user);
