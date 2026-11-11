@@ -142,47 +142,526 @@ document.addEventListener("DOMContentLoaded", async () => {
   faqSearch?.addEventListener("input", applyFaqFilters);
   loadFaqs();
 
+  // Set up chatbot elements and common example responses.
   const chatMessages = document.querySelector("#chat-messages");
   const chatForm = document.querySelector("#chat-form");
   const chatInput = document.querySelector("#chat-input");
-  const responseMap = {
-    housing: "A good first step is to review the housing timeline and apply for on-campus housing as soon as your application opens. If you are waitlisted, compare off-campus options before the semester gets close.",
-    mymap: "MyMap lets you build a class schedule. Add classes to your cart, check for conflicts, and submit when registration opens. It is normal for a few classes to fill, so review your schedule right after submission.",
-    advisor: "You can connect with an academic advisor through BYU’s advising directory. Start with your college or intended major so you reach the right office.",
-    events: "The calendar shows BYU and Provo events. Use the filters to narrow the list, then select an event for details and registration links.",
+  const chatHistory = document.querySelector("#chat-history");
+  const chatHistoryStatus = document.querySelector("#chat-history-status");
+  let historyStorageKey = null;
+  let historyLoadVersion = 0;
+  let chatRequestVersion = 0;
+  let savedConversations = [];
+  const NEW_CHAT_SESSION_MARKER = "__cougarai_new_chat__";
+
+  // Ask for a one-time star rating after two chatbot answers or 30 seconds.
+  // Track the active chat so the selected rating can be linked to its conversation.
+  const satisfactionSurvey = document.querySelector("#chat-satisfaction");
+  const satisfactionStatus = document.querySelector("#satisfaction-status");
+  const satisfactionRatings = satisfactionSurvey?.querySelectorAll('input[name="chat-satisfaction"]') ?? [];
+  let surveyShown = false;
+  let botAnswerCount = 0;
+  let surveyTimer;
+  let activeConversationId = null;
+  let pendingFeedbackRating = null;
+  let feedbackSaved = false;
+  let feedbackSaving = false;
+
+  const highlightSatisfactionStars = (ratingValue = 0) => {
+    satisfactionRatings.forEach((rating) => {
+      rating.closest("label")?.classList.toggle(
+        "selected",
+        Number(rating.value) <= ratingValue
+      );
+    });
   };
-  const addMessage = (text, type = "bot") => {
+
+  // Insert the selected rating once a conversation ID is available.
+  const saveConversationFeedback = async () => {
+    if (!pendingFeedbackRating || !activeConversationId || feedbackSaved || feedbackSaving) return;
+
+    const client = window.cougarAuth?.client;
+    if (!client) {
+      pendingFeedbackRating = null;
+      satisfactionSurvey.dataset.rating = "";
+      satisfactionRatings.forEach((rating) => {
+        rating.checked = false;
+        rating.disabled = false;
+      });
+      highlightSatisfactionStars();
+      if (satisfactionStatus) {
+        satisfactionStatus.textContent = "Database connection unavailable. Please choose a star to try again.";
+      }
+      return;
+    }
+
+    feedbackSaving = true;
+    if (satisfactionStatus) satisfactionStatus.textContent = "Saving your feedback…";
+
+    try {
+      const { error } = await client.from("chat_feedback").insert({
+        conversation_id: activeConversationId,
+        rating: pendingFeedbackRating
+      });
+      if (error) throw error;
+
+      feedbackSaved = true;
+      if (satisfactionStatus) satisfactionStatus.textContent = "Thanks for your feedback!";
+    } catch (error) {
+      console.error("Feedback submission error:", error);
+      pendingFeedbackRating = null;
+      satisfactionSurvey.dataset.rating = "";
+      satisfactionRatings.forEach((rating) => {
+        rating.checked = false;
+        rating.disabled = false;
+      });
+      highlightSatisfactionStars();
+      if (satisfactionStatus) {
+        satisfactionStatus.textContent = "Could not save your rating. Please choose a star to try again.";
+      }
+    } finally {
+      feedbackSaving = false;
+    }
+  };
+
+  // Reveal the survey only once and cancel the timer if an answer triggered it first.
+  const showSatisfactionSurvey = () => {
+    if (surveyShown || !satisfactionSurvey) return;
+    surveyShown = true;
+    clearTimeout(surveyTimer);
+    satisfactionSurvey.hidden = false;
+  };
+
+  const startSatisfactionTimer = () => {
+    if (!satisfactionSurvey || surveyTimer) return;
+    // Start the 30-second fallback when the user sends their first question.
+    surveyTimer = window.setTimeout(showSatisfactionSurvey, 30000);
+  };
+
+  if (satisfactionSurvey) {
+    const satisfactionStarGroup = satisfactionSurvey.querySelector(".satisfaction-stars");
+
+    satisfactionRatings.forEach((input) => {
+      input.closest("label")?.addEventListener("mouseenter", () => {
+        const hoveredRating = Number(input.value);
+        satisfactionRatings.forEach((star) => {
+          star.closest("label")?.classList.toggle(
+            "preview",
+            Number(star.value) <= hoveredRating
+          );
+        });
+      });
+    });
+
+    satisfactionStarGroup?.addEventListener("mouseleave", () => {
+      satisfactionRatings.forEach((input) => {
+        input.closest("label")?.classList.remove("preview");
+      });
+    });
+
+    satisfactionRatings.forEach((input) => {
+      // Keep the selected value locally until it can be saved to Supabase.
+      input.addEventListener("change", () => {
+        if (!input.checked || feedbackSaved) return;
+        pendingFeedbackRating = Number(input.value);
+        highlightSatisfactionStars(pendingFeedbackRating);
+        satisfactionSurvey.dataset.rating = input.value;
+        satisfactionRatings.forEach((rating) => {
+          rating.disabled = true;
+        });
+        if (!activeConversationId && satisfactionStatus) {
+          satisfactionStatus.textContent = "Saving your feedback when this chat is ready…";
+        }
+        saveConversationFeedback();
+      });
+    });
+  }
+
+  const responseMap = {
+    housing:
+      "A good first step is to review the housing timeline and apply for on-campus housing as soon as your application opens. If you are waitlisted, compare off-campus options before the semester gets close.",
+    mymap:
+      "MyMap lets you build a class schedule. Add classes to your cart, check for conflicts, and submit when registration opens. It is normal for a few classes to fill, so review your schedule right after submission.",
+    advisor:
+      "You can connect with an academic advisor through BYU’s advising directory. Start with your college or intended major so you reach the right office.",
+    events:
+      "The calendar shows BYU and Provo events. Use the filters to narrow the list, then select an event for details and registration links.",
+  };
+
+  // Add a user or bot message to the chat window.
+  const formatChatTime = (value) => {
+    if (!value) return "just now";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+  };
+
+  const addMessage = (text, type = "bot", timestamp = null) => {
     if (!chatMessages) return;
+
     const message = document.createElement("div");
     message.className = `message${type === "user" ? " user" : ""}`;
-    message.innerHTML = `${text}<small>${type === "user" ? "You" : "BYU Guide"} · just now</small>`;
+    message.textContent = text;
+
+    const details = document.createElement("small");
+    const time = formatChatTime(timestamp);
+    details.textContent = `${type === "user" ? "You" : "BYU Guide"}${time ? ` · ${time}` : ""}`;
+    message.appendChild(details);
+
     chatMessages.appendChild(message);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   };
+
+  const showWelcomeMessage = () => {
+    if (!chatMessages) return;
+    chatMessages.replaceChildren();
+    addMessage(
+      "Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo."
+    );
+  };
+
+  const renderChatHistory = (conversations = []) => {
+    if (!chatHistory) return;
+    chatHistory.replaceChildren();
+
+    conversations.forEach((conversation) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "chat-history-item";
+      item.classList.toggle(
+        "active",
+        conversation.conversation_id === activeConversationId
+      );
+      item.setAttribute("aria-current", conversation.conversation_id === activeConversationId ? "true" : "false");
+
+      const title = document.createElement("span");
+      title.className = "chat-history-title";
+      title.textContent = conversation.conversation_title?.trim() || "Untitled conversation";
+      item.appendChild(title);
+
+      const updated = document.createElement("span");
+      updated.className = "chat-history-date";
+      updated.textContent = formatChatTime(conversation.updated_at);
+      item.appendChild(updated);
+
+      item.addEventListener("click", () => openConversation(conversation));
+      chatHistory.appendChild(item);
+    });
+  };
+
+  const loadChatHistory = async (client) => {
+    if (!chatHistory || !chatHistoryStatus) return;
+
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) {
+      chatHistory.replaceChildren();
+      chatHistoryStatus.textContent = "Could not check your sign-in status.";
+      console.error("Chat history session error:", sessionError);
+      return;
+    }
+
+    if (!sessionData?.session?.user) {
+      savedConversations = [];
+      chatHistory.replaceChildren();
+      chatHistoryStatus.textContent = "Sign in to see saved chats. Guest chats are only available in this session.";
+      return;
+    }
+
+    chatHistoryStatus.textContent = "Loading your chats…";
+    const { data, error } = await client
+      .from("chat_conversations")
+      .select("conversation_id, conversation_title, updated_at")
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      savedConversations = [];
+      chatHistory.replaceChildren();
+      chatHistoryStatus.textContent = "Could not load chats. Check the chat_conversations SELECT policy.";
+      console.error("Chat history error:", error);
+      return;
+    }
+
+    savedConversations = data ?? [];
+    renderChatHistory(savedConversations);
+    chatHistoryStatus.textContent = data?.length
+      ? "Select a chat to reopen it."
+      : "No saved chats yet. Start a chat and it will appear here.";
+  };
+
+  const openConversation = async (conversation) => {
+    const client = window.cougarAuth?.client;
+    if (!client || !historyStorageKey) return;
+
+    chatRequestVersion += 1;
+    const loadVersion = ++historyLoadVersion;
+    activeConversationId = conversation.conversation_id;
+    sessionStorage.setItem(historyStorageKey, activeConversationId);
+    renderChatHistory(savedConversations);
+
+    if (chatMessages) chatMessages.replaceChildren();
+    addMessage("Loading conversation…");
+
+    const { data, error } = await client
+      .from("chat_messages")
+      .select("sender, content, created_at")
+      .eq("conversation_id", activeConversationId)
+      .order("created_at", { ascending: true });
+
+    if (loadVersion !== historyLoadVersion) return;
+
+    if (error) {
+      console.error("Conversation messages error:", error);
+      if (chatMessages) chatMessages.replaceChildren();
+      addMessage("Could not load this conversation. Check the chat_messages SELECT policy and created_at column.");
+      return;
+    }
+
+    if (chatMessages) chatMessages.replaceChildren();
+    if (!data?.length) {
+      showWelcomeMessage();
+    } else {
+      data.forEach((message) => {
+        addMessage(
+          message.content,
+          message.sender === "user" ? "user" : "bot",
+          message.created_at
+        );
+      });
+    }
+
+    renderChatHistory(savedConversations);
+  };
+
+  // Choose a built-in response for supported topics.
   const getResponse = (question) => {
     const normalized = question.toLowerCase();
+
     if (normalized.includes("hous")) return responseMap.housing;
-    if (normalized.includes("mymap") || normalized.includes("class") || normalized.includes("schedule")) return responseMap.mymap;
-    if (normalized.includes("advisor") || normalized.includes("major")) return responseMap.advisor;
-    if (normalized.includes("event") || normalized.includes("around provo")) return responseMap.events;
+    if (
+      normalized.includes("mymap") ||
+      normalized.includes("class") ||
+      normalized.includes("schedule")
+    ) {
+      return responseMap.mymap;
+    }
+    if (normalized.includes("advisor") || normalized.includes("major")) {
+      return responseMap.advisor;
+    }
+    if (normalized.includes("event") || normalized.includes("around provo")) {
+      return responseMap.events;
+    }
+
     return "I can help with housing, MyMap and class registration, academic advising, BYU requirements, and events around Provo. Try asking about one of those topics.";
   };
-  const submitChat = (value) => {
+
+  // Keep each signed-in user or guest conversation under a separate key.
+  const getConversationStorageKey = async (client) => {
+    const { data } = await client.auth.getSession();
+    const userId = data?.session?.user?.id || "guest";
+    return `cougarai_conversation_${userId}`;
+  };
+
+  // Show an accessible typing indicator while the chatbot is formulating a reply.
+  const addTypingIndicator = () => {
+    if (!chatMessages) return null;
+
+    const indicator = document.createElement("div");
+    indicator.className = "message typing-indicator";
+    indicator.setAttribute("role", "status");
+    indicator.setAttribute("aria-label", "BYU Guide is thinking");
+    indicator.innerHTML = '<span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span>';
+    chatMessages.appendChild(indicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return indicator;
+  };
+
+  // Send a chat question to the Supabase chatbot function and display its reply.
+  const submitChat = async (value) => {
     const question = value.trim();
     if (!question) return;
+
+    const requestVersion = ++chatRequestVersion;
     addMessage(question, "user");
+    startSatisfactionTimer();
     if (chatInput) chatInput.value = "";
-    setTimeout(() => addMessage(getResponse(question)), 350);
+
+    const client = window.cougarAuth?.client;
+    if (!client) {
+      addMessage("Chat connection is not set up on this page yet.");
+      return;
+    }
+    const typingIndicator = addTypingIndicator();
+
+    try {
+      const storageKey = await getConversationStorageKey(client);
+      historyStorageKey = storageKey;
+
+      const storedConversationId = sessionStorage.getItem(storageKey);
+      const conversationId =
+        storedConversationId === NEW_CHAT_SESSION_MARKER
+          ? null
+          : storedConversationId;
+      activeConversationId = conversationId;
+
+      const { data: authData, error: authError } =
+        await client.auth.getSession();
+      if (authError) {
+        console.error("Could not read the current auth session:", authError);
+      }
+
+      const accessToken = authData?.session?.access_token;
+      const { data, error } = await client.functions.invoke("chatbot", {
+        body: {
+          message: question,
+          conversation_id: conversationId,
+        },
+        ...(accessToken
+          ? { headers: { Authorization: `Bearer ${accessToken}` } }
+          : {}),
+      });
+
+      if (requestVersion !== chatRequestVersion) {
+        await loadChatHistory(client);
+        return;
+      }
+
+      if (error || !data?.reply) {
+        // The function may have saved the conversation before answer generation failed.
+        await loadChatHistory(client);
+        addMessage("Sorry, I couldn't get an answer right now.");
+        console.error("Chat function error:", error || data);
+        return;
+      }
+
+      if (data.conversation_id) {
+        activeConversationId = data.conversation_id;
+        sessionStorage.setItem(storageKey, data.conversation_id);
+        saveConversationFeedback();
+      }
+
+      await loadChatHistory(client);
+      addMessage(data.reply);
+
+      botAnswerCount += 1;
+      if (botAnswerCount >= 2) showSatisfactionSurvey();
+    } catch (error) {
+      console.error("Chat function error:", error);
+      addMessage("Sorry, I couldn't get an answer right now.");
+    } finally {
+      typingIndicator?.remove();
+    }
   };
+
   chatForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    submitChat(chatInput.value);
+    submitChat(chatInput?.value ?? "");
   });
-  document.querySelectorAll("[data-question]").forEach((button) => button.addEventListener("click", () => submitChat(button.dataset.question)));
-  document.querySelector("[data-clear-chat]")?.addEventListener("click", () => {
-    if (chatMessages) chatMessages.innerHTML = '<div class="message">Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo.<small>BYU Guide · just now</small></div>';
-    showToast("Conversation cleared.");
+
+  document.querySelectorAll("[data-question]").forEach((button) => {
+    button.addEventListener("click", () => {
+      submitChat(button.dataset.question);
+    });
   });
+
+  const resetSurveyForNewChat = () => {
+    clearTimeout(surveyTimer);
+    surveyTimer = null;
+    surveyShown = false;
+    botAnswerCount = 0;
+    pendingFeedbackRating = null;
+    feedbackSaved = false;
+    feedbackSaving = false;
+    if (satisfactionSurvey) {
+      satisfactionSurvey.hidden = true;
+      satisfactionSurvey.dataset.rating = "";
+    }
+    satisfactionRatings.forEach((rating) => {
+      rating.checked = false;
+      rating.disabled = false;
+    });
+    highlightSatisfactionStars();
+    if (satisfactionStatus) satisfactionStatus.textContent = "";
+  };
+
+  const startNewChat = async () => {
+    chatRequestVersion += 1;
+    historyLoadVersion += 1;
+    activeConversationId = null;
+    resetSurveyForNewChat();
+
+    const client = window.cougarAuth?.client;
+    if (client) {
+      historyStorageKey = await getConversationStorageKey(client);
+      // Keep an explicit blank-chat marker so a page reload doesn't reopen
+      // the previous conversation before the user sends the first message.
+      sessionStorage.setItem(historyStorageKey, NEW_CHAT_SESSION_MARKER);
+    }
+
+    showWelcomeMessage();
+    renderChatHistory(savedConversations);
+    chatInput?.focus();
+    showToast("Started a new chat.");
+  };
+
+  document.querySelectorAll("[data-new-chat]").forEach((button) => {
+    button.addEventListener("click", startNewChat);
+  });
+
+  const initializeChatHistory = async () => {
+    const client = window.cougarAuth?.client;
+    showWelcomeMessage();
+
+    if (!client) {
+      if (chatHistoryStatus) chatHistoryStatus.textContent = "Chat history is unavailable right now.";
+      return;
+    }
+
+    historyStorageKey = await getConversationStorageKey(client);
+    const { data: sessionData, error } = await client.auth.getSession();
+    if (error) {
+      if (chatHistoryStatus) chatHistoryStatus.textContent = "Could not check your sign-in status.";
+      console.error("Chat history session error:", error);
+      return;
+    }
+
+    if (!sessionData?.session?.user) {
+      // Guest conversations are not listed or restored from the database.
+      sessionStorage.removeItem(historyStorageKey);
+      activeConversationId = null;
+      await loadChatHistory(client);
+      return;
+    }
+
+    const storedConversationId = sessionStorage.getItem(historyStorageKey);
+    if (storedConversationId === NEW_CHAT_SESSION_MARKER) {
+      activeConversationId = null;
+      await loadChatHistory(client);
+      return;
+    }
+
+    await loadChatHistory(client);
+
+    // Resume the last active conversation, or the latest saved one if its ID
+    // was lost before the function response reached the browser.
+    const savedConversation = savedConversations.find(
+      (conversation) => conversation.conversation_id === storedConversationId
+    ) ?? savedConversations[0];
+
+    if (savedConversation) {
+      activeConversationId = savedConversation.conversation_id;
+      sessionStorage.setItem(historyStorageKey, activeConversationId);
+      await openConversation(savedConversation);
+    } else {
+      sessionStorage.removeItem(historyStorageKey);
+      activeConversationId = null;
+      showWelcomeMessage();
+    }
+  };
+
+  if (chatMessages && chatHistory) initializeChatHistory();
 
   const categoryButtons = document.querySelectorAll(".category-filter");
   const eventCards = document.querySelectorAll(".event-card");
