@@ -1,4 +1,6 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await window.siteLayoutReady;
+
   const currentPage = document.body.dataset.page;
   document.querySelectorAll(".nav-link").forEach((link) => {
     if (link.dataset.page === currentPage) link.classList.add("active");
