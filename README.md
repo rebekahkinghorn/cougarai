@@ -192,6 +192,28 @@ Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-com
 
 Teammates can use the site without installing Deno. Teammates who edit Edge Function code should install the Deno VS Code extension. The separate Deno command-line executable is useful for Deno-specific CLI tools; Supabase CLI uses its own Edge Runtime to serve functions locally. If VS Code reports that it cannot resolve the Deno executable, the extension needs the Deno CLI available on PATH or configured with its `deno.path` setting. To deploy this function to the linked Supabase project, use `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` from the repository root.
 
+## 📅 Cougar AI Interactive Calendar
+
+The Cougar AI Calendar helps BYU students discover upcoming events and activities happening on campus and throughout the Provo community. The calendar provides an easy-to-use interface for exploring campus activities, sporting events, concerts, community gatherings, and wellness opportunities.
+
+### How to Use the Calendar
+
+1. **Browse Events:** The calendar automatically displays the current month. Use the left and right arrows to navigate between available months or click "Today" to return to the current month.
+2. **Filter by Category:** Select BYU (Blue), Community (Gold), Arts & Culture (Coral), or Wellness (Green) to display events that match your interests. Select "All Events" to view everything.
+3. **View Event Details:** Click any event on the calendar to open a popup displaying its date, time, location, category, and description.
+4. **Explore Upcoming Events:** Scroll below the calendar to view event cards that automatically update based on the selected month and category. Click a card for additional details.
+
+### Key Features
+
+- Automatically displays the current month.
+- Color-coded events with an easy-to-read legend.
+- Interactive category filtering.
+- Clickable event details.
+- Dynamically updated event cards.
+- Responsive design for desktop and mobile devices.
+
+The Cougar AI Calendar is designed to help students stay connected, discover new experiences, and make the most of their time at BYU.
+
 ## ERD
 
 <img width="1677" height="1026" alt="Cougar AI ERD-2" src="https://github.com/user-attachments/assets/dbedbe00-b875-41ca-9a49-28a5e3e22043" />
