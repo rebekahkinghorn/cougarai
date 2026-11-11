@@ -439,3 +439,123 @@ button.event-dot:focus-visible {
     }
 }
 
+
+/* ==========================================
+   CALENDAR EVENT COLOR LEGEND
+   ========================================== */
+
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+
+.legend-title {
+    color: var(--navy);
+    font-size: var(--type-sm);
+    font-weight: var(--weight-bold);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink);
+    font-size: var(--type-sm);
+}
+
+.legend-color {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.legend-color.green {
+    background: var(--mint-dark);
+}
+
+.legend-color.gold {
+    background: var(--gold);
+}
+
+.legend-color.coral {
+    background: var(--coral);
+}
+
+.legend-color.blue {
+    background: var(--blue);
+}
+
+/* Mobile layout */
+@media (max-width: 700px) {
+    .calendar-legend {
+        gap: 10px 14px;
+        padding: 12px;
+    }
+
+    .legend-title {
+        width: 100%;
+    }
+}
+
+/* Wellness event styling */
+.event-dot.blue {
+    color: var(--blue-dark);
+    background: var(--sky);
+}
+.event-dot.uncategorized {
+    color: var(--muted);
+    background: var(--surface-2);
+}
+
+/* ==========================================
+   CALENDAR CATEGORY FILTERS
+   ========================================== */
+
+.calendar-filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.filter-title {
+    color: var(--navy);
+    font-size: var(--type-sm);
+    font-weight: var(--weight-bold);
+}
+
+.calendar-filter-section .category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Make selected filter more noticeable */
+.calendar-filter-section .category-filter.active {
+    background: var(--blue);
+    color: white;
+    border-color: var(--blue);
+}
+
+/* Improve keyboard accessibility */
+.calendar-filter-section .category-filter:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+    .calendar-filter-section {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
