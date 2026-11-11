@@ -30,6 +30,76 @@
       </div>
     </div>
 
+      
+<!-- Calendar Category Filters -->
+<div class="calendar-filter-section">
+
+    <span class="filter-title">Filter Events:</span>
+
+    <div class="category-filters">
+
+        <button type="button"
+                class="category-filter active"
+                data-category="all">
+            All Events
+        </button>
+
+        <button type="button"
+                class="category-filter"
+                data-category="byu">
+            BYU
+        </button>
+
+        <button type="button"
+                class="category-filter"
+                data-category="community">
+            Community
+        </button>
+
+        <button type="button"
+                class="category-filter"
+                data-category="arts">
+            Arts &amp; Culture
+        </button>
+
+        <button type="button"
+                class="category-filter"
+                data-category="wellness">
+            Wellness
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- Calendar Color Legend -->
+<div class="calendar-legend" aria-label="Calendar event color legend">
+
+    <span class="legend-title">Event Categories:</span>
+
+    <div class="legend-item">
+        <span class="legend-color blue"></span>
+        <span>BYU Events</span>
+    </div>
+
+    <div class="legend-item">
+        <span class="legend-color gold"></span>
+        <span>Community</span>
+    </div>
+
+    <div class="legend-item">
+        <span class="legend-color coral"></span>
+        <span>Arts & Culture</span>
+    </div>
+
+    <div class="legend-item">
+        <span class="legend-color green"></span>
+        <span>Wellness</span>
+    </div>
+
+</div>
+
 
       
 <div class="calendar-grid" id="calendar-grid" aria-label="September 2026 calendar">
@@ -43,13 +113,7 @@
             <h3>Upcoming events</h3>
             <p>Tap on an event to see more details.</p>
           </div>
-          <div class="category-filters">
-            <button class="category-filter active" data-category="all">All</button>
-            <button class="category-filter" data-category="byu">BYU</button>
-            <button class="category-filter" data-category="community">Community</button>
-            <button class="category-filter" data-category="wellness">Wellness</button>
-          </div>
-        </div>
+        
         <div class="event-list">
           <button class="event-card" data-category="byu" data-event="New student club fair">
             <span class="date-badge"><strong>02</strong><small>Sep</small></span>
@@ -279,7 +343,7 @@ const events = {
   "2026-11-11": [{
     name: "Veterans Day Concert",
     color: "green",
-    category: "byu",
+    category: "arts",
     time: "7:30 PM",
     location: "BYU Music Building",
     description: "BYU Wind Symphony featuring Laura Osnes."
@@ -325,7 +389,7 @@ const events = {
   "2026-12-02": [{
     name: "Joy of Christmas Concert",
     color: "green",
-    category: "byu",
+    category: "arts",
     time: "7:30 PM",
     location: "BYU Music Building",
     description: "Christmas music from the BYU Symphony Orchestra."
@@ -334,7 +398,7 @@ const events = {
   "2026-12-04": [{
     name: "Christmas Around the World",
     color: "green",
-    category: "byu",
+    category: "arts",
     time: "7:30 PM",
     location: "Marriott Center",
     description: "International folk dance and Christmas music."
@@ -370,7 +434,7 @@ const events = {
   "2026-12-11": [{
     name: "The Nutcracker",
     color: "coral",
-    category: "community",
+    category: "arts",
     time: "See performance schedule",
     location: "Covey Center for the Arts",
     description: "Utah Metropolitan Ballet performs December 11-21."
@@ -386,6 +450,16 @@ const events = {
   }]
 };
 
+
+const categoryColors = {
+    byu: "blue",
+    community: "gold",
+    arts: "coral",
+    wellness: "green"
+};
+
+// Track which event category is currently selected
+let activeCategory = "all";
 
   function renderCalendar() {
     calendarGrid.innerHTML = "";
@@ -450,37 +524,51 @@ const events = {
       ].join("-");
 
       
-      if (date.getMonth() === currentMonth && events[dateKey]) {
-        events[dateKey].forEach(event => {
+      
 
-    // Create a clickable event button
+if (date.getMonth() === currentMonth && events[dateKey]) {
+
+    // Only show events matching the selected category
+    const filteredEvents = events[dateKey].filter(event => {
+        return activeCategory === "all" ||
+               event.category === activeCategory;
+    });
+
+    filteredEvents.forEach(event => {
+
+        // Create clickable event button
         const eventDot = document.createElement("button");
         eventDot.type = "button";
         eventDot.className = "event-dot";
 
-        if (event.color) {
-          eventDot.classList.add(event.color);
-        }
+        // Automatically assign the category color
+        const eventColor =
+            categoryColors[event.category] || "uncategorized";
 
+        eventDot.classList.add(eventColor);
         eventDot.textContent = event.name;
 
         // Open event details when clicked
         eventDot.addEventListener("click", () => {
-          openEventModal(event, dateKey);
+            openEventModal(event, dateKey);
         });
 
         dayCell.appendChild(eventDot);
-      });
-    }
+    });
+}
 
+// Add the completed day to the calendar
+calendarGrid.appendChild(dayCell);
 
-      calendarGrid.appendChild(dayCell);
-    }
+} // Closes the calendar's for loop
 
-    // Disable navigation at the September/December boundaries.
-    prevButton.disabled = currentMonth === minMonth;
-    nextButton.disabled = currentMonth === maxMonth;
-  }
+// Disable navigation at the September/December boundaries
+prevButton.disabled = currentMonth === minMonth;
+nextButton.disabled = currentMonth === maxMonth;
+
+} // Closes renderCalendar()
+
+  
 
   nextButton.addEventListener("click", () => {
     if (currentMonth < maxMonth) {
@@ -590,10 +678,41 @@ const events = {
     });
 
 
-  // Display September when the page first loads.
-  renderCalendar();
+    // ==========================================
+    // CALENDAR CATEGORY FILTER BUTTONS
+    // ==========================================
 
-});
+    const categoryFilterButtons = document.querySelectorAll(
+        ".calendar-filter-section .category-filter"
+    );
+
+    categoryFilterButtons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            // Get the selected category
+            activeCategory = button.dataset.category;
+
+            // Remove active styling from all buttons
+            categoryFilterButtons.forEach(btn => {
+                btn.classList.remove("active");
+                btn.setAttribute("aria-pressed", "false");
+            });
+
+            // Highlight the selected button
+            button.classList.add("active");
+            button.setAttribute("aria-pressed", "true");
+
+            // Refresh the calendar with filtered events
+            renderCalendar();
+        });
+
+    });
+
+    // Display the current month when the page loads
+    renderCalendar();
+  });
+
 </script>
 
 
@@ -677,6 +796,8 @@ const events = {
         }
       });
     });
+  
+    
   </script>
 </body>
 </html>
