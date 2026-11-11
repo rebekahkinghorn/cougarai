@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await window.siteLayoutReady;
   // Highlight the current page and control the mobile navigation.
   const currentPage = document.body.dataset.page;
   document.querySelectorAll(".nav-link").forEach((link) => {

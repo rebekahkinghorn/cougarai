@@ -42,6 +42,7 @@
 
   // If someone is already signed in (e.g. they navigated from another page), greet them right away.
   document.addEventListener("DOMContentLoaded", async () => {
+    await window.siteLayoutReady;
     if (!client) return;
     const { data } = await client.auth.getSession();
     if (data?.session?.user) showGreeting(data.session.user);
@@ -51,7 +52,8 @@
 
 
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+    await window.siteLayoutReady;
     const backdrop = document.querySelector(".signin-backdrop");
     const form = document.querySelector("#signin-form");
     const message = document.querySelector("#signin-message");

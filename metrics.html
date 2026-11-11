@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BYU Guide | Metrics</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="metrics">
+  <div id="site-header"></div>
+
+  <main class="container page-shell">
+    <div class="page-intro">
+      <div>
+        <span class="eyebrow">Chatbot quality</span>
+        <h1>Metrics dashboard</h1>
+        <p class="lede">A summary of the chatbot’s answer validity results.</p>
+      </div>
+      <button class="button secondary" id="refresh-all-metrics" type="button">Refresh all metrics</button>
+    </div>
+
+    <section class="panel metrics-panel metrics-panel-blue" aria-labelledby="metrics-table-title">
+      <div class="metrics-panel-heading">
+        <div>
+          <h2 id="metrics-table-title">Answer validity summary</h2>
+          <p id="metrics-status" class="muted" role="status" aria-live="polite">Loading metrics…</p>
+        </div>
+      </div>
+      <div class="metrics-table-wrap">
+        <table class="metrics-table">
+          <caption class="visually-hidden">Chatbot answer validity summary from Supabase</caption>
+          <thead>
+            <tr>
+              <th scope="col">Valid answers</th>
+              <th scope="col">No answers</th>
+              <th scope="col">Classified answers</th>
+              <th scope="col">Valid answer percent</th>
+              <th scope="col">No answer percent</th>
+            </tr>
+          </thead>
+          <tbody id="metrics-table-body">
+            <tr><td class="metrics-placeholder" colspan="5">Loading metrics…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel metrics-panel metrics-panel-mint metrics-section" aria-labelledby="feedback-table-title">
+      <div class="metrics-panel-heading metrics-panel-toolbar">
+        <div>
+          <h2 id="feedback-table-title">Chat satisfaction summary</h2>
+          <p id="feedback-metrics-status" class="muted" role="status" aria-live="polite">Loading feedback metrics…</p>
+        </div>
+      </div>
+      <div class="metrics-table-wrap">
+        <table class="metrics-table" id="feedback-metrics-table">
+          <caption class="visually-hidden">Chat feedback summary from Supabase</caption>
+          <thead id="feedback-metrics-head"></thead>
+          <tbody id="feedback-metrics-body">
+            <tr><td class="metrics-placeholder">Loading feedback metrics…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel metrics-panel metrics-panel-gold metrics-section" aria-labelledby="session-metrics-title">
+      <div class="metrics-panel-heading">
+        <h2 id="session-metrics-title">Session activity summary</h2>
+        <p class="muted">Session data</p>
+      </div>
+      <div class="metrics-data-placeholder" role="status">
+        <span aria-hidden="true">—</span>
+        <p>Data will appear here when session tracking is connected.</p>
+      </div>
+    </section>
+
+    <section class="panel metrics-panel metrics-panel-coral metrics-section" aria-labelledby="monthly-use-title">
+      <div class="metrics-panel-heading">
+        <h2 id="monthly-use-title">Monthly chatbot usage</h2>
+        <p class="muted">Share of monthly chatbot users who use the chatbot more than once.</p>
+      </div>
+      <div class="metrics-data-placeholder" role="status">
+        <span aria-hidden="true">—</span>
+        <p>Data will appear here when monthly usage tracking is connected.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="issue-title">Report an issue</h2>
+          <p>Tell us what went wrong and we’ll use it to improve the guide.</p>
+        </div>
+        <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+      </div>
+      <form class="modal-form">
+        <label for="issue-description">What happened?</label>
+        <textarea id="issue-description" required placeholder="Describe the issue…"></textarea>
+        <button class="button primary" type="submit">Send report</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop signin-backdrop" role="dialog" aria-modal="true" aria-labelledby="signin-title" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="signin-title">Sign in</h2>
+          <p>Sign in with the email and password you used to create your account.</p>
+        </div>
+        <button class="modal-close" type="button" data-close-signin aria-label="Close">×</button>
+      </div>
+      <form class="modal-form" id="signin-form">
+        <label for="signin-email">Email</label>
+        <input id="signin-email" name="email" type="email" autocomplete="email" required>
+        <label for="signin-password">Password</label>
+        <input id="signin-password" name="password" type="password" autocomplete="current-password" required>
+        <button class="button primary" type="submit">Sign in</button>
+        <p id="signin-message" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+
+  <script src="layout.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script src="metrics.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      await window.siteLayoutReady;
+      document.querySelector("[data-open-signup]")?.addEventListener("click", () => {
+        location.href = "index.html#signup";
+      });
+    });
+  </script>
+</body>
+</html>
