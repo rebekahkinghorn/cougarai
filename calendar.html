@@ -129,40 +129,31 @@
 </div>
 
 
-      <div class="event-section">
-        <div class="section-heading" style="margin-bottom:15px;">
-          <div>
-            <h3>Upcoming events</h3>
-            <p>Tap on an event to see more details.</p>
-          </div>
-        
-        <div class="event-list">
-          <button class="event-card" data-category="byu" data-event="New student club fair">
-            <span class="date-badge"><strong>02</strong><small>Sep</small></span>
-            <span>
-              <h3>New student club fair</h3>
-              <p>Find a group that shares your interests and meet people on campus.</p>
-              <span class="event-meta">BYU · Wilkinson Student Center</span>
-            </span>
-          </button>
-          <button class="event-card" data-category="community" data-event="Provo food truck night">
-            <span class="date-badge" style="background:var(--gold);color:var(--navy);"><strong>04</strong><small>Sep</small></span>
-            <span>
-              <h3>Provo food truck night</h3>
-              <p>Local food, outdoor seating, and an easy way to explore downtown.</p>
-              <span class="event-meta">Community · 6:00 PM</span>
-            </span>
-          </button>
-          <button class="event-card" data-category="wellness" data-event="Art and wellness night">
-            <span class="date-badge" style="background:var(--coral);"><strong>09</strong><small>Sep</small></span>
-            <span>
-              <h3>Art and wellness night</h3>
-              <p>Take a break with creative activities and a low-pressure social space.</p>
-              <span class="event-meta">Wellness · 7:00 PM</span>
-            </span>
-          </button>
+      
+<!-- Dynamic Upcoming Events Section -->
+<div class="event-section">
+
+    <div class="section-heading" style="margin-bottom:15px;">
+        <div>
+            <h3>Upcoming Events</h3>
+            <p>
+                Explore events for the selected month.
+                Click an event to see more details.
+            </p>
         </div>
-      </div>
+    </div>
+
+    <!-- JavaScript will generate event cards here -->
+    <div class="event-list" id="upcoming-events">
+    </div>
+
+</div>
+
+        
+<!-- JavaScript will automatically generate event cards -->
+<div class="event-list" id="upcoming-events"></div>
+
+        
     </section>
     <!-- Suggest an Event Button -->
       <div style="display: flex; justify-content: flex-end;">
@@ -287,6 +278,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   const calendarGrid = document.getElementById("calendar-grid");
+  const upcomingEventsContainer =
+    document.getElementById("upcoming-events");
+
   const monthHeading = document.getElementById("calendar-month");
   const prevButton = document.getElementById("prev-month");
   const nextButton = document.getElementById("next-month");
@@ -564,9 +558,124 @@ calendarGrid.appendChild(dayCell);
 prevButton.disabled = currentMonth === minMonth;
 nextButton.disabled = currentMonth === maxMonth;
 
+// Update the event cards whenever the calendar changes
+renderUpcomingEvents();
+
 } // Closes renderCalendar()
 
   
+// ==========================================
+// DYNAMIC UPCOMING EVENTS
+// ==========================================
+
+function renderUpcomingEvents() {
+
+    upcomingEventsContainer.innerHTML = "";
+
+    // Get the events for the selected month
+    const monthlyEvents = [];
+
+    Object.keys(events).forEach(dateKey => {
+
+        const eventDate = new Date(dateKey + "T12:00:00");
+
+        if (
+            eventDate.getFullYear() === year &&
+            eventDate.getMonth() === currentMonth
+        ) {
+            events[dateKey].forEach(event => {
+
+                // Respect the selected category filter
+                if (
+                    activeCategory === "all" ||
+                    event.category === activeCategory
+                ) {
+                    monthlyEvents.push({
+                        ...event,
+                        dateKey: dateKey
+                    });
+                }
+
+            });
+        }
+    });
+
+    // Sort events by date
+    monthlyEvents.sort((a, b) =>
+        a.dateKey.localeCompare(b.dateKey)
+    );
+
+    // Show a message if there are no matching events
+    if (monthlyEvents.length === 0) {
+
+        const message = document.createElement("p");
+        message.className = "muted";
+        message.textContent =
+            "No events found for this month and category.";
+
+        upcomingEventsContainer.appendChild(message);
+        return;
+    }
+
+    // Create a card for each event
+    monthlyEvents.forEach(event => {
+
+        const eventDate = new Date(event.dateKey + "T12:00:00");
+
+        const day = eventDate.getDate();
+        const month = eventDate.toLocaleString("en-US", {
+            month: "short"
+        });
+
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "event-card";
+
+        const color = categoryColors[event.category] || "uncategorized";
+        card.classList.add("event-card-" + color);
+
+        const badge = document.createElement("span");
+        badge.className = "date-badge";
+
+        const badgeDay = document.createElement("strong");
+        badgeDay.textContent = String(day).padStart(2, "0");
+
+        const badgeMonth = document.createElement("small");
+        badgeMonth.textContent = month;
+
+        badge.appendChild(badgeDay);
+        badge.appendChild(badgeMonth);
+
+        const content = document.createElement("span");
+
+        const title = document.createElement("h3");
+        title.textContent = event.name;
+
+        const description = document.createElement("p");
+        description.textContent =
+            event.description || "More details coming soon.";
+
+        const meta = document.createElement("span");
+        meta.className = "event-meta";
+        meta.textContent =
+            `${event.location || "Location TBD"} · ${event.time || "Time TBD"}`;
+
+        content.appendChild(title);
+        content.appendChild(description);
+        content.appendChild(meta);
+
+        card.appendChild(badge);
+        card.appendChild(content);
+
+        // Open the existing event details popup
+        card.addEventListener("click", () => {
+            openEventModal(event, event.dateKey);
+        });
+
+        upcomingEventsContainer.appendChild(card);
+    });
+}
+
 
   nextButton.addEventListener("click", () => {
     if (currentMonth < maxMonth) {
