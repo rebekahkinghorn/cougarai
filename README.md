@@ -221,3 +221,10 @@ The Cougar AI Calendar is designed to help students stay connected, discover new
 ## Demo
 
 [Vertical slice demo video](https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing)
+
+
+## Data Flow Diagrams
+<img width="590" height="162" alt="image" src="https://github.com/user-attachments/assets/ed13cffb-3386-4696-ba91-1ef80282e13d" />
+<img width="685" height="309" alt="image" src="https://github.com/user-attachments/assets/75e3da83-265a-447c-8b55-e61f32a825fb" />
+
+
