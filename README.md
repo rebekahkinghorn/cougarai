@@ -11,6 +11,8 @@ high school, but also for current missionaries trying to prepare with limited ti
 
 This is the probelem that our app solves. CougarAI has a built in chatbot that is trained on everything a freshman needs to prepare for and get through their first year at BYU. It also includes a FAQ page for freshman who don't even know where to start in their preparation, which is generated based on questions other users are asking the chatbot.
 
+The FAQ page lets students browse common questions by topic, search by keyword, expand an answer, or continue to the chatbot if they need help with a question that is not covered. FAQ drafts are created from valid chatbot question-and-answer pairs from the previous 30 days: the existing `dynamic-function` Edge Function uses Gemini to group recurring questions, compare them with published FAQs and prior suggestions, and save new drafts to `faq_suggestions`. An administrator can run this process from the metrics dashboard, review each pending draft, choose an existing category or propose a new one, and approve or reject it. Approval publishes the reviewed question and answer through the `approve_faq_suggestion` database function; questions already covered by published FAQs are tracked separately instead of being added as duplicate drafts.
+
 We also realize that BYU freshman struggle not only with figuring out the academic side of BYU, but the social side as well. For this purpose our app also has a calendar page which will include events happening on and off campus. Users will be able to filter this calendar to show them events that they are most interested in.
 
 ## Tech Stack
@@ -33,6 +35,7 @@ AI app builder: CODEX
 - Reused the site's shared sign-in form for the metrics page. The Metrics link appears only for accounts with trusted `app_metadata.role = admin`; direct visits to `metrics.html` prompt for sign-in and keep the dashboard hidden unless the account has that role.
 - Admin status must be assigned to the approved Supabase Auth account by a trusted administrator using the Auth Admin API or dashboard `app_metadata`; users cannot grant themselves access. The login checks the trusted `app_metadata.role` claim, never editable `user_metadata`.
 - The page gate controls the dashboard UI, and the `admin-metrics` Edge Function independently verifies the signed-in user's trusted `app_metadata.role` before returning project-wide aggregate results. It reads only the two summary views with the server-side service-role key; that key is never sent to the browser.
+- The admin metrics dashboard includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares its suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for admin review. The dashboard lets admins assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. Approval publishes the FAQ through the `approve_faq_suggestion` database function.
 
 
 4.
