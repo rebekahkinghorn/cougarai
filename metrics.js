@@ -53,6 +53,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tableBody = document.querySelector("#metrics-table-body");
   const status = document.querySelector("#metrics-status");
   const refreshAllButton = document.querySelector("#refresh-all-metrics");
+  const generateFaqButton = document.querySelector("#generate-faq-suggestions");
+  const faqGenerationStatus = document.querySelector("#faq-generation-status");
   const feedbackHead = document.querySelector("#feedback-metrics-head");
   const feedbackBody = document.querySelector("#feedback-metrics-body");
   const feedbackStatus = document.querySelector("#feedback-metrics-status");
@@ -498,7 +500,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  const generateFaqDrafts = async () => {
+    generateFaqButton.disabled = true;
+    generateFaqButton.textContent = "Generating drafts…";
+    faqGenerationStatus.textContent = "Checking recent answered chats and generating FAQ drafts. This may take a little while…";
+    try {
+      const { data, error } = await client.functions.invoke("dynamic-function", {
+        body: {},
+      });
+      if (error) throw error;
+
+      const saved = Number(data?.suggestions_saved ?? 0);
+      const covered = Number(data?.already_covered_inserted ?? 0) + Number(data?.already_covered_updated ?? 0);
+      faqGenerationStatus.textContent = data?.message
+        ? `${data.message} Refreshing the review list…`
+        : `${data?.message || "Generation finished."} ${saved} new draft${saved === 1 ? "" : "s"} saved; ${covered} already-covered question${covered === 1 ? "" : "s"} recorded. Refreshing the review list…`;
+      await loadFaqSuggestions({ forceFresh: true });
+      if (!data?.message) {
+        faqGenerationStatus.textContent = `${data?.message || "Generation finished."} ${saved} new draft${saved === 1 ? "" : "s"} saved; ${covered} already-covered question${covered === 1 ? "" : "s"} recorded.`;
+      }
+    } catch (error) {
+      console.error("FAQ draft generation error:", error);
+      faqGenerationStatus.textContent = error?.context?.status === 403
+        ? "Admin access is required to generate FAQ drafts."
+        : "Could not generate FAQ drafts. Check that the dynamic-function Edge Function is deployed and review its Supabase logs.";
+    } finally {
+      generateFaqButton.disabled = false;
+      generateFaqButton.textContent = "Generate FAQ drafts";
+    }
+  };
+
   refreshAllButton.addEventListener("click", () => refreshAllMetrics(true));
+  generateFaqButton.addEventListener("click", generateFaqDrafts);
   await refreshAllMetrics();
 
   // Refresh after sign-in so policies requiring an authenticated user can apply.
