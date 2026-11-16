@@ -11,7 +11,7 @@ high school, but also for current missionaries trying to prepare with limited ti
 
 This is the probelem that our app solves. CougarAI has a built in chatbot that is trained on everything a freshman needs to prepare for and get through their first year at BYU. It also includes a FAQ page for freshman who don't even know where to start in their preparation, which is generated based on questions other users are asking the chatbot.
 
-The FAQ page lets students browse common questions by topic, search by keyword, expand an answer, or continue to the chatbot if they need help with a question that is not covered. FAQ drafts are created from valid chatbot question-and-answer pairs from the previous 30 days: the existing `dynamic-function` Edge Function uses Gemini to group recurring questions, compare them with published FAQs and prior suggestions, and save new drafts to `faq_suggestions`. An administrator can run this process from the metrics dashboard, review each pending draft, choose an existing category or propose a new one, and approve or reject it. Approval publishes the reviewed question and answer through the `approve_faq_suggestion` database function; questions already covered by published FAQs are tracked separately instead of being added as duplicate drafts.
+The FAQ page lets students browse common questions by topic, search by keyword, expand an answer, or continue to the chatbot if they need help with a question that is not covered. FAQ drafts are created from valid chatbot question-and-answer pairs from the previous 30 days: the existing `dynamic-function` Edge Function uses Gemini to group recurring questions, compare them with published FAQs and prior suggestions, and save new drafts to `faq_suggestions`. An administrator can run this process from the **Approvals & Reports** page, review each pending draft, choose an existing category or propose a new one, and approve or reject it. Approval publishes the reviewed question and answer through the `approve_faq_suggestion` database function; questions already covered by published FAQs are tracked separately instead of being added as duplicate drafts.
 
 We also realize that BYU freshman struggle not only with figuring out the academic side of BYU, but the social side as well. For this purpose our app also has a calendar page which will include events happening on and off campus. Users will be able to filter this calendar to show them events that they are most interested in.
 
@@ -32,10 +32,24 @@ AI app builder: CODEX
 
 ### November 10 — Admin metrics sign-in
 
-- Reused the site's shared sign-in form for the metrics page. The Metrics link appears only for accounts with trusted `app_metadata.role = admin`; direct visits to `metrics.html` prompt for sign-in and keep the dashboard hidden unless the account has that role.
+- Reused the site's shared sign-in form for the admin pages. The Metrics and Approvals & Reports links appear only for accounts with trusted `app_metadata.role = admin`; direct visits to either page prompt for sign-in and keep the admin content hidden unless the account has that role.
 - Admin status must be assigned to the approved Supabase Auth account by a trusted administrator using the Auth Admin API or dashboard `app_metadata`; users cannot grant themselves access. The login checks the trusted `app_metadata.role` claim, never editable `user_metadata`.
 - The page gate controls the dashboard UI, and the `admin-metrics` Edge Function independently verifies the signed-in user's trusted `app_metadata.role` before returning project-wide aggregate results. It reads only the two summary views with the server-side service-role key; that key is never sent to the browser.
-- The admin metrics dashboard includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares its suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for admin review. The dashboard lets admins assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. Approval publishes the FAQ through the `approve_faq_suggestion` database function.
+- The admin **Approvals & Reports** page includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for review. Admins can assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. Suggested-event submissions have a placeholder on this page; the form and database connection are not implemented yet. Approval publishes an FAQ through the `approve_faq_suggestion` database function.
+
+#### Deploying `admin-issue-reports`
+
+The **Approvals & Reports** page reads submitted issue descriptions, their status, and the submitter's user ID through this Edge Function. It verifies the signed-in user's trusted admin role before using the server-side service-role key to read or update `issue_report`; never put that key in browser code.
+
+Before deploying the updated function, run the SQL in both `supabase/migrations/20261116000100_issue_report_resolution.sql` and `supabase/migrations/20261116000200_issue_report_submitted_at.sql` in the Supabase SQL Editor. They add the stable report ID, resolution timestamp and comment, and submission timestamp to `issue_report`. The submission migration backfills from an existing timestamp column when one is available and sets a default for new reports.
+
+From the repository root, deploy it with:
+
+```sh
+npx supabase functions deploy admin-issue-reports --project-ref xyyhccpivxxgiatptwko
+```
+
+On the **Approvals & Reports** page, open reports appear under **Open reports**, including their submission date and time. Select **Mark as resolved**, optionally add a resolution comment, and confirm. The report moves to **Resolved**, where admins can see the comment and the saved resolution date/time. Refresh the page to confirm the status and resolution details persist.
 
 
 4.

@@ -85,6 +85,13 @@ a { color: inherit; text-decoration: none; }
 .main-nav { display: flex; align-items: center; gap: 6px; }
 .nav-link { padding: 10px 14px; border-radius: 999px; color: var(--muted); font-size: var(--type-sm); font-weight: var(--weight-semibold); transition: 160ms ease; }
 .nav-link:hover, .nav-link.active { color: var(--navy); background: var(--sky); }
+.admin-menu { position: relative; }
+.admin-menu-trigger { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; list-style: none; }
+.admin-menu-trigger::-webkit-details-marker { display: none; }
+.admin-menu-trigger span { font-size: var(--type-xs); transition: transform 160ms ease; }
+.admin-menu[open] .admin-menu-trigger span { transform: rotate(180deg); }
+.admin-menu-dropdown { position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; display: grid; min-width: 220px; gap: 4px; padding: 8px; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: var(--shadow); }
+.admin-menu-dropdown .nav-link { border-radius: 10px; white-space: nowrap; }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
 .nav-greeting { padding: 0 6px; color: var(--muted); font-weight: var(--weight-medium); font-size: var(--type-base); white-space: nowrap; cursor: default; }
 .menu-toggle { display: none; border: 0; background: transparent; color: var(--navy); font-size: var(--type-2xl); }
@@ -180,6 +187,36 @@ p { line-height: var(--leading-body); }
 .metrics-data-placeholder { display: grid; place-items: center; gap: 8px; min-height: 128px; margin: 0 26px 26px; padding: 24px; border: 1px dashed var(--line); border-radius: var(--radius-md); color: var(--muted); text-align: center; background: var(--metrics-tint, #fbfcfe); }
 .metrics-data-placeholder span { color: var(--metrics-accent, #9aa8b8); font-size: var(--type-2xl); }
 .metrics-data-placeholder p { margin: 0; font-size: var(--type-sm); }
+.review-progress-track { height: 6px; margin: 0 22px 18px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.review-progress-bar { width: 0; height: 100%; background: var(--blue); transition: width 180ms ease; }
+.faq-review-card { margin: 0 22px 22px; padding: 24px; border: 1px solid var(--line); box-shadow: none; }
+.faq-review-category { display: grid; gap: 8px; margin: 16px 0; }
+.faq-review-category p { margin: 0; }
+.faq-review-category label { color: var(--navy); font-weight: var(--weight-bold); }
+.faq-review-category select, .faq-review-category input { max-width: 420px; }
+.faq-suggested-answer { padding: 18px; border-radius: var(--radius-sm); background: var(--sky); }
+.faq-suggested-answer strong { display: block; margin-bottom: 8px; color: var(--navy); }
+.faq-suggested-answer p { margin: 0; line-height: 1.65; }
+.faq-review-similar { margin: 14px 0 0; }
+.faq-review-actions, .faq-review-navigation, .faq-review-decisions { display: flex; align-items: center; gap: 10px; }
+.faq-review-actions { justify-content: space-between; flex-wrap: wrap; margin-top: 22px; }
+.issue-report-tabs { display: flex; gap: 10px; padding: 0 22px 18px; }
+.issue-report-tabs .button { min-height: 40px; }
+.issue-report-tabs .button.active { border-color: #a9c4ed; color: var(--navy); background: var(--sky); }
+.issue-report-tabs span { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: rgba(19, 34, 56, 0.08); font-size: var(--type-xs); }
+.issue-report-action { min-height: 36px; padding: 0 12px; white-space: nowrap; }
+.resolution-report-description { max-height: 150px; margin-top: 8px; overflow: auto; white-space: pre-wrap; }
+.resolution-form { display: grid; gap: 12px; margin-top: 22px; }
+.resolution-form label { color: var(--navy); font-size: var(--type-sm); font-weight: var(--weight-bold); }
+.resolution-form textarea { width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 12px; outline: none; resize: vertical; }
+.resolution-form textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.1); }
+.resolution-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+#resolution-form-status { margin: 0; }
+.faq-covered { margin: 0 22px 22px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.faq-covered h3 { margin-bottom: 8px; font-size: 1.1rem; }
+.faq-covered ul { display: grid; gap: 8px; margin: 0; padding-left: 20px; }
+#generate-faq-suggestions { margin: 15px 0; }
+#faq-generation-status { margin-top: 8px; }
 .chat-layout { display: grid; grid-template-columns: minmax(230px, 280px) minmax(0, 1fr); gap: 0; align-items: stretch; min-height: 740px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: white; box-shadow: var(--shadow); overflow: hidden; }
 .side-panel { padding: 28px 24px; border: 0; border-right: 1px solid var(--line); border-radius: 0; background: var(--surface-2); box-shadow: none; }
 .side-panel h3 { margin-bottom: 18px; padding-left: 10px; border-left: 3px solid var(--gold); }
@@ -295,6 +332,8 @@ p { line-height: var(--leading-body); }
 .toast.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .modal-backdrop { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 20px; background: rgba(19, 34, 56, 0.5); }
 .modal-backdrop.show { display: grid; }
+.resolution-backdrop { position: fixed; inset: 0; z-index: 61; display: none; place-items: center; padding: 20px; background: rgba(19, 34, 56, 0.5); }
+.resolution-backdrop.show { display: grid; }
 .modal { width: min(500px, 100%); padding: 28px; border-radius: 24px; background: white; box-shadow: 0 24px 70px rgba(19, 34, 56, 0.3); }
 .modal-header { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
 .modal-header h2 { margin-bottom: 8px; font-size: var(--type-2xl); }
@@ -323,6 +362,10 @@ p { line-height: var(--leading-body); }
   .main-nav { position: absolute; top: 68px; right: 14px; left: 14px; display: none; flex-direction: column; align-items: stretch; padding: 10px; border: 1px solid var(--line); border-radius: 17px; background: white; box-shadow: var(--shadow); }
   .main-nav.open { display: flex; }
   .nav-link { text-align: center; }
+  .admin-menu { width: 100%; text-align: center; }
+  .admin-menu-trigger { justify-content: center; width: 100%; }
+  .admin-menu-dropdown { position: static; min-width: 0; margin-top: 4px; border: 0; background: transparent; box-shadow: none; }
+  .admin-menu-dropdown .nav-link { white-space: normal; }
   .nav-actions { display: none; }
   .page-shell { padding: 36px 0 56px; }
   .hero { min-height: auto; }

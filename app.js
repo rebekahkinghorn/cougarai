@@ -36,11 +36,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   modalBackdrop?.addEventListener("click", (event) => {
     if (event.target === modalBackdrop) closeModal();
   });
-  document.querySelector(".modal-form")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    closeModal();
-    showToast("Thanks—your issue was recorded for the prototype.");
-    event.target.reset();
+
+  document.querySelectorAll("[data-issue-form]").forEach((issueForm) => {
+    issueForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const client = window.cougarAuth?.client;
+      const description = issueForm.querySelector("#issue-description")?.value.trim();
+      if (!client) {
+        showToast("Database connection not available. Please refresh and try again.");
+        return;
+      }
+      if (!description) return;
+
+      const submitButton = issueForm.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
+      try {
+        const { data: sessionData, error: sessionError } = await client.auth.getSession();
+        if (sessionError) throw sessionError;
+        const userId = sessionData?.session?.user?.id || null;
+        const { error } = await client.from("issue_report").insert({
+          description,
+          user_id: userId,
+          status: "Pending",
+        });
+        if (error) throw error;
+
+        issueForm.reset();
+        closeModal();
+        showToast("Your issue report was successfully submitted!");
+      } catch (error) {
+        console.error("Issue submission error:", error);
+        showToast(`Could not submit issue report: ${error.message || "Please try again."}`);
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
+    });
   });
 
   const faqSearch = document.querySelector("#faq-search");

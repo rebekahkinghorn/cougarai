@@ -11,10 +11,22 @@
   const updateAdminLinks = (user) => {
     const isAdmin = user?.app_metadata?.role === "admin";
     document
-      .querySelectorAll('a[data-page="metrics"], #site-footer a[href="metrics.html"]')
+      .querySelectorAll("a[data-admin-link]")
       .forEach((link) => {
         link.hidden = !isAdmin;
       });
+
+    const adminMenu = document.querySelector("[data-admin-menu]");
+    if (adminMenu) {
+      adminMenu.hidden = !isAdmin;
+      adminMenu.querySelectorAll("[data-admin-page]").forEach((link) => {
+        link.classList.toggle("active", link.dataset.adminPage === document.body.dataset.page);
+      });
+      adminMenu.querySelector(".admin-menu-trigger")?.classList.toggle(
+        "active",
+        ["metrics", "approvals"].includes(document.body.dataset.page),
+      );
+    }
   };
 
   // Prefer the username chosen at sign up; fall back to the part of the email before the @.
@@ -76,6 +88,7 @@
     const openButton = document.querySelector("[data-open-signin]");
     const closeButton = document.querySelector("[data-close-signin]");
     let adminSignInRequested = false;
+    let adminSignInRedirect = "metrics.html";
 
     if (!backdrop || !form || !message || !openButton || !closeButton) return;
 
@@ -91,15 +104,21 @@
       showMessage("");
     };
 
-    // Metrics pages reuse this shared sign-in form and require the trusted admin role.
+    // Protected admin pages reuse this shared sign-in form and require the trusted admin role.
     document.addEventListener("cougar:admin-auth-required", (event) => {
       adminSignInRequested = true;
+      if (["metrics.html", "approvals.html"].includes(event.detail?.redirectTo)) {
+        adminSignInRedirect = event.detail.redirectTo;
+      }
+      const adminDestination = adminSignInRedirect === "approvals.html"
+        ? "the Approvals & Reports page"
+        : "the metrics dashboard";
       backdrop.classList.add("show");
       backdrop.setAttribute("aria-hidden", "false");
       showMessage(
         event.detail?.reason === "admin-required"
           ? "This account does not have admin access. Sign in with an admin account."
-          : "Sign in with an admin account to open the metrics dashboard.",
+          : `Sign in with an admin account to open ${adminDestination}.`,
         true,
       );
       document.querySelector("#signin-email")?.focus();
@@ -147,7 +166,7 @@
             showMessage("This account is signed in but has not been granted the admin role.", true);
             return;
           }
-          location.replace("metrics.html");
+          location.replace(adminSignInRedirect);
           return;
         }
 
