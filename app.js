@@ -357,7 +357,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const message = document.createElement("div");
     message.className = `message${type === "user" ? " user" : ""}`;
-    message.textContent = text;
+    if (type === "user") {
+      message.textContent = text;
+    } else {
+      // Render only validated BYU markdown links; keep all other content as text.
+      const linkPattern = /\[([^\]]+)\]\((https:\/\/[^\s)]+)\)/g;
+      let lastIndex = 0;
+      let match;
+      while ((match = linkPattern.exec(text)) !== null) {
+        message.append(document.createTextNode(text.slice(lastIndex, match.index)));
+        try {
+          const url = new URL(match[2]);
+          if (url.hostname === "byu.edu" || url.hostname.endsWith(".byu.edu")) {
+            const link = document.createElement("a");
+            link.href = url.href;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = match[1];
+            message.append(link);
+          } else {
+            message.append(document.createTextNode(match[0]));
+          }
+        } catch {
+          message.append(document.createTextNode(match[0]));
+        }
+        lastIndex = linkPattern.lastIndex;
+      }
+      message.append(document.createTextNode(text.slice(lastIndex)));
+    }
 
     const details = document.createElement("small");
     const time = formatChatTime(timestamp);
