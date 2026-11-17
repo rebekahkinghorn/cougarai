@@ -135,13 +135,144 @@
     </section>
     <!-- Suggest an Event Button -->
       <div class="suggest-event-action">
-        <button class="button primary" data-toast="Event suggestion feature will be shipping soon!">
+        <button
+          class="button primary"
+          type="button"
+          id="open-suggest-event">
           Suggest an Event
         </button>
       </div>
   </main>
 
   <div id="site-footer"></div>
+
+
+<!-- ==========================================
+     SUGGEST AN EVENT MODAL
+     ========================================== -->
+
+<div class="modal-backdrop suggest-event-backdrop"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="suggest-event-title"
+     aria-hidden="true">
+
+  <div class="modal suggest-event-modal">
+
+    <div class="modal-header">
+      <div>
+        <h2 id="suggest-event-title">Suggest an Event</h2>
+        <p>
+          Know something happening around Provo or Orem?
+          Share it with the community!
+        </p>
+      </div>
+
+      <button class="modal-close"
+              type="button"
+              id="close-suggest-event"
+              aria-label="Close event suggestion form">
+        &times;
+      </button>
+    </div>
+
+    <form class="modal-form" id="suggest-event-form">
+
+      <!-- Event Title -->
+      <label for="suggest-title">Event Title *</label>
+      <input
+        type="text"
+        id="suggest-title"
+        name="title"
+        placeholder="Enter the event name"
+        maxlength="120"
+        required
+      >
+
+      <!-- Event Date -->
+      <label for="suggest-date">Event Date *</label>
+      <input
+        type="date"
+        id="suggest-date"
+        name="date"
+        required
+      >
+
+      <!-- Event Category -->
+      <label for="suggest-category">Event Category *</label>
+      <select id="suggest-category"
+              name="category"
+              required>
+        <option value="">Select a category</option>
+        <option value="byu">BYU</option>
+        <option value="community">Community</option>
+        <option value="arts">Arts &amp; Culture</option>
+        <option value="wellness">Wellness</option>
+      </select>
+
+      <!-- Street Address -->
+      <label for="suggest-address">Street Address *</label>
+      <input
+        type="text"
+        id="suggest-address"
+        name="address"
+        placeholder="e.g. 500 W Center St"
+        required
+      >
+
+      <!-- City -->
+      <label for="suggest-city">City *</label>
+      <select id="suggest-city"
+              name="city"
+              required>
+        <option value="">Select a city</option>
+        <option value="Provo">Provo</option>
+        <option value="Orem">Orem</option>
+      </select>
+
+      <!-- ZIP Code -->
+      <label for="suggest-zip">ZIP Code *</label>
+      <input
+        type="text"
+        id="suggest-zip"
+        name="zip"
+        placeholder="e.g. 84601"
+        inputmode="numeric"
+        pattern="[0-9]{5}"
+        maxlength="5"
+        title="Enter a five-digit ZIP code"
+        required
+      >
+
+      <p class="suggest-location-note">
+        Only events located in Provo or Orem, Utah,
+        can be submitted.
+      </p>
+
+      <!-- Submission Message -->
+      <p id="suggest-event-message"
+         role="status"
+         aria-live="polite"></p>
+
+      <!-- Form Buttons -->
+      <div class="suggest-form-actions">
+        <button type="button"
+                class="button secondary"
+                id="cancel-suggest-event">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="button primary">
+          Submit Suggestion
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
 
   <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="issue-title">
     <div class="modal">
@@ -823,6 +954,126 @@ function renderUpcomingEvents() {
   });
 
 </script>
+
+
+<!-- ==========================================
+     SUGGEST AN EVENT MODAL JAVASCRIPT
+     ========================================== -->
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Get the Suggest an Event elements
+    const suggestBackdrop = document.querySelector(
+        ".suggest-event-backdrop"
+    );
+
+    const openSuggestButton = document.getElementById(
+        "open-suggest-event"
+    );
+
+    const closeSuggestButton = document.getElementById(
+        "close-suggest-event"
+    );
+
+    const cancelSuggestButton = document.getElementById(
+        "cancel-suggest-event"
+    );
+
+    const suggestForm = document.getElementById(
+        "suggest-event-form"
+    );
+
+    const suggestMessage = document.getElementById(
+        "suggest-event-message"
+    );
+
+    // Remember where the user was before opening the popup
+    let previousFocus = null;
+
+    // Open the Suggest an Event popup
+    function openSuggestModal() {
+
+        previousFocus = document.activeElement;
+
+        suggestBackdrop.classList.add("show");
+
+        suggestBackdrop.setAttribute(
+            "aria-hidden", "false"
+        );
+
+        document.getElementById("suggest-title").focus();
+    }
+
+    // Close the Suggest an Event popup
+    function closeSuggestModal() {
+
+        suggestBackdrop.classList.remove("show");
+
+        suggestBackdrop.setAttribute(
+            "aria-hidden", "true"
+        );
+
+        suggestMessage.textContent = "";
+
+        // Return keyboard focus to the original button
+        if (previousFocus && previousFocus.isConnected) {
+            previousFocus.focus();
+        }
+    }
+
+    // Open when Suggest an Event is clicked
+    openSuggestButton.addEventListener(
+        "click", openSuggestModal
+    );
+
+    // Close when X is clicked
+    closeSuggestButton.addEventListener(
+        "click", closeSuggestModal
+    );
+
+    // Close when Cancel is clicked
+    cancelSuggestButton.addEventListener(
+        "click", closeSuggestModal
+    );
+
+    // Close when clicking outside the popup
+    suggestBackdrop.addEventListener("click", (event) => {
+
+        if (event.target === suggestBackdrop) {
+            closeSuggestModal();
+        }
+
+    });
+
+    // Close when Escape is pressed
+    document.addEventListener("keydown", (event) => {
+
+        if (
+            event.key === "Escape" &&
+            suggestBackdrop.classList.contains("show")
+        ) {
+            closeSuggestModal();
+        }
+
+    });
+
+    // Temporarily handle form submission
+    suggestForm.addEventListener("submit", (event) => {
+
+        // Prevent the page from refreshing
+        event.preventDefault();
+
+        suggestMessage.style.color = "var(--blue-dark)";
+
+        suggestMessage.textContent =
+            "Form completed! Submission functionality is coming next.";
+
+    });
+
+});
+</script>
+
 
 
   <script src="layout.js"></script>
