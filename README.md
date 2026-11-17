@@ -163,9 +163,9 @@ The chatbot now makes an embedding request and a text-generation request for eac
 - Test the Vertical Slice (Sign Up & Dynamic Greeting)
 
   - Click the "Sign up" button in the top right navigation bar of the app.
-  - Fill out the modal form with a Username, Email, and Password, then submit.
-  - Supabase will process the registration, create the account in your database, and automatically swap the top-right header buttons from "Sign up / Sign in" to a dynamic greeting reading: "Hello, 'username'!" (along with a Sign out button).
-  - Hit refresh in the browser to confirm that it still says "Hello, 'username'!" in the top right corner. If it does then your database and backend is sucessfully working!
+  - Fill out the modal form with your name, school year, expected graduation year, major, email, and password, then submit.
+  - Supabase stores the profile values in Auth user metadata. After sign-in, the header greets the user by first and last name.
+  - Refresh the browser to confirm the greeting is restored from the Supabase session.
 
   Link to the video that shows our vertical slice!
 
@@ -187,9 +187,9 @@ The sign-in form calls Supabase Auth with the user's email and password. The hea
 
 ### 3. Sign up — Implemented in the front end; requires Supabase Auth
 
-The sign-up form creates a Supabase Auth account with a username saved as user metadata. Depending on the project's email-confirmation settings, the user may need to confirm their email before a session is created. When a session is returned, the header changes to a greeting and sign-out control.
+The sign-up forms create a Supabase Auth account with first name, last name, school year, expected graduation year, and major saved in Auth user metadata. Supabase stores these values in `auth.users.raw_user_meta_data` as JSON keys (`first_name`, `last_name`, `school_year`, `graduation_year`, and `major`); they are not separate columns on `auth.users`, so no Auth table schema change is needed. Depending on email-confirmation settings, the user may need to confirm their email before a session is created. When signed in, the header greets them by first and last name, with an email-based fallback for existing accounts without saved names.
 
-**Verifying the vertical slice:** Use a new email address in the “Sign up” form, submit a username, email, and password, and complete any email-confirmation step required by Supabase. Once signed in, confirm the greeting appears. Refresh the page and confirm the greeting remains, showing that the Supabase session is restored. If the project requires email confirmation, account creation alone may not sign the user in.
+**Verifying the vertical slice:** Use a new email address in the “Sign up” form, submit your name, school year, expected graduation year, major, email, and password, and complete any email-confirmation step required by Supabase. Once signed in, confirm the greeting appears. Refresh the page and confirm the greeting remains, showing that the Supabase session is restored. If the project requires email confirmation, account creation alone may not sign the user in.
 
 ### 4. Chatbot history saves — Implemented; requires the deployed chatbot Edge Function and Supabase policies
 
