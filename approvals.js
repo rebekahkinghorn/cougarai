@@ -208,6 +208,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     tbody.appendChild(row);
+    applyResponsiveTableLabels(tbody);
+  };
+
+  // Label table values so the mobile card layout remains easy to scan.
+  const applyResponsiveTableLabels = (tbody) => {
+    const labels = [...tbody.closest("table").querySelectorAll("thead th")]
+      .map((header) => header.textContent.trim());
+    tbody.querySelectorAll("tr").forEach((row) => {
+      [...row.cells].forEach((cell, index) => {
+        if (cell.colSpan === 1 && labels[index]) cell.dataset.label = labels[index];
+      });
+    });
   };
 
   const formatIssueReportDate = (value) => {
@@ -277,6 +289,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         row.appendChild(actionCell);
         return row;
       }));
+      applyResponsiveTableLabels(issueReportsBody);
     }
 
     if (!resolvedReports.length) {
@@ -301,6 +314,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         appendReporter(row, report.user_id);
         return row;
       }));
+      applyResponsiveTableLabels(resolvedIssueReportsBody);
     }
 
     issueReportsStatus.textContent = `${openReports.length} open · ${resolvedReports.length} resolved`;

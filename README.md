@@ -229,9 +229,9 @@ The metrics dashboard gets `chatbot_answer_validity_summary` through the `admin-
 
 The metrics page has a placeholder for session activity (FAQ time on page, popular chatbot questions, and external link clicks). The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it. Session activity collection and aggregation are not implemented.
 
-### How admin login works
 
-- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, and monthly repeat-use summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app.
+### How admin login works
+- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, and monthly repeat-use summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app. 
 - Session activity remains a visual placeholder. The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
 - Both Supabase summary views use `security_invoker=on`. Direct browser queries therefore follow the signed-in user's RLS access to the underlying tables. Project-wide aggregate access is now routed through the admin-only `admin-metrics` Edge Function.
 
@@ -273,8 +273,13 @@ The metrics page has a placeholder for session activity (FAQ time on page, popul
 
 The browser calls `supabase/functions/admin-metrics/index.ts` through `client.functions.invoke("admin-metrics")` and sends the current Supabase login session. The function verifies that session with Supabase Auth, then checks the trusted `app_metadata.role` value. Requests from users without `role: "admin"` receive HTTP 403. The browser-side page check controls navigation and visibility; the Edge Function performs the server-side authorization that protects the data.
 
-After the role check, the function uses its server-side service-role key to query only the summary views, and returns their aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying chat or feedback tables. The Supabase project configuration keeps JWT verification enabled for this function.
+After the role check, the function uses its server-side service-role key to query only the summary views and returns aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying activity, chat, or feedback tables. The Supabase project configuration keeps JWT verification enabled for this admin-only function.
 
+#### Greg Project admin site
+
+The signed-in Cougar AI **Admin → Approvals & Reports** page includes a link to the [Greg Project admin site](https://403project.vercel.app/). The link opens in the same tab. Greg Project is a companion full-stack admin app for the IS 403 project. It can maintain Supabase Authentication users and create, read, update, and delete rows in public.greg_table.
+
+Both apps use the same Supabase project and administrator account. Greg Project has its own site session, so an administrator signs in again when moving from Cougar AI to Greg Project. Greg Project checks admin access on its server and keeps the Supabase secret key server-side.
 #### Deno and editing Edge Functions
 
 Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-compatible Edge Runtime. Deno is the runtime and toolchain behind APIs used here, such as `Deno.serve()` and `Deno.env.get()`. The Deno VS Code extension provides editor support (including type information and diagnostics); `.vscode/settings.json` enables it for `supabase/functions` only, so the regular website files continue using VS Code's normal JavaScript/TypeScript support.
@@ -315,3 +320,9 @@ The Cougar AI Calendar is designed to help students stay connected, discover new
 
 <img width="590" height="162" alt="image" src="https://github.com/user-attachments/assets/ed13cffb-3386-4696-ba91-1ef80282e13d" />
 <img width="685" height="309" alt="image" src="https://github.com/user-attachments/assets/75e3da83-265a-447c-8b55-e61f32a825fb" />
+
+## Greg Project Admin Site
+
+The Cougar AI **Approvals & Reports** page includes a **Greg Project** link for administrators. It opens the separate Greg Project site, where an admin signs in again with the shared Supabase Auth account and can maintain user accounts and project records. The second sign-in is required because the Greg Project site can also be opened directly.
+
+The Greg Project site uses the same Supabase project as Cougar AI. Its admin pages call Supabase Edge Functions for protected operations; sensitive service-role credentials stay on the server side. The deployed site is available at [Greg Project](https://403project.vercel.app/).

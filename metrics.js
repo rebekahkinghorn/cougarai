@@ -47,6 +47,18 @@ const formatPercentPoints = (value) => {
   return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(numericValue)}%`;
 };
 
+const formatEngagedDuration = (value) => {
+  const totalSeconds = Number(value);
+  if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return "—";
+  const roundedSeconds = Math.round(totalSeconds);
+  const minutes = Math.floor(roundedSeconds / 60);
+  const seconds = roundedSeconds % 60;
+  if (!minutes) return `${seconds} sec`;
+  if (minutes < 60) return `${minutes} min ${seconds} sec`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours} hr ${minutes % 60} min`;
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   await window.siteLayoutReady;
 
@@ -58,8 +70,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const feedbackStatus = document.querySelector("#feedback-metrics-status");
   const repeatUsageBody = document.querySelector("#repeat-usage-body");
   const repeatUsageStatus = document.querySelector("#repeat-usage-status");
+  const sessionMetricsBody = document.querySelector("#session-metrics-body");
+  const sessionMetricsStatus = document.querySelector("#session-metrics-status");
   const client = window.cougarAuth?.client;
   const dashboard = document.querySelector("#metrics-dashboard");
+  // Mobile card rows use the column heading as a visible label for every value.
+  const applyResponsiveTableLabels = (tbody) => {
+    const labels = [...tbody.closest("table").querySelectorAll("thead th")]
+      .map((header) => header.textContent.trim());
+    tbody.querySelectorAll("tr").forEach((row) => {
+      [...row.cells].forEach((cell, index) => {
+        if (cell.colSpan === 1 && labels[index]) cell.dataset.label = labels[index];
+      });
+    });
+  };
   let adminMetricsRequest;
 
   const getAdminMetrics = () => {
@@ -102,6 +126,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     tableBody.appendChild(row);
+    applyResponsiveTableLabels(tableBody);
   };
 
   const loadMetrics = async () => {
@@ -135,6 +160,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
         tableBody.appendChild(row);
       });
+      applyResponsiveTableLabels(tableBody);
 
       status.textContent = `Showing ${data.length} ${data.length === 1 ? "summary row" : "summary rows"}.`;
     } catch (error) {
@@ -156,6 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     feedbackBody.appendChild(row);
+    applyResponsiveTableLabels(feedbackBody);
   };
 
   const loadFeedbackMetrics = async () => {
@@ -198,6 +225,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return row;
       });
       feedbackBody.replaceChildren(...rows);
+      applyResponsiveTableLabels(feedbackBody);
       feedbackStatus.textContent = `Showing ${data.length} ${data.length === 1 ? "feedback summary row" : "feedback summary rows"}.`;
     } catch (error) {
       console.error("Feedback metrics load error:", error);
@@ -217,6 +245,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     repeatUsageBody.appendChild(row);
+    applyResponsiveTableLabels(repeatUsageBody);
   };
 
   const loadRepeatUsageMetrics = async () => {
@@ -275,6 +304,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return row;
       });
       repeatUsageBody.replaceChildren(...renderedRows);
+      applyResponsiveTableLabels(repeatUsageBody);
       repeatUsageStatus.textContent = "Repeat users sent chatbot messages on at least two distinct UTC dates. Calendar months run oldest to newest; the current month is month to date, followed by the rolling last 30 days. Green meets the 50% goal; red is below it.";
     } catch (error) {
       console.error("Repeat-use metrics load error:", error);
@@ -283,12 +313,71 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  const setSessionActivityMessage = (message) => {
+    sessionMetricsBody.replaceChildren();
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.className = "metrics-placeholder";
+    cell.colSpan = 6;
+    cell.textContent = message;
+    row.appendChild(cell);
+    sessionMetricsBody.appendChild(row);
+    applyResponsiveTableLabels(sessionMetricsBody);
+  };
+
+  const loadSessionActivityMetrics = async () => {
+    sessionMetricsStatus.textContent = "Loading session activity…";
+    setSessionActivityMessage("Loading session activity…");
+    try {
+      const { data: result, error } = await getAdminMetrics();
+      if (error) throw error;
+      const rows = result?.sessionActivity;
+      if (!rows?.length) {
+        sessionMetricsStatus.textContent = result?.sessionActivityError
+          ? "The session activity summary is unavailable. Apply its SQL migration and deploy the updated admin-metrics function."
+          : "No visits have been recorded yet.";
+        setSessionActivityMessage(result?.sessionActivityError
+          ? "Session activity is unavailable. Check the Supabase function logs."
+          : "There is no session activity for the last 12 weeks yet.");
+        return;
+      }
+
+      const pageLabels = { chatbot: "Chatbot", faq: "FAQ", calendar: "Calendar" };
+      const formatWeek = (value) => value
+        ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`))
+        : "—";
+      const renderedRows = rows.map((record) => {
+        const row = document.createElement("tr");
+        [
+          formatWeek(record.week_start),
+          pageLabels[record.page_key] || record.page_key,
+          formatMetric(record.total_visits),
+          formatMetric(record.unique_visitors),
+          formatEngagedDuration(record.median_engaged_seconds),
+          formatEngagedDuration(record.average_engaged_seconds),
+        ].forEach((value) => {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+        });
+        return row;
+      });
+      sessionMetricsBody.replaceChildren(...renderedRows);
+      applyResponsiveTableLabels(sessionMetricsBody);
+      sessionMetricsStatus.textContent = `Showing ${rows.length} weekly page summaries from the last 12 weeks.`;
+    } catch (error) {
+      console.error("Session activity metrics load error:", error);
+      sessionMetricsStatus.textContent = "Could not load session activity. Check the page_engagement_weekly_summary view and deployed admin-metrics function.";
+      setSessionActivityMessage("Session activity is unavailable. Check the Supabase function logs.");
+    }
+  };
+
   const refreshAllMetrics = async () => {
     refreshAllButton.disabled = true;
     refreshAllButton.textContent = "Refreshing…";
     adminMetricsRequest = null;
     try {
-      await Promise.all([loadMetrics(), loadFeedbackMetrics(), loadRepeatUsageMetrics()]);
+      await Promise.all([loadMetrics(), loadFeedbackMetrics(), loadRepeatUsageMetrics(), loadSessionActivityMetrics()]);
     } finally {
       refreshAllButton.disabled = false;
       refreshAllButton.textContent = "Refresh all metrics";

@@ -64,12 +64,29 @@
 
   <section class="panel metrics-panel metrics-panel-gold metrics-section" aria-labelledby="session-metrics-title">
     <div class="metrics-panel-heading">
-      <h2 id="session-metrics-title">Session activity summary</h2>
-      <p class="muted">Session data</p>
+      <div>
+        <h2 id="session-metrics-title">Session activity summary</h2>
+        <p id="session-metrics-status" class="muted" role="status" aria-live="polite">Loading session activity…</p>
+      </div>
     </div>
-    <div class="metrics-data-placeholder" role="status">
-      <span aria-hidden="true">—</span>
-      <p>Data will appear here when session tracking is connected.</p>
+    <p class="session-metrics-note">Weekly engaged time per visit, by page. Time pauses when the page is hidden or idle for 30 seconds. Visit IDs are anonymous browser identifiers.</p>
+    <div class="metrics-table-wrap">
+      <table class="metrics-table">
+        <caption class="visually-hidden">Weekly active time per page visit</caption>
+        <thead>
+          <tr>
+            <th scope="col">Week starting</th>
+            <th scope="col">Page</th>
+            <th scope="col">Visits</th>
+            <th scope="col">Unique browsers</th>
+            <th scope="col">Median engaged time per visit</th>
+            <th scope="col">Average engaged time per visit</th>
+          </tr>
+        </thead>
+        <tbody id="session-metrics-body">
+          <tr><td class="metrics-placeholder" colspan="6">Loading session activity…</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -143,6 +160,7 @@
   <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
+  <script src="page-activity.js"></script>
   <script src="metrics.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
