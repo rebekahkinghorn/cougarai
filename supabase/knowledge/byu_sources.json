@@ -398,5 +398,15 @@
     "topic": "departments",
     "title": "BYU Ancient Scripture",
     "url": "https://religion.byu.edu/"
+  },
+  {
+    "topic": "dining",
+    "title": "BYU Campus Dining Locations",
+    "url": "https://www.byu.edu/housing/oncampushousing/conf_dining_locations.shtml"
+  },
+  {
+    "topic": "dining",
+    "title": "BYU Housing and Meal Plan Rates",
+    "url": "https://housing.byu.edu/oncampushousing/sng_rates.shtml"
   }
 ]
