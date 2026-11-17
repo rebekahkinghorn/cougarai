@@ -85,6 +85,8 @@ a { color: inherit; text-decoration: none; }
 .main-nav { display: flex; align-items: center; gap: 6px; }
 .nav-link { padding: 10px 14px; border-radius: 999px; color: var(--muted); font-size: var(--type-sm); font-weight: var(--weight-semibold); transition: 160ms ease; }
 .nav-link:hover, .nav-link.active { color: var(--navy); background: var(--sky); }
+.greg-project-link { display: none; }
+body[data-page="approvals"] .greg-project-link { display: inline-flex; }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
 .nav-greeting { padding: 0 6px; color: var(--muted); font-weight: var(--weight-medium); font-size: var(--type-base); white-space: nowrap; cursor: default; }
 .menu-toggle { display: none; border: 0; background: transparent; color: var(--navy); font-size: var(--type-2xl); }
