@@ -23,14 +23,14 @@
     </div>
 
     <div class="chat-layout">
-      <aside class="panel side-panel">
+      <aside class="panel side-panel" id="chat-history-panel" aria-label="Chat history">
         <div class="history-heading">
           <h3>Chat history</h3>
         </div>
-        <br><br>
         <p class="history-status" id="chat-history-status" role="status" aria-live="polite">Loading your chats…</p>
         <div class="chat-history" id="chat-history" aria-label="Saved conversations"></div>
       </aside>
+      <button class="history-backdrop" type="button" aria-label="Close chat history"></button>
 
       <section class="panel chat-panel" aria-label="BYU Guide chat">
         <div class="chat-header">
@@ -41,7 +41,10 @@
               <small>Answers about getting ready for campus</small>
             </div>
           </div>
-          <button class="button primary small" type="button" data-new-chat>New chat</button>
+          <div class="chat-header-actions">
+            <button class="button secondary small" type="button" data-toggle-history aria-controls="chat-history-panel" aria-expanded="true">Hide history</button>
+            <button class="button primary small" type="button" data-new-chat>New chat</button>
+          </div>
         </div>
 
         <div class="chat-messages" id="chat-messages" aria-live="polite" aria-label="Conversation messages"></div>
@@ -80,7 +83,7 @@
         </div>
         <button class="modal-close" data-close-modal aria-label="Close">×</button>
       </div>
-      <form class="modal-form">
+      <form class="modal-form" data-issue-form>
         <label for="issue-email">Email (optional)</label>
         <input id="issue-email" type="email" placeholder="you@example.com">
         <label for="issue-description">What happened?</label>
