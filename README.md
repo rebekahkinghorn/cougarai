@@ -17,9 +17,9 @@ We also realize that BYU freshman struggle not only with figuring out the academ
 
 ## Tech Stack
 
-Front end: HTML, CSS, Javascript 
-Database, Backend & Autentication: Supabase 
-AI app builder: CODEX 
+Front end: HTML, CSS, Javascript
+Database, Backend & Autentication: Supabase
+AI app builder: CODEX
 
 ## Recent Work (November 9–16, 2026)
 
@@ -51,9 +51,6 @@ npx supabase functions deploy admin-issue-reports --project-ref xyyhccpivxxgiatp
 
 On the **Approvals & Reports** page, open reports appear under **Open reports**, including their submission date and time. Select **Mark as resolved**, optionally add a resolution comment, and confirm. The report moves to **Resolved**, where admins can see the comment and the saved resolution date/time. Refresh the page to confirm the status and resolution details persist.
 
-
-4.
-
 ### November 10 — Shared layout and metrics dashboard
 
 - Replaced repeated page headers and footers on the main pages with `partials/header.html` and `partials/footer.html`, loaded by `layout.js`. The shared navigation includes a link to `metrics.html`.
@@ -70,27 +67,82 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
 #### Set up and deploy the BYU knowledge base
 
 1. Apply `supabase/migrations/20261116000300_byu_knowledge_base.sql` in the Supabase SQL Editor. This creates the vector table and a service-role-only similarity-search function. The browser cannot read the knowledge table directly.
-2. Set the existing chatbot Gemini secret in Supabase if it is not already configured. The deployed function reads `gemini_api_key`; never commit the value or place a service-role key in browser code.
-3. Deploy the updated function from the repository root:
+2. Confirm the chatbot's Gemini secret is set in **Supabase Dashboard → Edge Functions → Secrets**. The secret name must be exactly `gemini_api_key`; the value is the actual Gemini API key. The dashboard will not reveal a saved secret value ([Supabase secrets guide](https://supabase.com/docs/guides/functions/secrets)). If the original key is unavailable, create a key in the team's [Google AI Studio project](https://aistudio.google.com/app/apikey), then set that value as `gemini_api_key`. Supabase makes changed function secrets available without redeploying.
+3. From the repository root, sign the Supabase CLI in once:
+
+   ```sh
+   npx supabase login
+   ```
+
+   Use a Supabase **personal access token** from [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) if prompted. This is only for the CLI to manage the project; it is different from the user's login token, the project API key, and the service-role key. The CLI stores it in your computer's credential storage. [Supabase CLI login guide](https://supabase.com/docs/reference/cli/supabase-login)
+
+4. Deploy the updated function from the repository root:
 
    ```sh
    npx supabase functions deploy chatbot --project-ref xyyhccpivxxgiatptwko
    ```
 
-4. In a trusted local shell, set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `GEMINI_API_KEY` for the ingestion script. Use the Supabase project URL and service-role key from Project Settings; do not save the service-role key in the repository, a frontend file, or a checked-in `.env` file.
-5. Preview the source fetch and extraction without writing data:
+   If the CLI asks **“Deploy 1 Function on project …?”**, check that the project reference is `xyyhccpivxxgiatptwko`, then confirm. This deploys the function code; it does not apply the SQL migration or load the BYU pages.
+
+5. In a trusted local terminal at the repository root, set the environment variables for the ingestion script. It reads them from the current shell process; it does not read a `.env` file. They last only for that terminal session. Use the following in macOS zsh, entering each command separately:
+
+   - Set the project URL. It is also shown in `auth.js`:
+
+     ```sh
+     export SUPABASE_URL='https://xyyhccpivxxgiatptwko.supabase.co'
+     ```
+
+   - Find the legacy `service_role` key in **Supabase Dashboard → Project Settings → API Keys → Legacy API Keys**. This version of the ingestion script expects that legacy key (a long JWT, often beginning with `eyJ`), not the `sb_publishable_...` key, an `sb_secret_...` key, the CLI personal access token, or a user's login token. It bypasses row-level security, so never put it in browser code, source control, or a checked-in file.
+
+     Type this command and press Enter. When the prompt appears, paste the key and press Enter; the key will not display. Then run the `export` command at the next shell prompt:
+
+     ```sh
+     read -s 'SUPABASE_SERVICE_ROLE_KEY?Paste the legacy service_role key: '
+     ```
+
+     ```sh
+     export SUPABASE_SERVICE_ROLE_KEY
+     ```
+
+   - Get the actual Gemini API key from the team's Google AI Studio project ([key guide](https://ai.google.dev/gemini-api/docs/api-key)). It may be the same key used by the deployed chatbot or another valid key for the team's project. If you use a new key and want the chatbot to use it too, update the Supabase secret `gemini_api_key` as described above. The secret's name alone is not the key value.
+
+     Enter the prompt command by itself, paste the actual Gemini key when prompted, and press Enter. Then export it at the next shell prompt:
+
+     ```sh
+     read -s 'GEMINI_API_KEY?Paste the actual Gemini API key: '
+     ```
+
+     ```sh
+     export GEMINI_API_KEY
+     ```
+
+   Run each `read` command separately so it waits for the key you intend to enter. Confirm variables are set without printing their values:
+
+   ```sh
+   [[ -n "$SUPABASE_URL" ]] && echo "SUPABASE_URL set" || echo "SUPABASE_URL missing"
+   [[ -n "$SUPABASE_SERVICE_ROLE_KEY" ]] && echo "SUPABASE_SERVICE_ROLE_KEY set" || echo "SUPABASE_SERVICE_ROLE_KEY missing"
+   [[ -n "$GEMINI_API_KEY" ]] && echo "GEMINI_API_KEY set" || echo "GEMINI_API_KEY missing"
+   ```
+
+   All three must say **set**. If the terminal is closed, set them again in the new terminal. Do not paste the keys into chat or print them to check them.
+
+6. Preview the source fetch and extraction without writing to Supabase or calling Gemini embeddings:
 
    ```sh
    node scripts/ingest_byu_sources.mjs --dry-run
    ```
 
-6. After reviewing the listed sources, run the script without `--dry-run` to fetch pages, create embeddings, and populate Supabase. Re-run it when the approved pages change. Unchanged chunks are not re-embedded.
+7. After reviewing the listed sources, run the ingestion from the same terminal, without `--dry-run` or a trailing backslash:
+
+   ```sh
+   node scripts/ingest_byu_sources.mjs
+   ```
+
+   It fetches allowed pages, creates embeddings for new or changed chunks, and writes them to Supabase. A successful run ends with `Ingestion complete with 0 failed source(s).` Warnings may report pages disallowed by a site's `robots.txt`; those are skipped. If the script says the environment variables are missing, set/export all three in that same terminal and retry. Re-run ingestion when approved pages change; unchanged chunks are not re-embedded.
+
+8. Confirm rows were added to `public.byu_knowledge_chunks` in the Supabase Table Editor. Then ask the chatbot a question about one of the indexed topics and check that a supported answer includes BYU source links.
 
 The chatbot now makes an embedding request and a text-generation request for each question, so Gemini usage can increase. Supabase stores the chunk text and 768-dimensional vectors. The source list is intentionally curated and the extractor handles public HTML pages; it does not crawl an entire BYU domain, process authenticated pages, or extract PDF contents.
-
-
-
-
 
 ## Project Setup
 
@@ -121,7 +173,6 @@ The chatbot now makes an embedding request and a text-generation request for eac
   - Fill out the modal form with a Username, Email, and Password, then submit.
   - Supabase will process the registration, create the account in your database, and automatically swap the top-right header buttons from "Sign up / Sign in" to a dynamic greeting reading: "Hello, 'username'!" (along with a Sign out button).
   - Hit refresh in the browser to confirm that it still says "Hello, 'username'!" in the top right corner. If it does then your database and backend is sucessfully working!
-
 
   Link to the video that shows our vertical slice!
 
@@ -185,17 +236,17 @@ The metrics dashboard gets `chatbot_answer_validity_summary` through the `admin-
 
 The metrics page has a placeholder for session activity (FAQ time on page, popular chatbot questions, and external link clicks). The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it. Session activity collection and aggregation are not implemented.
 
-
 ### How admin login works
-- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, and monthly repeat-use summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app. 
+
+- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, and monthly repeat-use summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app.
 - Session activity remains a visual placeholder. The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
 - Both Supabase summary views use `security_invoker=on`. Direct browser queries therefore follow the signed-in user's RLS access to the underlying tables. Project-wide aggregate access is now routed through the admin-only `admin-metrics` Edge Function.
-
 
 #### Add another admin account
 
 1. In the Supabase Dashboard, open **Authentication → Users** and find the account by email. If the person does not have an account yet, select **Add user → Send invitation** and have them finish setting it up.
 2. Open **SQL Editor → New query**. Replace `admin@example.com` in this read-only query with the account's email, run it, and confirm it returns the intended user:
+
    ```sql
    select
      id,
@@ -205,8 +256,8 @@ The metrics page has a placeholder for session activity (FAQ time on page, popul
    from auth.users
    where lower(email) = lower('admin@example.com');
    ```
-
 3. To grant the CougarAI admin role, replace the example email in this query and run it:
+
    ```sql
    update auth.users
    set raw_app_meta_data =
@@ -220,10 +271,10 @@ The metrics page has a placeholder for session activity (FAQ time on page, popul
    ```
 
    Confirm one row is returned with `cougarai_role` equal to `admin` and `supabase_role` still equal to `authenticated`. Do not change the top-level `auth.users.role`; that is Supabase's database role, not CougarAI's admin role.
-    
-    Have the admin sign out and sign back in, then open **Metrics**. The Metrics links appear only for accounts whose `app_metadata.role` is `admin`; the dashboard also checks the role when opened directly.
 
-    This is a one-off change in the Supabase SQL Editor. For production user provisioning, use Supabase's Auth Admin API from a trusted server; never put a Supabase secret/service-role key in browser code. [Supabase `updateUserById` guidance](https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid)
+   Have the admin sign out and sign back in, then open **Metrics**. The Metrics links appear only for accounts whose `app_metadata.role` is `admin`; the dashboard also checks the role when opened directly.
+
+   This is a one-off change in the Supabase SQL Editor. For production user provisioning, use Supabase's Auth Admin API from a trusted server; never put a Supabase secret/service-role key in browser code. [Supabase `updateUserById` guidance](https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid)
 
 #### How the admin metrics Edge Function works
 
@@ -267,9 +318,7 @@ The Cougar AI Calendar is designed to help students stay connected, discover new
 
 [Vertical slice demo video](https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing)
 
-
 ## Data Flow Diagrams
+
 <img width="590" height="162" alt="image" src="https://github.com/user-attachments/assets/ed13cffb-3386-4696-ba91-1ef80282e13d" />
 <img width="685" height="309" alt="image" src="https://github.com/user-attachments/assets/75e3da83-265a-447c-8b55-e61f32a825fb" />
-
-
