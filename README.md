@@ -121,7 +121,7 @@ The sign-up form creates a Supabase Auth account with a username saved as user m
 
 ### 4. Chatbot history saves — Implemented; requires the deployed chatbot Edge Function and Supabase policies
 
-The browser sends the signed-in user's access token and conversation ID to the Supabase `chatbot` Edge Function. The function can associate a conversation with the authenticated user. The browser keeps the active conversation ID in per-user session storage, and prior saved conversations can be reloaded from Supabase.
+The browser sends the signed-in user's access token and conversation ID to the Supabase `chatbot` Edge Function. The function verifies conversation ownership, loads up to the 20 most recent saved messages in chronological order, and sends those turns with the new prompt to Gemini so follow-up questions can use the current chat's context. New conversations begin with only the first prompt. The browser keeps the active conversation ID in per-user session storage, and prior saved conversations can be reloaded from Supabase.
 
 **Verifying the vertical slice:** Sign in, send a question, and confirm a conversation appears in the sidebar and in `chat_conversations` with the signed-in user's ID. Navigate away and return, select the conversation, and confirm its saved messages load. The browser also stores the active conversation ID in session storage for the current tab.
 
