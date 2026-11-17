@@ -153,14 +153,25 @@ The metrics dashboard gets `chat_feedback_summary` through the `admin-metrics` E
 
 The metrics dashboard gets `chatbot_answer_validity_summary` through the `admin-metrics` Edge Function. The function checks the trusted admin role and uses a server-side key to read the aggregate view, returning valid/no-answer counts and percentages. The function must be deployed to the linked Supabase project.
 
-### 11. Engagement and returning users — Partially implemented
+### 11. Engagement and returning users — Partially implemented; requires Supabase setup
 
-The metrics page has a placeholder for session activity (FAQ time on page, popular chatbot questions, and external link clicks). The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it. Session activity collection and aggregation are not implemented.
+The session activity panel reports engaged time on Chatbot, FAQ, and Calendar by week. It includes the number of visits, unique anonymous browser IDs, median engaged seconds per visit, and average engaged seconds per visit for the last 12 weeks. Time accrues while the tab is visible and pauses after 30 seconds without activity. A visit is recorded as soon as the page opens, including visits with zero engaged seconds. Tracking stores random browser and visit IDs, not account IDs or page content. It is a supporting engagement signal, not a direct satisfaction score.
+
+The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it.
+
+To enable session activity, run `supabase/migrations/20261116000300_page_session_activity.sql` in the Supabase SQL Editor. It creates the restricted activity table and the `page_engagement_weekly_summary` view. Deploy both Edge Functions from the repository root:
+
+```sh
+npx supabase functions deploy track-page-activity --project-ref xyyhccpivxxgiatptwko
+npx supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko
+```
+
+The `track-page-activity` function accepts only the three supported page names and capped whole-second durations. It is configured for public anonymous tracking; the table and aggregate view are not readable by browser roles. The updated `admin-metrics` function separately verifies the admin role before returning weekly aggregates.
 
 
 ### How admin login works
-- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, and monthly repeat-use summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app. 
-- Session activity remains a visual placeholder. The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
+- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, monthly repeat-use, and weekly session-activity summaries. Deploy it with `npx supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting current metrics in the hosted app.
+- The `page_engagement_weekly_summary` view supplies weekly visit and engaged-time summaries for the last 12 weeks. The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
 - Both Supabase summary views use `security_invoker=on`. Direct browser queries therefore follow the signed-in user's RLS access to the underlying tables. Project-wide aggregate access is now routed through the admin-only `admin-metrics` Edge Function.
 
 
@@ -201,7 +212,7 @@ The metrics page has a placeholder for session activity (FAQ time on page, popul
 
 The browser calls `supabase/functions/admin-metrics/index.ts` through `client.functions.invoke("admin-metrics")` and sends the current Supabase login session. The function verifies that session with Supabase Auth, then checks the trusted `app_metadata.role` value. Requests from users without `role: "admin"` receive HTTP 403. The browser-side page check controls navigation and visibility; the Edge Function performs the server-side authorization that protects the data.
 
-After the role check, the function uses its server-side service-role key to query only the summary views, and returns their aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying chat or feedback tables. The Supabase project configuration keeps JWT verification enabled for this function.
+After the role check, the function uses its server-side service-role key to query only the summary views and returns aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying activity, chat, or feedback tables. The Supabase project configuration keeps JWT verification enabled for this admin-only function.
 
 #### Deno and editing Edge Functions
 

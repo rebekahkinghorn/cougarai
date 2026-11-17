@@ -187,6 +187,7 @@ p { line-height: var(--leading-body); }
 .metrics-data-placeholder { display: grid; place-items: center; gap: 8px; min-height: 128px; margin: 0 26px 26px; padding: 24px; border: 1px dashed var(--line); border-radius: var(--radius-md); color: var(--muted); text-align: center; background: var(--metrics-tint, #fbfcfe); }
 .metrics-data-placeholder span { color: var(--metrics-accent, #9aa8b8); font-size: var(--type-2xl); }
 .metrics-data-placeholder p { margin: 0; font-size: var(--type-sm); }
+.session-metrics-note { margin: 0 22px 16px; color: var(--muted); font-size: var(--type-sm); }
 .review-progress-track { height: 6px; margin: 0 22px 18px; border-radius: 99px; background: var(--line); overflow: hidden; }
 .review-progress-bar { width: 0; height: 100%; background: var(--blue); transition: width 180ms ease; }
 .faq-review-card { margin: 0 22px 22px; padding: 24px; border: 1px solid var(--line); box-shadow: none; }
