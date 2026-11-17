@@ -178,6 +178,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   const chatInput = document.querySelector("#chat-input");
   const chatHistory = document.querySelector("#chat-history");
   const chatHistoryStatus = document.querySelector("#chat-history-status");
+  const chatLayout = document.querySelector(".chat-layout");
+  const historyToggle = document.querySelector("[data-toggle-history]");
+  const mobileChatLayout = window.matchMedia("(max-width: 700px)");
+  const setHistoryOpen = (open) => {
+    if (!chatLayout || !historyToggle) return;
+    if (mobileChatLayout.matches) {
+      chatLayout.classList.toggle("history-open", open);
+    } else {
+      chatLayout.classList.toggle("history-collapsed", !open);
+    }
+    historyToggle.setAttribute("aria-expanded", String(open));
+    historyToggle.textContent = open ? "Hide history" : "Show history";
+  };
+  setHistoryOpen(!mobileChatLayout.matches);
+  historyToggle?.addEventListener("click", () => {
+    setHistoryOpen(historyToggle.getAttribute("aria-expanded") !== "true");
+  });
+  document.querySelector(".history-backdrop")?.addEventListener("click", () => {
+    setHistoryOpen(false);
+  });
+  mobileChatLayout.addEventListener("change", (event) => {
+    setHistoryOpen(!event.matches);
+  });
   let historyStorageKey = null;
   let historyLoadVersion = 0;
   let chatRequestVersion = 0;
@@ -334,7 +357,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const message = document.createElement("div");
     message.className = `message${type === "user" ? " user" : ""}`;
-    message.textContent = text;
+    if (type === "user") {
+      message.textContent = text;
+    } else {
+      // Render only validated BYU markdown links; keep all other content as text.
+      const linkPattern = /\[([^\]]+)\]\((https:\/\/[^\s)]+)\)/g;
+      let lastIndex = 0;
+      let match;
+      while ((match = linkPattern.exec(text)) !== null) {
+        message.append(document.createTextNode(text.slice(lastIndex, match.index)));
+        try {
+          const url = new URL(match[2]);
+          if (url.hostname === "byu.edu" || url.hostname.endsWith(".byu.edu")) {
+            const link = document.createElement("a");
+            link.href = url.href;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = match[1];
+            message.append(link);
+          } else {
+            message.append(document.createTextNode(match[0]));
+          }
+        } catch {
+          message.append(document.createTextNode(match[0]));
+        }
+        lastIndex = linkPattern.lastIndex;
+      }
+      message.append(document.createTextNode(text.slice(lastIndex)));
+    }
 
     const details = document.createElement("small");
     const time = formatChatTime(timestamp);
@@ -422,6 +472,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const openConversation = async (conversation) => {
+    if (mobileChatLayout.matches) setHistoryOpen(false);
     const client = window.cougarAuth?.client;
     if (!client || !historyStorageKey) return;
 
@@ -617,6 +668,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const startNewChat = async () => {
+    if (mobileChatLayout.matches) setHistoryOpen(false);
     chatRequestVersion += 1;
     historyLoadVersion += 1;
     activeConversationId = null;
@@ -691,7 +743,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  if (chatMessages && chatHistory) initializeChatHistory();
+  if (chatMessages && chatHistory) {
+    // Login happens in a modal without reloading the page. Refresh the saved
+    // history as soon as Supabase reports the new authenticated session.
+    window.cougarAuth?.client?.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        void initializeChatHistory();
+      }
+    });
+    initializeChatHistory();
+  }
 
   const categoryButtons = document.querySelectorAll(".category-filter");
   const eventCards = document.querySelectorAll(".event-card");
