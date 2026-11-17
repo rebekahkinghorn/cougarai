@@ -203,6 +203,11 @@ The browser calls `supabase/functions/admin-metrics/index.ts` through `client.fu
 
 After the role check, the function uses its server-side service-role key to query only the summary views, and returns their aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying chat or feedback tables. The Supabase project configuration keeps JWT verification enabled for this function.
 
+#### Greg Project admin site
+
+The signed-in Cougar AI **Admin → Approvals & Reports** page includes a link to the [Greg Project admin site](https://403project.vercel.app/). The link opens in the same tab. Greg Project is a companion full-stack admin app for the IS 403 project. It can maintain Supabase Authentication users and create, read, update, and delete rows in public.greg_table.
+
+Both apps use the same Supabase project and administrator account. Greg Project has its own site session, so an administrator signs in again when moving from Cougar AI to Greg Project. Greg Project checks admin access on its server and keeps the Supabase secret key server-side.
 #### Deno and editing Edge Functions
 
 Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-compatible Edge Runtime. Deno is the runtime and toolchain behind APIs used here, such as `Deno.serve()` and `Deno.env.get()`. The Deno VS Code extension provides editor support (including type information and diagnostics); `.vscode/settings.json` enables it for `supabase/functions` only, so the regular website files continue using VS Code's normal JavaScript/TypeScript support.
