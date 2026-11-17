@@ -251,6 +251,7 @@ p { line-height: var(--leading-body); }
 .chat-messages { display: flex; flex: 1; flex-direction: column; min-height: 0; gap: 15px; padding: 24px; overflow-y: auto; background: #fbfcfe; }
 .message { max-width: 78%; padding: 14px 16px; border-radius: 18px 18px 18px 5px; color: #526278; line-height: var(--leading-snug); background: var(--sky); }
 .message.user { align-self: flex-end; border-radius: 18px 18px 5px 18px; color: white; background: var(--navy); }
+.message a { color: var(--blue-dark); text-decoration: underline; text-underline-offset: 2px; }
 .typing-indicator { display: flex; align-items: center; gap: 5px; width: fit-content; min-width: 64px; padding: 13px 15px; }
 .typing-indicator span { display: inline-block; font-size: 13px; line-height: 1; animation: paw-pulse 1.2s infinite ease-in-out; }
 .typing-indicator span:nth-child(2) { animation-delay: 0.18s; }

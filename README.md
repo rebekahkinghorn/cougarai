@@ -9,7 +9,7 @@ information vague and not all in the same place where everybody can access what 
 the most efficient way possible? This is a problem for not only freshman coming straight out of
 high school, but also for current missionaries trying to prepare with limited time and resources.
 
-This is the probelem that our app solves. CougarAI has a built in chatbot that is trained on everything a freshman needs to prepare for and get through their first year at BYU. It also includes a FAQ page for freshman who don't even know where to start in their preparation, which is generated based on questions other users are asking the chatbot.
+This is the problem that our app solves. CougarAI has a built-in chatbot that answers questions using a curated set of public BYU information and the current conversation. Its source collection can grow as the team reviews and adds more BYU pages. It also includes a FAQ page for freshmen who don't know where to start in their preparation, which is generated based on questions other users are asking the chatbot.
 
 The FAQ page lets students browse common questions by topic, search by keyword, expand an answer, or continue to the chatbot if they need help with a question that is not covered. FAQ drafts are created from valid chatbot question-and-answer pairs from the previous 30 days: the existing `dynamic-function` Edge Function uses Gemini to group recurring questions, compare them with published FAQs and prior suggestions, and save new drafts to `faq_suggestions`. An administrator can run this process from the **Approvals & Reports** page, review each pending draft, choose an existing category or propose a new one, and approve or reject it. Approval publishes the reviewed question and answer through the `approve_faq_suggestion` database function; questions already covered by published FAQs are tracked separately instead of being added as duplicate drafts.
 
@@ -21,7 +21,7 @@ Front end: HTML, CSS, Javascript
 Database, Backend & Autentication: Supabase 
 AI app builder: CODEX 
 
-## Recent Work (November 9–10, 2026)
+## Recent Work (November 9–16, 2026)
 
 ### November 9 — Chat persistence and history
 
@@ -59,6 +59,34 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
 - Replaced repeated page headers and footers on the main pages with `partials/header.html` and `partials/footer.html`, loaded by `layout.js`. The shared navigation includes a link to `metrics.html`.
 - Fixed a duplicated block and unmatched `catch` in `app.js` that caused a JavaScript syntax error and prevented that script from running.
 - Added a styled metrics dashboard with live tables for `chatbot_answer_validity_summary` and `chat_feedback_summary`, plus one **Refresh all metrics** button.
+
+### November 16 — BYU information retrieval for the chatbot
+
+- Added a retrieval-augmented generation (RAG) knowledge base. The `chatbot` Edge Function embeds the user's question with Gemini, searches relevant BYU passages in Supabase using pgvector, and gives those passages to Gemini alongside the current conversation history.
+- Answers that cite retrieved material include links to the BYU pages. If the retrieved passages do not support an answer, the chatbot says it could not find enough information instead of presenting an unsupported answer as verified.
+- The initial curated sources are listed in `supabase/knowledge/byu_sources.json` and cover admissions, housing, financial aid, tuition, registration, deadlines, and student resources. This is a starter collection, not a crawl of every BYU website. Add reviewed public BYU URLs to that file as the scope grows.
+- `scripts/ingest_byu_sources.mjs` fetches those HTTPS pages, checks their robots.txt rules, extracts and chunks page text, creates Gemini embeddings, and upserts the results into Supabase. It skips unchanged chunks on later runs. The script accepts only `byu.edu` and its subdomains, reports pages disallowed by robots.txt, and exits with an error if a fetch or ingestion fails.
+
+#### Set up and deploy the BYU knowledge base
+
+1. Apply `supabase/migrations/20261116000300_byu_knowledge_base.sql` in the Supabase SQL Editor. This creates the vector table and a service-role-only similarity-search function. The browser cannot read the knowledge table directly.
+2. Set the existing chatbot Gemini secret in Supabase if it is not already configured. The deployed function reads `gemini_api_key`; never commit the value or place a service-role key in browser code.
+3. Deploy the updated function from the repository root:
+
+   ```sh
+   npx supabase functions deploy chatbot --project-ref xyyhccpivxxgiatptwko
+   ```
+
+4. In a trusted local shell, set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `GEMINI_API_KEY` for the ingestion script. Use the Supabase project URL and service-role key from Project Settings; do not save the service-role key in the repository, a frontend file, or a checked-in `.env` file.
+5. Preview the source fetch and extraction without writing data:
+
+   ```sh
+   node scripts/ingest_byu_sources.mjs --dry-run
+   ```
+
+6. After reviewing the listed sources, run the script without `--dry-run` to fetch pages, create embeddings, and populate Supabase. Re-run it when the approved pages change. Unchanged chunks are not re-embedded.
+
+The chatbot now makes an embedding request and a text-generation request for each question, so Gemini usage can increase. Supabase stores the chunk text and 768-dimensional vectors. The source list is intentionally curated and the extractor handles public HTML pages; it does not crawl an entire BYU domain, process authenticated pages, or extract PDF contents.
 
 
 
