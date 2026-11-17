@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BYU Guide | Approvals &amp; Reports</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="approvals">
+  <div id="site-header"></div>
+
+  <main class="container page-shell" id="approvals-dashboard" hidden>
+    <div class="page-intro">
+      <div>
+        <span class="eyebrow">Admin workspace</span>
+        <h1>Approvals &amp; Reports</h1>
+        <p class="lede">Review FAQ drafts, reported issues, and suggested events.</p>
+      </div>
+    </div>
+
+    <section class="panel metrics-panel metrics-panel-gold metrics-section" aria-labelledby="faq-pending-title">
+      <div class="metrics-panel-heading">
+        <div>
+          <h2 id="faq-pending-title">FAQ suggestion review</h2>
+          <p id="faq-pending-status" class="muted" role="status" aria-live="polite">Loading suggestions…</p>
+          <button class="button primary" id="generate-faq-suggestions" type="button">Generate FAQ drafts</button>
+          <p id="faq-generation-status" class="muted" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="review-progress-track" aria-hidden="true">
+        <div id="faq-review-progress" class="review-progress-bar"></div>
+      </div>
+
+      <article id="faq-review-card" class="panel faq-review-card" aria-live="polite">
+        <p id="faq-review-count" class="eyebrow">Suggestion</p>
+        <h3 id="faq-review-question">Loading suggestion…</h3>
+
+        <div class="faq-review-category">
+          <p id="faq-category-recommendation" class="muted">Gemini’s category suggestion will appear here.</p>
+          <label for="faq-category-select">Category for this FAQ</label>
+          <select id="faq-category-select" class="search-input">
+            <option value="">Choose a category…</option>
+            <option value="__new__">＋ New category…</option>
+          </select>
+          <input id="faq-new-category-name" type="text" maxlength="80" placeholder="Enter a new category name" aria-label="New category name" hidden>
+        </div>
+
+        <div class="faq-suggested-answer">
+          <strong>Suggested answer</strong>
+          <p id="faq-review-answer"></p>
+        </div>
+
+        <p id="faq-review-similar" class="muted faq-review-similar"></p>
+
+        <div class="faq-review-actions">
+          <div class="faq-review-navigation">
+            <button class="button secondary" id="faq-review-prev" type="button">← Previous</button>
+            <button class="button secondary" id="faq-review-next" type="button">Next →</button>
+          </div>
+          <div class="faq-review-decisions">
+            <button class="button secondary" id="faq-review-reject" type="button">Reject</button>
+            <button class="button primary" id="faq-review-approve" type="button">Approve</button>
+          </div>
+        </div>
+      </article>
+
+      <section class="faq-covered" aria-labelledby="faq-covered-heading">
+        <h3 id="faq-covered-heading">Already covered <span id="faq-covered-count"></span></h3>
+        <p id="faq-covered-status" class="muted" role="status" aria-live="polite" hidden></p>
+        <ul id="faq-covered-list"></ul>
+      </section>
+    </section>
+
+    <section class="panel metrics-panel metrics-panel-coral metrics-section" aria-labelledby="issue-reports-title">
+      <div class="metrics-panel-heading metrics-panel-toolbar">
+        <div>
+          <h2 id="issue-reports-title">Reported issues</h2>
+          <p id="issue-reports-status" class="muted" role="status" aria-live="polite">Loading issue reports…</p>
+        </div>
+        <button class="button secondary" id="refresh-issue-reports" type="button">Refresh reports</button>
+      </div>
+      <div class="issue-report-tabs" role="tablist" aria-label="Issue report status">
+        <button class="button secondary active" id="open-issues-tab" type="button" role="tab" aria-selected="true" aria-controls="open-issues-panel">Open reports <span id="open-issues-count">0</span></button>
+        <button class="button secondary" id="resolved-issues-tab" type="button" role="tab" aria-selected="false" aria-controls="resolved-issues-panel">Resolved <span id="resolved-issues-count">0</span></button>
+      </div>
+      <section id="open-issues-panel" role="tabpanel" aria-labelledby="open-issues-tab">
+        <div class="metrics-table-wrap">
+          <table class="metrics-table">
+            <caption class="visually-hidden">Open user-submitted issue reports</caption>
+            <thead><tr><th scope="col">Issue</th><th scope="col">Date submitted</th><th scope="col">Status</th><th scope="col">Submitter user ID</th><th scope="col">Action</th></tr></thead>
+            <tbody id="issue-reports-body"><tr><td class="metrics-placeholder" colspan="5">Loading issue reports…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+      <section id="resolved-issues-panel" role="tabpanel" aria-labelledby="resolved-issues-tab" hidden>
+        <div class="metrics-table-wrap">
+          <table class="metrics-table">
+            <caption class="visually-hidden">Resolved user-submitted issue reports</caption>
+            <thead><tr><th scope="col">Issue</th><th scope="col">Resolution comment</th><th scope="col">Resolved on</th><th scope="col">Submitter user ID</th></tr></thead>
+            <tbody id="resolved-issue-reports-body"><tr><td class="metrics-placeholder" colspan="4">Loading issue reports…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel metrics-panel metrics-panel-blue metrics-section" aria-labelledby="event-approval-title">
+      <div class="metrics-panel-heading">
+        <div>
+          <h2 id="event-approval-title">Suggested event submissions</h2>
+          <p class="muted">Event submissions will appear here after the suggestion form is connected to the database.</p>
+        </div>
+      </div>
+      <div class="metrics-data-placeholder" role="status">
+        <span aria-hidden="true">—</span>
+        <p>Event approvals are not connected yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <div class="resolution-backdrop" id="resolve-report-modal" role="dialog" aria-modal="true" aria-labelledby="resolve-report-title" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="resolve-report-title">Resolve issue report</h2>
+          <p id="resolve-report-description" class="resolution-report-description"></p>
+        </div>
+        <button class="modal-close" type="button" data-close-resolution aria-label="Close">×</button>
+      </div>
+      <form class="resolution-form" id="resolve-report-form">
+        <label for="resolution-comment">Resolution comment <span class="muted">(optional)</span></label>
+        <textarea id="resolution-comment" name="resolutionComment" maxlength="2000" placeholder="Add a note about how this was resolved…"></textarea>
+        <div class="resolution-form-actions">
+          <button class="button secondary" type="button" data-close-resolution>Cancel</button>
+          <button class="button primary" type="submit">Mark as resolved</button>
+        </div>
+        <p id="resolution-form-status" class="muted" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="issue-modal" role="dialog" aria-modal="true" aria-labelledby="issue-title">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="issue-title">Report an issue</h2>
+          <p>Tell us what went wrong and we’ll use it to improve the guide.</p>
+        </div>
+        <button class="modal-close" type="button" data-close-modal aria-label="Close">×</button>
+      </div>
+      <form class="modal-form" data-issue-form>
+        <label for="issue-description">What happened?</label>
+        <textarea id="issue-description" required placeholder="Describe the issue…"></textarea>
+        <button class="button primary" type="submit">Send report</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop signin-backdrop" role="dialog" aria-modal="true" aria-labelledby="signin-title" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="signin-title">Sign in</h2>
+          <p>Sign in with the email and password you used to create your account.</p>
+        </div>
+        <button class="modal-close" type="button" data-close-signin aria-label="Close">×</button>
+      </div>
+      <form class="modal-form" id="signin-form">
+        <label for="signin-email">Email</label>
+        <input id="signin-email" name="email" type="email" autocomplete="email" required>
+        <label for="signin-password">Password</label>
+        <input id="signin-password" name="password" type="password" autocomplete="current-password" required>
+        <button class="button primary" type="submit">Sign in</button>
+        <p id="signin-message" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+
+  <script src="layout.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script src="approvals.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      await window.siteLayoutReady;
+      document.querySelector("[data-open-signup]")?.addEventListener("click", () => {
+        location.href = "index.html#signup";
+      });
+    });
+  </script>
+</body>
+</html>
