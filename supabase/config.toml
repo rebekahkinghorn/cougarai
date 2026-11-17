@@ -10,6 +10,9 @@ verify_jwt = true
 [functions.admin-issue-reports]
 verify_jwt = true
 
+[functions.track-page-activity]
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

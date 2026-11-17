@@ -44,11 +44,11 @@ Deno.serve(async (request) => {
   }
 
   // This elevated client is used only after checking the signed-in user's trusted role.
-  // It reads aggregate views only and never exposes its service-role key to the browser.
+  // It reads summary views only and never exposes its service-role key to the browser.
   const adminClient = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const [validityResult, feedbackResult, repeatUsageResult] = await Promise.all([
+  const [validityResult, feedbackResult, repeatUsageResult, sessionActivityResult] = await Promise.all([
     adminClient
       .from("chatbot_answer_validity_summary")
       .select("valid_answers,no_answers,classified_answers,valid_answer_percent,no_answer_percent"),
@@ -59,6 +59,11 @@ Deno.serve(async (request) => {
       .from("chatbot_monthly_repeat_usage_summary")
       .select("period_label,period_start,period_end,active_users,repeat_users,repeat_user_percent,goal_percent,sort_order")
       .order("sort_order", { ascending: true }),
+    adminClient
+      .from("page_engagement_weekly_summary")
+      .select("week_start,page_key,total_visits,unique_visitors,median_engaged_seconds,average_engaged_seconds")
+      .order("week_start", { ascending: false })
+      .order("page_key", { ascending: true }),
   ]);
 
   if (validityResult.error || feedbackResult.error) {
@@ -71,11 +76,16 @@ Deno.serve(async (request) => {
   if (repeatUsageResult.error) {
     console.error("Could not read monthly repeat-use view:", repeatUsageResult.error.message);
   }
+  if (sessionActivityResult.error) {
+    console.error("Could not read page engagement view:", sessionActivityResult.error.message);
+  }
 
   return jsonResponse({
     answerValidity: validityResult.data ?? [],
     chatFeedback: feedbackResult.data ?? [],
     repeatUsage: repeatUsageResult.error ? [] : repeatUsageResult.data ?? [],
     repeatUsageError: repeatUsageResult.error ? "Repeat-use summary view is unavailable" : null,
+    sessionActivity: sessionActivityResult.error ? [] : sessionActivityResult.data ?? [],
+    sessionActivityError: sessionActivityResult.error ? "Page engagement summary view is unavailable" : null,
   });
 });
