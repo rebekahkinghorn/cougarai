@@ -394,7 +394,6 @@ p { line-height: var(--leading-body); }
   .admin-menu-trigger { justify-content: center; width: 100%; }
   .admin-menu-dropdown { position: static; min-width: 0; margin-top: 4px; border: 0; background: transparent; box-shadow: none; }
   .admin-menu-dropdown .nav-link { white-space: normal; }
-  .nav-actions { display: none; }
   .page-shell { padding: 36px 0 56px; }
   .hero { min-height: auto; }
   .hero-art { min-height: 520px; margin: 0; }
@@ -760,4 +759,77 @@ button.event-dot:focus-visible {
 .event-card-uncategorized .date-badge {
     background: var(--muted);
     color: white;
+}
+
+
+/* ==========================================
+   SUGGEST AN EVENT FORM
+   ========================================== */
+
+/* Make the modal scrollable on smaller screens */
+.suggest-event-modal {
+    width: min(550px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Style the category and city dropdown menus */
+.suggest-event-modal select {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: white;
+    color: var(--ink);
+    font: inherit;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Highlight dropdowns when selected */
+.suggest-event-modal select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.1);
+}
+
+/* Style the location restriction message */
+.suggest-location-note {
+    padding: 12px 15px;
+    margin: 5px 0;
+    border-radius: 12px;
+    background: var(--sky);
+    color: var(--blue-dark);
+    font-size: var(--type-sm);
+    line-height: 1.5;
+}
+
+/* Arrange the Cancel and Submit buttons */
+.suggest-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Style validation and submission messages */
+#suggest-event-message {
+    margin: 0;
+    font-size: var(--type-sm);
+    font-weight: var(--weight-semibold);
+}
+
+/* Adjust form buttons for mobile devices */
+@media (max-width: 500px) {
+    .suggest-event-modal {
+        padding: 22px;
+    }
+
+    .suggest-form-actions {
+        flex-direction: column;
+    }
+
+    .suggest-form-actions .button {
+        width: 100%;
+    }
 }
