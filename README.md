@@ -1,3 +1,5 @@
+export SUPABASE_SERVICE_ROLE_KEYread -s 'GEMINI_API_KEY?Paste the actual Gemini API key: '
+
 # CougarAI
 
 ## App Summary
@@ -18,10 +20,10 @@ We also realize that BYU freshman struggle not only with figuring out the academ
 ## Tech Stack
 
 Front end: HTML, CSS, Javascript
-Database, Backend & Autentication: Supabase
+Database, Backend & Authentication: Supabase
 AI app builder: CODEX
 
-## Recent Work (November 9–16, 2026)
+## Recent Work (November 9–17, 2026)
 
 ### November 9 — Chat persistence and history
 
@@ -61,7 +63,7 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
 
 - Added a retrieval-augmented generation (RAG) knowledge base. The `chatbot` Edge Function embeds the user's question with Gemini, searches relevant BYU passages in Supabase using pgvector, and gives those passages to Gemini alongside the current conversation history.
 - Answers that cite retrieved material include links to the BYU pages. If the retrieved passages do not support an answer, the chatbot says it could not find enough information instead of presenting an unsupported answer as verified.
-- The initial curated sources are listed in `supabase/knowledge/byu_sources.json` and cover admissions, housing, financial aid, tuition, registration, deadlines, and student resources. This is a starter collection, not a crawl of every BYU website. Add reviewed public BYU URLs to that file as the scope grows.
+- The curated sources are listed in `supabase/knowledge/byu_sources.json`. The current 82-entry collection covers admissions, housing, financial aid, tuition, registration, deadlines, student resources, BYU history and leadership, events, academic departments, campus dining, and meal plans. This is a reviewed collection, not a crawl of every BYU website.
 - `scripts/ingest_byu_sources.mjs` fetches those HTTPS pages, checks their robots.txt rules, extracts and chunks page text, creates Gemini embeddings, and upserts the results into Supabase. It skips unchanged chunks on later runs. The script accepts only `byu.edu` and its subdomains, reports pages disallowed by robots.txt, and exits with an error if a fetch or ingestion fails.
 
 #### Set up and deploy the BYU knowledge base
@@ -75,7 +77,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    Use a Supabase **personal access token** from [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) if prompted. This is only for the CLI to manage the project; it is different from the user's login token, the project API key, and the service-role key. The CLI stores it in your computer's credential storage. [Supabase CLI login guide](https://supabase.com/docs/reference/cli/supabase-login)
-
 4. Deploy the updated function from the repository root:
 
    ```sh
@@ -83,7 +84,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    If the CLI asks **“Deploy 1 Function on project …?”**, check that the project reference is `xyyhccpivxxgiatptwko`, then confirm. This deploys the function code; it does not apply the SQL migration or load the BYU pages.
-
 5. In a trusted local terminal at the repository root, set the environment variables for the ingestion script. It reads them from the current shell process; it does not read a `.env` file. They last only for that terminal session. Use the following in macOS zsh, entering each command separately:
 
    - Set the project URL. It is also shown in `auth.js`:
@@ -91,7 +91,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
      ```sh
      export SUPABASE_URL='https://xyyhccpivxxgiatptwko.supabase.co'
      ```
-
    - Find the legacy `service_role` key in **Supabase Dashboard → Project Settings → API Keys → Legacy API Keys**. This version of the ingestion script expects that legacy key (a long JWT, often beginning with `eyJ`), not the `sb_publishable_...` key, an `sb_secret_...` key, the CLI personal access token, or a user's login token. It bypasses row-level security, so never put it in browser code, source control, or a checked-in file.
 
      Type this command and press Enter. When the prompt appears, paste the key and press Enter; the key will not display. Then run the `export` command at the next shell prompt:
@@ -103,7 +102,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
      ```sh
      export SUPABASE_SERVICE_ROLE_KEY
      ```
-
    - Get the actual Gemini API key from the team's Google AI Studio project ([key guide](https://ai.google.dev/gemini-api/docs/api-key)). It may be the same key used by the deployed chatbot or another valid key for the team's project. If you use a new key and want the chatbot to use it too, update the Supabase secret `gemini_api_key` as described above. The secret's name alone is not the key value.
 
      Enter the prompt command by itself, paste the actual Gemini key when prompted, and press Enter. Then export it at the next shell prompt:
@@ -125,13 +123,11 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    All three must say **set**. If the terminal is closed, set them again in the new terminal. Do not paste the keys into chat or print them to check them.
-
 6. Preview the source fetch and extraction without writing to Supabase or calling Gemini embeddings:
 
    ```sh
    node scripts/ingest_byu_sources.mjs --dry-run
    ```
-
 7. After reviewing the listed sources, run the ingestion from the same terminal, without `--dry-run` or a trailing backslash:
 
    ```sh
@@ -139,10 +135,18 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    It fetches allowed pages, creates embeddings for new or changed chunks, and writes them to Supabase. A successful run ends with `Ingestion complete with 0 failed source(s).` Warnings may report pages disallowed by a site's `robots.txt`; those are skipped. If the script says the environment variables are missing, set/export all three in that same terminal and retry. Re-run ingestion when approved pages change; unchanged chunks are not re-embedded.
-
 8. Confirm rows were added to `public.byu_knowledge_chunks` in the Supabase Table Editor. Then ask the chatbot a question about one of the indexed topics and check that a supported answer includes BYU source links.
 
 The chatbot now makes an embedding request and a text-generation request for each question, so Gemini usage can increase. Supabase stores the chunk text and 768-dimensional vectors. The source list is intentionally curated and the extractor handles public HTML pages; it does not crawl an entire BYU domain, process authenticated pages, or extract PDF contents.
+
+### November 17 — Profiles, readable replies, and expanded sources
+
+- Expanded signup metadata to collect first name, last name, school year, expected graduation year, and major. Supabase Auth stores these values in `raw_user_meta_data`, and the signed-in greeting uses the saved first and last name.
+- Removed the separate username field because email is the Supabase login identifier. Existing accounts without saved names fall back to the email prefix in the greeting.
+- Added safe Markdown-style rendering for assistant replies, including short headings, paragraphs, bold and italic text, inline code, lists, and validated BYU links. The chatbot prompt asks for short paragraphs and compact lists when they improve readability.
+- Added friendly handling for standalone gratitude and acknowledgment messages. These replies bypass knowledge retrieval and are excluded from factual answer-validity metrics.
+- Expanded the knowledge-source list to 82 reviewed BYU pages, including history, leadership, events, academic departments, campus dining locations, and meal-plan rates.
+- Improved the mobile welcome-page mock phone so its input and conversation stay inside the phone frame.
 
 ## Project Setup
 
@@ -170,9 +174,9 @@ The chatbot now makes an embedding request and a text-generation request for eac
 - Test the Vertical Slice (Sign Up & Dynamic Greeting)
 
   - Click the "Sign up" button in the top right navigation bar of the app.
-  - Fill out the modal form with a Username, Email, and Password, then submit.
-  - Supabase will process the registration, create the account in your database, and automatically swap the top-right header buttons from "Sign up / Sign in" to a dynamic greeting reading: "Hello, 'username'!" (along with a Sign out button).
-  - Hit refresh in the browser to confirm that it still says "Hello, 'username'!" in the top right corner. If it does then your database and backend is sucessfully working!
+  - Fill out the modal form with your name, school year, expected graduation year, major, email, and password, then submit.
+  - Supabase stores the profile values in Auth user metadata. After sign-in, the header greets the user by first and last name.
+  - Refresh the browser to confirm the greeting is restored from the Supabase session.
 
   Link to the video that shows our vertical slice!
 
@@ -194,15 +198,19 @@ The sign-in form calls Supabase Auth with the user's email and password. The hea
 
 ### 3. Sign up — Implemented in the front end; requires Supabase Auth
 
-The sign-up form creates a Supabase Auth account with a username saved as user metadata. Depending on the project's email-confirmation settings, the user may need to confirm their email before a session is created. When a session is returned, the header changes to a greeting and sign-out control.
+The sign-up forms create a Supabase Auth account with first name, last name, school year, expected graduation year, and major saved in Auth user metadata. Supabase stores these values in `auth.users.raw_user_meta_data` as JSON keys (`first_name`, `last_name`, `school_year`, `graduation_year`, and `major`); they are not separate columns on `auth.users`, so no Auth table schema change is needed. Depending on email-confirmation settings, the user may need to confirm their email before a session is created. When signed in, the header greets them by first and last name, with an email-based fallback for existing accounts without saved names.
 
-**Verifying the vertical slice:** Use a new email address in the “Sign up” form, submit a username, email, and password, and complete any email-confirmation step required by Supabase. Once signed in, confirm the greeting appears. Refresh the page and confirm the greeting remains, showing that the Supabase session is restored. If the project requires email confirmation, account creation alone may not sign the user in.
+**Verifying the vertical slice:** Use a new email address in the “Sign up” form, submit your name, school year, expected graduation year, major, email, and password, and complete any email-confirmation step required by Supabase. Once signed in, confirm the greeting appears. Refresh the page and confirm the greeting remains, showing that the Supabase session is restored. If the project requires email confirmation, account creation alone may not sign the user in.
 
 ### 4. Chatbot history saves — Implemented; requires the deployed chatbot Edge Function and Supabase policies
 
 The browser sends the signed-in user's access token and conversation ID to the Supabase `chatbot` Edge Function. The function verifies conversation ownership, loads up to the 20 most recent saved messages in chronological order, and sends those turns with the new prompt to Gemini so follow-up questions can use the current chat's context. New conversations begin with only the first prompt. The browser keeps the active conversation ID in per-user session storage, and prior saved conversations can be reloaded from Supabase.
 
-**Verifying the vertical slice:** Sign in, send a question, and confirm a conversation appears in the sidebar and in `chat_conversations` with the signed-in user's ID. Navigate away and return, select the conversation, and confirm its saved messages load. The browser also stores the active conversation ID in session storage for the current tab.
+The Edge Function recognizes standalone expressions of gratitude and acknowledgment, including “thank you,” “thanks so much,” and “that was helpful,” and returns a friendly conversational reply without running a BYU knowledge search. The detector only handles messages that consist entirely of an acknowledgment, so a message such as “Thanks—when does registration open?” still follows the normal source-grounded question flow. Conversational replies are saved to `chat_messages` with a null database `response_code`, which keeps them out of the valid-answer and no-answer metrics.
+
+Assistant replies support safe Markdown-style formatting for paragraphs, short headings, bold and italic text, inline code, numbered lists, bulleted lists, and validated links to BYU domains. User messages remain plain text. The Edge Function asks Gemini to keep paragraphs short and use compact lists for multi-part answers.
+
+**Verifying the vertical slice:** Sign in, send a question, and confirm a conversation appears in the sidebar and in `chat_conversations` with the signed-in user's ID. Send “Thank you!” and confirm the chatbot responds conversationally rather than showing the insufficient-sources message. Navigate away and return, select the conversation, and confirm its saved messages load. The browser also stores the active conversation ID in session storage for the current tab.
 
 ### 5. Chat history — Implemented for signed-in users
 
@@ -232,14 +240,16 @@ The metrics dashboard gets `chat_feedback_summary` through the `admin-metrics` E
 
 The metrics dashboard gets `chatbot_answer_validity_summary` through the `admin-metrics` Edge Function. The function checks the trusted admin role and uses a server-side key to read the aggregate view, returning valid/no-answer counts and percentages. The function must be deployed to the linked Supabase project.
 
-### 11. Engagement and returning users — Partially implemented
+### 11. Engagement and returning users — Partially implemented; page timing and repeat-use metrics are live
 
-The metrics page has a placeholder for session activity (FAQ time on page, popular chatbot questions, and external link clicks). The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it. Session activity collection and aggregation are not implemented.
+Anonymous engaged-time tracking is implemented for the FAQ, chatbot, and calendar pages. `page-activity.js` counts time only while the page is visible and the visitor has interacted within the previous 30 seconds. It sends anonymous visitor, visit, page, and elapsed-time values to the `track-page-activity` Edge Function; it does not send account IDs or page content. The function upserts visits into `page_session_activity`, and the admin dashboard reads the `page_engagement_weekly_summary` view through `admin-metrics` to show visits, unique visitors, and median and average engaged time. Apply `supabase/migrations/20261116000300_page_session_activity.sql`, deploy `track-page-activity`, and redeploy `admin-metrics` before expecting live page-engagement data.
 
+The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it. Popular chatbot-question and external-link-click metrics remain placeholders.
 
 ### How admin login works
-- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, and monthly repeat-use summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app. 
-- Session activity remains a visual placeholder. The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
+
+- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, monthly repeat-use, and weekly page-engagement summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app.
+- The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
 - Both Supabase summary views use `security_invoker=on`. Direct browser queries therefore follow the signed-in user's RLS access to the underlying tables. Project-wide aggregate access is now routed through the admin-only `admin-metrics` Edge Function.
 
 #### Add another admin account
@@ -287,6 +297,7 @@ After the role check, the function uses its server-side service-role key to quer
 The signed-in Cougar AI **Admin → Approvals & Reports** page includes a link to the [Greg Project admin site](https://403project.vercel.app/). The link opens in the same tab. Greg Project is a companion full-stack admin app for the IS 403 project. It can maintain Supabase Authentication users and create, read, update, and delete rows in public.greg_table.
 
 Both apps use the same Supabase project and administrator account. Greg Project has its own site session, so an administrator signs in again when moving from Cougar AI to Greg Project. Greg Project checks admin access on its server and keeps the Supabase secret key server-side.
+
 #### Deno and editing Edge Functions
 
 Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-compatible Edge Runtime. Deno is the runtime and toolchain behind APIs used here, such as `Deno.serve()` and `Deno.env.get()`. The Deno VS Code extension provides editor support (including type information and diagnostics); `.vscode/settings.json` enables it for `supabase/functions` only, so the regular website files continue using VS Code's normal JavaScript/TypeScript support.

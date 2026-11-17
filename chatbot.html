@@ -130,19 +130,40 @@
       <div class="modal-header">
         <div>
           <h2 id="signup-title">Create your account</h2>
-          <p>Choose a username and sign up with your email and password.</p>
+          <p>Tell us a little about yourself and create your account.</p>
         </div>
         <button class="modal-close" type="button" data-close-signup aria-label="Close">×</button>
       </div>
       <form class="modal-form" id="signup-form">
-        <label for="signup-username">Username</label>
-        <input id="signup-username" name="username" type="text" autocomplete="username" minlength="3" maxlength="24" required>
+        <div class="signup-fields-row">
+          <div><label for="signup-first-name">First name</label><input id="signup-first-name" name="first_name" type="text" autocomplete="given-name" maxlength="80" required></div>
+          <div><label for="signup-last-name">Last name</label><input id="signup-last-name" name="last_name" type="text" autocomplete="family-name" maxlength="80" required></div>
+        </div>
 
-        <label for="signup-email">Email</label>
-        <input id="signup-email" name="email" type="email" autocomplete="email" required>
+        <div class="signup-fields-row">
+          <div><label for="signup-school-year">School year</label>
+          <select id="signup-school-year" name="school_year" required>
+          <option value="" selected disabled>Select your school year</option>
+          <option value="incoming">Incoming student</option>
+          <option value="freshman">Freshman</option>
+          <option value="sophomore">Sophomore</option>
+          <option value="junior">Junior</option>
+          <option value="senior">Senior</option>
+          <option value="graduate">Graduate student</option>
+          <option value="other">Other</option>
+          </select></div>
 
-        <label for="signup-password">Password</label>
-        <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+          <div><label for="signup-graduation-year">Expected grad year</label>
+          <input id="signup-graduation-year" name="graduation_year" type="number" inputmode="numeric" min="2026" max="2045" step="1" placeholder="e.g., 2030" required></div>
+        </div>
+
+        <label for="signup-major">Major</label>
+        <input id="signup-major" name="major" type="text" maxlength="120" required>
+
+        <div class="signup-fields-row">
+          <div><label for="signup-email">Email</label><input id="signup-email" name="email" type="email" autocomplete="email" required></div>
+          <div><label for="signup-password">Password</label><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
+        </div>
 
         <button class="button primary" type="submit">Create account</button>
         <p id="signup-message" role="status" aria-live="polite"></p>
@@ -176,7 +197,7 @@
       const openSignup = () => {
         backdrop.classList.add("show");
         backdrop.setAttribute("aria-hidden", "false");
-        document.querySelector("#signup-username").focus();
+        document.querySelector("#signup-first-name").focus();
       };
 
       const closeSignup = () => {
@@ -204,7 +225,11 @@
 
         const submitButton = form.querySelector('button[type="submit"]');
         const values = new FormData(form);
-        const username = String(values.get("username")).trim();
+        const firstName = String(values.get("first_name")).trim();
+        const lastName = String(values.get("last_name")).trim();
+        const schoolYear = String(values.get("school_year"));
+        const graduationYear = String(values.get("graduation_year"));
+        const major = String(values.get("major")).trim();
         const email = String(values.get("email")).trim();
         const password = String(values.get("password"));
         submitButton.disabled = true;
@@ -214,7 +239,13 @@
           const { data, error } = await client.auth.signUp({
             email,
             password,
-            options: { data: { username } }
+            options: { data: {
+              first_name: firstName,
+              last_name: lastName,
+              school_year: schoolYear,
+              graduation_year: graduationYear,
+              major,
+            } }
           });
           if (error) throw error;
           form.reset();
@@ -223,7 +254,7 @@
           if (data.session?.user) showGreeting(data.session.user);
           window.showToast?.(
             data.session
-              ? `Your account is ready. Welcome, ${username}!`
+              ? `Your account is ready. Welcome, ${firstName} ${lastName}!`
               : "Account created. Check your email for a confirmation link."
           );
         } catch (error) {
