@@ -127,7 +127,7 @@ The browser sends the signed-in user's access token and conversation ID to the S
 
 ### 5. Chat history — Implemented for signed-in users
 
-The chatbot sidebar lists the signed-in user's saved conversations. Selecting a conversation reloads its messages. Supabase RLS policies on `chat_conversations` and `chat_messages` determine which rows the user can read. Guest chats are not listed as saved user history.
+The chatbot sidebar lists the signed-in user's saved conversations as soon as they log in, including when they sign in through the modal without reloading the page. Selecting a conversation reloads its messages. Supabase RLS policies on `chat_conversations` and `chat_messages` determine which rows the user can read. Guest chats are not listed as saved user history.
 
 ### 6. New chat — Implemented as “Clear chat”; requires the deployed chatbot Edge Function to save the next conversation
 
