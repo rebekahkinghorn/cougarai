@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
   await window.siteLayoutReady;
-  // Highlight the current page and control the mobile navigation.
+
   const currentPage = document.body.dataset.page;
   document.querySelectorAll(".nav-link").forEach((link) => {
     if (link.dataset.page === currentPage) link.classList.add("active");
@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     menuToggle.setAttribute("aria-expanded", String(isOpen));
   });
 
-  // Show brief status messages throughout the app.
   const toast = document.querySelector(".toast");
   let toastTimer;
   const showToast = (message) => {
@@ -29,129 +28,149 @@ document.addEventListener("DOMContentLoaded", async () => {
     button.addEventListener("click", () => showToast(button.dataset.toast));
   });
 
-  // Open and close the shared report-an-issue modal.
   const modalBackdrop = document.querySelector(".modal-backdrop");
   const openModal = () => modalBackdrop?.classList.add("show");
   const closeModal = () => modalBackdrop?.classList.remove("show");
-
-  document.querySelectorAll("[data-open-modal]").forEach((button) =>
-    button.addEventListener("click", openModal)
-  );
-  document.querySelectorAll("[data-close-modal]").forEach((button) =>
-    button.addEventListener("click", closeModal)
-  );
-
+  document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", openModal));
+  document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", closeModal));
   modalBackdrop?.addEventListener("click", (event) => {
     if (event.target === modalBackdrop) closeModal();
   });
 
-  // Save issue reports to Supabase, from all pages. 
-  const issueModal = document.querySelector(".modal-backdrop[aria-labelledby=\"issue-title\"]");
-  const issueForm = issueModal?.querySelector(".modal-form");
-  issueForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-
-    const description = issueForm.querySelector("#issue-description")?.value.trim();
-    if (!description) return;
-
-    const client = window.cougarAuth?.client;
-    if (!client) {
-      showToast("Database connection not available.");
-      return;
-    }
-
-    const submitButton = issueForm.querySelector("button[type=\"submit\"]");
-    if (submitButton) submitButton.disabled = true;
-
-    try {
-      const { data: sessionData, error: sessionError } = await client.auth.getSession();
-      if (sessionError) throw sessionError;
-      const userId = sessionData?.session?.user?.id || null;
-      if (!userId) {
-        showToast("You must be logged in to report an issue.");
+  document.querySelectorAll("[data-issue-form]").forEach((issueForm) => {
+    issueForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const client = window.cougarAuth?.client;
+      const description = issueForm.querySelector("#issue-description")?.value.trim();
+      if (!client) {
+        showToast("Database connection not available. Please refresh and try again.");
         return;
       }
+      if (!description) return;
 
-      const submittedAt = new Date();
-      const mountainParts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
-        timeZoneName: "longOffset"
-      }).formatToParts(submittedAt);
-      const mountainTime = Object.fromEntries(mountainParts.map(({ type, value }) => [type, value]));
-      const mountainOffset = mountainTime.timeZoneName.replace("GMT", "");
-      const dateSubmitted = `${mountainTime.year}-${mountainTime.month}-${mountainTime.day}T${mountainTime.hour}:${mountainTime.minute}:${mountainTime.second}${mountainOffset}`;
+      const submitButton = issueForm.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
+      try {
+        const { data: sessionData, error: sessionError } = await client.auth.getSession();
+        if (sessionError) throw sessionError;
+        const userId = sessionData?.session?.user?.id || null;
+        const { error } = await client.from("issue_report").insert({
+          description,
+          user_id: userId,
+          status: "Pending",
+        });
+        if (error) throw error;
 
-      const { error } = await client.from("issue_report").insert({
-        description, user_id: userId, status: "Pending", date_submitted: dateSubmitted
-      });
-      if (error) throw error;
-
-      issueForm.reset();
-      issueModal.classList.remove("show");
-      showToast("Your issue report was successfully submitted!");
-    } catch (error) {
-      console.error("Issue submission error:", error);
-      showToast("Error: " + error.message);
-    } finally {
-      if (submitButton) submitButton.disabled = false;
-    }
-  }, true);
-
-  // Expand and collapse individual FAQ answers.
-  document.querySelectorAll(".faq-question").forEach((button) => {
-    button.addEventListener("click", () => {
-      const item = button.closest(".faq-item");
-      const isOpen = item.classList.toggle("open");
-      button.setAttribute("aria-expanded", String(isOpen));
+        issueForm.reset();
+        closeModal();
+        showToast("Your issue report was successfully submitted!");
+      } catch (error) {
+        console.error("Issue submission error:", error);
+        showToast(`Could not submit issue report: ${error.message || "Please try again."}`);
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
     });
   });
 
-  // Search and filter FAQ entries by text or category.
   const faqSearch = document.querySelector("#faq-search");
-  const faqItems = [...document.querySelectorAll(".faq-item")];
+  const faqList = document.querySelector("#faq-list");
+  const faqFilters = document.querySelector("#faq-filters");
+  const faqStatus = document.querySelector("#faq-status");
+  let faqItems = [];
+  let activeFaqCategory = "all";
   const faqEmpty = document.querySelector(".faq-empty");
-
-  const filterFaqs = () => {
-    if (!faqSearch) return;
-
-    const query = faqSearch.value.trim().toLowerCase();
+  const applyFaqFilters = () => {
+    const query = faqSearch?.value.trim().toLowerCase() ?? "";
     let visibleCount = 0;
-
     faqItems.forEach((item) => {
-      const matches = !query || item.textContent.toLowerCase().includes(query);
-      item.hidden = !matches;
-      if (matches) visibleCount += 1;
+      const categoryMatches = activeFaqCategory === "all" || item.dataset.category === activeFaqCategory;
+      const searchMatches = !query || item.textContent.toLowerCase().includes(query);
+      item.hidden = !(categoryMatches && searchMatches);
+      if (!item.hidden) visibleCount++;
     });
-
     faqEmpty?.classList.toggle("show", visibleCount === 0);
   };
 
-  faqSearch?.addEventListener("input", filterFaqs);
+  const loadFaqs = async () => {
+    if (!faqList) return;
+    const client = window.cougarAuth?.client;
+    if (!client) {
+      faqStatus.textContent = "FAQs could not connect to Supabase. Check that auth.js is loaded and configured.";
+      return;
+    }
 
-  document.querySelectorAll(".filter[data-filter]").forEach((filter) => {
-    filter.addEventListener("click", () => {
-      document
-        .querySelectorAll(".filter[data-filter]")
-        .forEach((button) => button.classList.remove("active"));
+    try {
+      const [faqResult, categoryResult] = await Promise.all([
+        client.from("FAQ").select("faq_id, faq_title, faq_answer, faq_category_id").order("faq_title"),
+        client.from("FAQ_Category").select("faq_category_id, faq_category_name").order("faq_category_name"),
+      ]);
+      if (faqResult.error) throw faqResult.error;
+      if (categoryResult.error) throw categoryResult.error;
 
-      filter.classList.add("active");
-
-      const category = filter.dataset.filter;
-      faqItems.forEach((item) => {
-        const matches = category === "all" || item.dataset.category === category;
-        item.hidden = !matches;
+      const allFilter = faqFilters.querySelector('[data-filter="all"]');
+      faqFilters.replaceChildren(allFilter);
+      (categoryResult.data ?? []).forEach((category) => {
+        const button = document.createElement("button");
+        button.className = "filter";
+        button.dataset.filter = String(category.faq_category_id);
+        button.textContent = category.faq_category_name;
+        faqFilters.appendChild(button);
       });
 
-      if (faqEmpty) {
-        faqEmpty.classList.toggle(
-          "show",
-          !faqItems.some((item) => !item.hidden)
-        );
-      }
-    });
+      faqList.replaceChildren();
+      (faqResult.data ?? []).forEach((faq) => {
+        const item = document.createElement("article");
+        item.className = "faq-item";
+        item.dataset.category = faq.faq_category_id == null ? "uncategorized" : String(faq.faq_category_id);
+
+        const questionButton = document.createElement("button");
+        questionButton.className = "faq-question";
+        questionButton.type = "button";
+        questionButton.setAttribute("aria-expanded", "false");
+        const questionText = document.createElement("span");
+        questionText.textContent = faq.faq_title || "Untitled FAQ";
+        const toggleIcon = document.createElement("span");
+        toggleIcon.setAttribute("aria-hidden", "true");
+        toggleIcon.textContent = "+";
+        questionButton.append(questionText, toggleIcon);
+
+        const answer = document.createElement("div");
+        answer.className = "faq-answer";
+        answer.textContent = faq.faq_answer || "No answer has been added yet.";
+
+        item.append(questionButton, answer);
+        faqList.appendChild(item);
+      });
+
+      faqItems = [...faqList.querySelectorAll(".faq-item")];
+      faqStatus.textContent = `Showing ${faqItems.length} ${faqItems.length === 1 ? "FAQ" : "FAQs"}.`;
+      applyFaqFilters();
+    } catch (error) {
+      console.error("FAQ load error:", error);
+      faqStatus.textContent = "Could not load FAQs. Check Supabase table names and public read access.";
+    }
+  };
+
+  faqList?.addEventListener("click", (event) => {
+    const button = event.target.closest(".faq-question");
+    if (!button) return;
+    const item = button.closest(".faq-item");
+    const isOpen = item.classList.toggle("open");
+    button.setAttribute("aria-expanded", String(isOpen));
   });
+
+  faqFilters?.addEventListener("click", (event) => {
+    const filter = event.target.closest(".filter[data-filter]");
+    if (!filter) return;
+    faqFilters.querySelectorAll(".filter").forEach((button) => button.classList.remove("active"));
+    filter.classList.add("active");
+    activeFaqCategory = filter.dataset.filter;
+    applyFaqFilters();
+  });
+
+  faqSearch?.addEventListener("input", applyFaqFilters);
+  loadFaqs();
 
   // Set up chatbot elements and common example responses.
   const chatMessages = document.querySelector("#chat-messages");
@@ -708,26 +727,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     initializeChatHistory();
   }
 
-  // Filter calendar event cards by the selected category.
   const categoryButtons = document.querySelectorAll(".category-filter");
   const eventCards = document.querySelectorAll(".event-card");
-
-  categoryButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      categoryButtons.forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-
-      const category = button.dataset.category;
-      eventCards.forEach((card) => {
-        card.hidden = category !== "all" && card.dataset.category !== category;
-      });
-    });
-  });
-
-  // Show a confirmation toast when an event card is selected.
-  document.querySelectorAll("[data-event]").forEach((event) => {
-    event.addEventListener("click", () => {
-      showToast(`${event.dataset.event} selected. Event details would open here.`);
-    });
-  });
+  categoryButtons.forEach((button) => button.addEventListener("click", () => {
+    categoryButtons.forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    const category = button.dataset.category;
+    eventCards.forEach((card) => { card.hidden = category !== "all" && card.dataset.category !== category; });
+  }));
+  document.querySelectorAll("[data-event]").forEach((event) => event.addEventListener("click", () => {
+    showToast(`${event.dataset.event} selected. Event details would open here.`);
+  }));
 });

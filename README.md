@@ -11,6 +11,8 @@ high school, but also for current missionaries trying to prepare with limited ti
 
 This is the probelem that our app solves. CougarAI has a built in chatbot that is trained on everything a freshman needs to prepare for and get through their first year at BYU. It also includes a FAQ page for freshman who don't even know where to start in their preparation, which is generated based on questions other users are asking the chatbot.
 
+The FAQ page lets students browse common questions by topic, search by keyword, expand an answer, or continue to the chatbot if they need help with a question that is not covered. FAQ drafts are created from valid chatbot question-and-answer pairs from the previous 30 days: the existing `dynamic-function` Edge Function uses Gemini to group recurring questions, compare them with published FAQs and prior suggestions, and save new drafts to `faq_suggestions`. An administrator can run this process from the **Approvals & Reports** page, review each pending draft, choose an existing category or propose a new one, and approve or reject it. Approval publishes the reviewed question and answer through the `approve_faq_suggestion` database function; questions already covered by published FAQs are tracked separately instead of being added as duplicate drafts.
+
 We also realize that BYU freshman struggle not only with figuring out the academic side of BYU, but the social side as well. For this purpose our app also has a calendar page which will include events happening on and off campus. Users will be able to filter this calendar to show them events that they are most interested in.
 
 ## Tech Stack
@@ -30,9 +32,24 @@ AI app builder: CODEX
 
 ### November 10 — Admin metrics sign-in
 
-- Reused the site's shared sign-in form for the metrics page. The Metrics link appears only for accounts with trusted `app_metadata.role = admin`; direct visits to `metrics.html` prompt for sign-in and keep the dashboard hidden unless the account has that role.
+- Reused the site's shared sign-in form for the admin pages. The Metrics and Approvals & Reports links appear only for accounts with trusted `app_metadata.role = admin`; direct visits to either page prompt for sign-in and keep the admin content hidden unless the account has that role.
 - Admin status must be assigned to the approved Supabase Auth account by a trusted administrator using the Auth Admin API or dashboard `app_metadata`; users cannot grant themselves access. The login checks the trusted `app_metadata.role` claim, never editable `user_metadata`.
 - The page gate controls the dashboard UI, and the `admin-metrics` Edge Function independently verifies the signed-in user's trusted `app_metadata.role` before returning project-wide aggregate results. It reads only the two summary views with the server-side service-role key; that key is never sent to the browser.
+- The admin **Approvals & Reports** page includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for review. Admins can assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. Suggested-event submissions have a placeholder on this page; the form and database connection are not implemented yet. Approval publishes an FAQ through the `approve_faq_suggestion` database function.
+
+#### Deploying `admin-issue-reports`
+
+The **Approvals & Reports** page reads submitted issue descriptions, their status, and the submitter's user ID through this Edge Function. It verifies the signed-in user's trusted admin role before using the server-side service-role key to read or update `issue_report`; never put that key in browser code.
+
+Before deploying the updated function, run the SQL in both `supabase/migrations/20261116000100_issue_report_resolution.sql` and `supabase/migrations/20261116000200_issue_report_submitted_at.sql` in the Supabase SQL Editor. They add the stable report ID, resolution timestamp and comment, and submission timestamp to `issue_report`. The submission migration backfills from an existing timestamp column when one is available and sets a default for new reports.
+
+From the repository root, deploy it with:
+
+```sh
+npx supabase functions deploy admin-issue-reports --project-ref xyyhccpivxxgiatptwko
+```
+
+On the **Approvals & Reports** page, open reports appear under **Open reports**, including their submission date and time. Select **Mark as resolved**, optionally add a resolution comment, and confirm. The report moves to **Resolved**, where admins can see the comment and the saved resolution date/time. Refresh the page to confirm the status and resolution details persist.
 
 
 4.
@@ -192,6 +209,28 @@ Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-com
 
 Teammates can use the site without installing Deno. Teammates who edit Edge Function code should install the Deno VS Code extension. The separate Deno command-line executable is useful for Deno-specific CLI tools; Supabase CLI uses its own Edge Runtime to serve functions locally. If VS Code reports that it cannot resolve the Deno executable, the extension needs the Deno CLI available on PATH or configured with its `deno.path` setting. To deploy this function to the linked Supabase project, use `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` from the repository root.
 
+## 📅 Cougar AI Interactive Calendar
+
+The Cougar AI Calendar helps BYU students discover upcoming events and activities happening on campus and throughout the Provo community. The calendar provides an easy-to-use interface for exploring campus activities, sporting events, concerts, community gatherings, and wellness opportunities.
+
+### How to Use the Calendar
+
+1. **Browse Events:** The calendar automatically displays the current month. Use the left and right arrows to navigate between available months or click "Today" to return to the current month.
+2. **Filter by Category:** Select BYU (Blue), Community (Gold), Arts & Culture (Coral), or Wellness (Green) to display events that match your interests. Select "All Events" to view everything.
+3. **View Event Details:** Click any event on the calendar to open a popup displaying its date, time, location, category, and description.
+4. **Explore Upcoming Events:** Scroll below the calendar to view event cards that automatically update based on the selected month and category. Click a card for additional details.
+
+### Key Features
+
+- Automatically displays the current month.
+- Color-coded events with an easy-to-read legend.
+- Interactive category filtering.
+- Clickable event details.
+- Dynamically updated event cards.
+- Responsive design for desktop and mobile devices.
+
+The Cougar AI Calendar is designed to help students stay connected, discover new experiences, and make the most of their time at BYU.
+
 ## ERD
 
 <img width="1677" height="1026" alt="Cougar AI ERD-2" src="https://github.com/user-attachments/assets/dbedbe00-b875-41ca-9a49-28a5e3e22043" />
@@ -199,3 +238,10 @@ Teammates can use the site without installing Deno. Teammates who edit Edge Func
 ## Demo
 
 [Vertical slice demo video](https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing)
+
+
+## Data Flow Diagrams
+<img width="590" height="162" alt="image" src="https://github.com/user-attachments/assets/ed13cffb-3386-4696-ba91-1ef80282e13d" />
+<img width="685" height="309" alt="image" src="https://github.com/user-attachments/assets/75e3da83-265a-447c-8b55-e61f32a825fb" />
+
+
