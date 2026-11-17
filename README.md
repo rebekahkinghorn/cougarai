@@ -75,7 +75,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    Use a Supabase **personal access token** from [Account → Access Tokens](https://supabase.com/dashboard/account/tokens) if prompted. This is only for the CLI to manage the project; it is different from the user's login token, the project API key, and the service-role key. The CLI stores it in your computer's credential storage. [Supabase CLI login guide](https://supabase.com/docs/reference/cli/supabase-login)
-
 4. Deploy the updated function from the repository root:
 
    ```sh
@@ -83,7 +82,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    If the CLI asks **“Deploy 1 Function on project …?”**, check that the project reference is `xyyhccpivxxgiatptwko`, then confirm. This deploys the function code; it does not apply the SQL migration or load the BYU pages.
-
 5. In a trusted local terminal at the repository root, set the environment variables for the ingestion script. It reads them from the current shell process; it does not read a `.env` file. They last only for that terminal session. Use the following in macOS zsh, entering each command separately:
 
    - Set the project URL. It is also shown in `auth.js`:
@@ -91,7 +89,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
      ```sh
      export SUPABASE_URL='https://xyyhccpivxxgiatptwko.supabase.co'
      ```
-
    - Find the legacy `service_role` key in **Supabase Dashboard → Project Settings → API Keys → Legacy API Keys**. This version of the ingestion script expects that legacy key (a long JWT, often beginning with `eyJ`), not the `sb_publishable_...` key, an `sb_secret_...` key, the CLI personal access token, or a user's login token. It bypasses row-level security, so never put it in browser code, source control, or a checked-in file.
 
      Type this command and press Enter. When the prompt appears, paste the key and press Enter; the key will not display. Then run the `export` command at the next shell prompt:
@@ -103,7 +100,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
      ```sh
      export SUPABASE_SERVICE_ROLE_KEY
      ```
-
    - Get the actual Gemini API key from the team's Google AI Studio project ([key guide](https://ai.google.dev/gemini-api/docs/api-key)). It may be the same key used by the deployed chatbot or another valid key for the team's project. If you use a new key and want the chatbot to use it too, update the Supabase secret `gemini_api_key` as described above. The secret's name alone is not the key value.
 
      Enter the prompt command by itself, paste the actual Gemini key when prompted, and press Enter. Then export it at the next shell prompt:
@@ -125,13 +121,11 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    All three must say **set**. If the terminal is closed, set them again in the new terminal. Do not paste the keys into chat or print them to check them.
-
 6. Preview the source fetch and extraction without writing to Supabase or calling Gemini embeddings:
 
    ```sh
    node scripts/ingest_byu_sources.mjs --dry-run
    ```
-
 7. After reviewing the listed sources, run the ingestion from the same terminal, without `--dry-run` or a trailing backslash:
 
    ```sh
@@ -139,7 +133,6 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
    ```
 
    It fetches allowed pages, creates embeddings for new or changed chunks, and writes them to Supabase. A successful run ends with `Ingestion complete with 0 failed source(s).` Warnings may report pages disallowed by a site's `robots.txt`; those are skipped. If the script says the environment variables are missing, set/export all three in that same terminal and retry. Re-run ingestion when approved pages change; unchanged chunks are not re-embedded.
-
 8. Confirm rows were added to `public.byu_knowledge_chunks` in the Supabase Table Editor. Then ask the chatbot a question about one of the indexed topics and check that a supported answer includes BYU source links.
 
 The chatbot now makes an embedding request and a text-generation request for each question, so Gemini usage can increase. Supabase stores the chunk text and 768-dimensional vectors. The source list is intentionally curated and the extractor handles public HTML pages; it does not crawl an entire BYU domain, process authenticated pages, or extract PDF contents.
