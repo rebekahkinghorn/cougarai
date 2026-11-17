@@ -327,3 +327,9 @@ The Cougar AI Calendar is designed to help students stay connected, discover new
 
 <img width="590" height="162" alt="image" src="https://github.com/user-attachments/assets/ed13cffb-3386-4696-ba91-1ef80282e13d" />
 <img width="685" height="309" alt="image" src="https://github.com/user-attachments/assets/75e3da83-265a-447c-8b55-e61f32a825fb" />
+
+## Greg Project Admin Site
+
+The Cougar AI **Approvals & Reports** page includes a **Greg Project** link for administrators. It opens the separate Greg Project site, where an admin signs in again with the shared Supabase Auth account and can maintain user accounts and project records. The second sign-in is required because the Greg Project site can also be opened directly.
+
+The Greg Project site uses the same Supabase project as Cougar AI. Its admin pages call Supabase Edge Functions for protected operations; sensitive service-role credentials stay on the server side. The deployed site is available at [Greg Project](https://403project.vercel.app/).

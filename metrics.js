@@ -74,6 +74,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const sessionMetricsStatus = document.querySelector("#session-metrics-status");
   const client = window.cougarAuth?.client;
   const dashboard = document.querySelector("#metrics-dashboard");
+  // Mobile card rows use the column heading as a visible label for every value.
+  const applyResponsiveTableLabels = (tbody) => {
+    const labels = [...tbody.closest("table").querySelectorAll("thead th")]
+      .map((header) => header.textContent.trim());
+    tbody.querySelectorAll("tr").forEach((row) => {
+      [...row.cells].forEach((cell, index) => {
+        if (cell.colSpan === 1 && labels[index]) cell.dataset.label = labels[index];
+      });
+    });
+  };
   let adminMetricsRequest;
 
   const getAdminMetrics = () => {
@@ -116,6 +126,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     tableBody.appendChild(row);
+    applyResponsiveTableLabels(tableBody);
   };
 
   const loadMetrics = async () => {
@@ -149,6 +160,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
         tableBody.appendChild(row);
       });
+      applyResponsiveTableLabels(tableBody);
 
       status.textContent = `Showing ${data.length} ${data.length === 1 ? "summary row" : "summary rows"}.`;
     } catch (error) {
@@ -170,6 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     feedbackBody.appendChild(row);
+    applyResponsiveTableLabels(feedbackBody);
   };
 
   const loadFeedbackMetrics = async () => {
@@ -212,6 +225,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return row;
       });
       feedbackBody.replaceChildren(...rows);
+      applyResponsiveTableLabels(feedbackBody);
       feedbackStatus.textContent = `Showing ${data.length} ${data.length === 1 ? "feedback summary row" : "feedback summary rows"}.`;
     } catch (error) {
       console.error("Feedback metrics load error:", error);
@@ -231,6 +245,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     repeatUsageBody.appendChild(row);
+    applyResponsiveTableLabels(repeatUsageBody);
   };
 
   const loadRepeatUsageMetrics = async () => {
@@ -289,6 +304,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return row;
       });
       repeatUsageBody.replaceChildren(...renderedRows);
+      applyResponsiveTableLabels(repeatUsageBody);
       repeatUsageStatus.textContent = "Repeat users sent chatbot messages on at least two distinct UTC dates. Calendar months run oldest to newest; the current month is month to date, followed by the rolling last 30 days. Green meets the 50% goal; red is below it.";
     } catch (error) {
       console.error("Repeat-use metrics load error:", error);
@@ -306,6 +322,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     cell.textContent = message;
     row.appendChild(cell);
     sessionMetricsBody.appendChild(row);
+    applyResponsiveTableLabels(sessionMetricsBody);
   };
 
   const loadSessionActivityMetrics = async () => {
@@ -346,6 +363,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return row;
       });
       sessionMetricsBody.replaceChildren(...renderedRows);
+      applyResponsiveTableLabels(sessionMetricsBody);
       sessionMetricsStatus.textContent = `Showing ${rows.length} weekly page summaries from the last 12 weeks.`;
     } catch (error) {
       console.error("Session activity metrics load error:", error);
