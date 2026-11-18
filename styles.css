@@ -1014,3 +1014,29 @@ button.event-dot:focus-visible {
         display: block;
     }
 }
+
+/* Admin suggested-event review */
+.event-submission-row { cursor: pointer; }
+.event-submission-row:hover { background: var(--sky); }
+.event-submission-row:focus-visible { outline: 3px solid var(--blue); outline-offset: -3px; }
+.event-submission-name { padding: 0; border: 0; color: var(--navy); background: transparent; font: inherit; font-weight: var(--weight-bold); text-align: left; cursor: pointer; }
+.event-submission-name:hover { color: var(--blue-dark); text-decoration: underline; }
+.event-review-modal { width: min(640px, 100%); max-height: min(90vh, 780px); overflow-y: auto; }
+.event-review-modal .eyebrow { margin: 0 0 6px; color: var(--blue-dark); font-weight: var(--weight-bold); }
+.event-review-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+.event-review-details > div { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--sky); }
+.event-review-details dt { margin-bottom: 5px; color: var(--muted); font-size: var(--type-xs); font-weight: var(--weight-bold); }
+.event-review-details dd { margin: 0; color: var(--navy); overflow-wrap: anywhere; }
+@media (max-width: 560px) { .event-review-details { grid-template-columns: 1fr; } }
+.event-review-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
+.event-review-form label { margin-top: 4px; }
+.event-review-form input, .event-review-form select { min-height: 48px; }
+.event-review-form [for="event-edit-name"], .event-review-form #event-edit-name,
+.event-review-form [for="event-edit-address"], .event-review-form #event-edit-address,
+.event-review-form [for="event-edit-city"], .event-review-form #event-edit-city,
+.event-review-form [for="event-edit-zip"], .event-review-form #event-edit-zip { grid-column: 1 / -1; }
+@media (max-width: 560px) { .event-review-form { grid-template-columns: 1fr; } }
+.event-review-modal [hidden] { display: none !important; }
+.event-review-form > div { display: grid; gap: 8px; min-width: 0; }
+.event-review-form > div:nth-child(1), .event-review-form > div:nth-child(6),
+.event-review-form > div:nth-child(7), .event-review-form > div:nth-child(8) { grid-column: 1 / -1; }

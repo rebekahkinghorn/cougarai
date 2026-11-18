@@ -105,20 +105,86 @@
     </section>
 
     <section class="panel metrics-panel metrics-panel-blue metrics-section" aria-labelledby="event-approval-title">
-      <div class="metrics-panel-heading">
+      <div class="metrics-panel-heading metrics-panel-toolbar">
         <div>
           <h2 id="event-approval-title">Suggested event submissions</h2>
-          <p class="muted">Event submissions will appear here after the suggestion form is connected to the database.</p>
+          <p id="event-submissions-status" class="muted" role="status" aria-live="polite">Loading event submissions…</p>
         </div>
+        <button class="button secondary" id="refresh-event-submissions" type="button">Refresh submissions</button>
       </div>
-      <div class="metrics-data-placeholder" role="status">
-        <span aria-hidden="true">—</span>
-        <p>Event approvals are not connected yet.</p>
+      <div class="metrics-table-wrap">
+        <table class="metrics-table">
+          <caption class="visually-hidden">Pending user-submitted events for administrator approval</caption>
+          <thead>
+            <tr>
+              <th scope="col">Event</th>
+              <th scope="col">Date and time</th>
+              <th scope="col">Location</th>
+              <th scope="col">Category</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody id="event-submissions-body">
+            <tr><td class="metrics-placeholder" colspan="5">Loading event submissions…</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
   </main>
 
   <div id="site-footer"></div>
+
+  <div class="resolution-backdrop" id="event-review-modal" role="dialog" aria-modal="true" aria-labelledby="event-review-title" aria-hidden="true">
+    <div class="modal event-review-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" id="event-review-category"></p>
+          <h2 id="event-review-title">Review event submission</h2>
+          <p class="muted" id="event-review-submitted"></p>
+        </div>
+        <button class="modal-close" type="button" data-close-event-review aria-label="Close">×</button>
+      </div>
+      <p class="muted">Review the submitted details. Empty fields indicate information that was not provided.</p>
+      <dl class="event-review-details" id="event-review-readonly">
+        <div><dt>Event title</dt><dd id="event-review-name"></dd></div>
+        <div><dt>Event date</dt><dd id="event-review-date"></dd></div>
+        <div><dt>Event start time</dt><dd id="event-review-start"></dd></div>
+        <div><dt>Event end time</dt><dd id="event-review-end"></dd></div>
+        <div><dt>Event category</dt><dd id="event-review-category-value"></dd></div>
+        <div><dt>Street address</dt><dd id="event-review-address"></dd></div>
+        <div><dt>City</dt><dd id="event-review-city"></dd></div>
+        <div><dt>ZIP code</dt><dd id="event-review-zip"></dd></div>
+      </dl>
+      <form class="modal-form event-review-form" id="event-review-form" hidden>
+        <div><label for="event-edit-name">Event title *</label><input id="event-edit-name" name="event_name" type="text" maxlength="120" required></div>
+        <div><label for="event-edit-date">Event date *</label><input id="event-edit-date" name="date" type="date" required></div>
+        <div><label for="event-edit-start">Event start time *</label><input id="event-edit-start" name="start_time" type="time" required></div>
+        <div><label for="event-edit-end">Event end time *</label><input id="event-edit-end" name="end_time" type="time" required></div>
+        <div><label for="event-edit-category">Event category *</label>
+          <select id="event-edit-category" name="event_category_id" required>
+            <option value="">Select a category</option>
+            <option value="1">BYU</option><option value="2">Community</option>
+            <option value="3">Arts &amp; Culture</option><option value="4">Wellness</option>
+          </select>
+        </div>
+        <div><label for="event-edit-address">Street address *</label><input id="event-edit-address" name="street_address" type="text" required></div>
+        <div><label for="event-edit-city">City *</label>
+          <select id="event-edit-city" name="city" required>
+            <option value="">Select a city</option><option value="Provo">Provo</option><option value="Orem">Orem</option>
+          </select>
+        </div>
+        <div><label for="event-edit-zip">ZIP code *</label><input id="event-edit-zip" name="zip_code" type="text" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" title="Enter a five-digit ZIP code" required></div>
+      </form>
+      <p id="event-review-status" class="muted" role="status" aria-live="polite"></p>
+      <div class="resolution-form-actions">
+        <button class="button secondary" type="button" data-close-event-review>Close</button>
+        <button class="button secondary" id="edit-event-submission" type="button">Edit details</button>
+        <button class="button secondary" id="cancel-event-edit" type="button" hidden>Cancel edit</button>
+        <button class="button primary" id="save-event-edit" type="button" hidden>Save edits</button>
+        <button class="button primary" id="approve-event-submission" type="button">Approve event</button>
+      </div>
+    </div>
+  </div>
 
   <div class="resolution-backdrop" id="resolve-report-modal" role="dialog" aria-modal="true" aria-labelledby="resolve-report-title" aria-hidden="true">
     <div class="modal">
