@@ -28,15 +28,7 @@
     <div class="metrics-table-wrap">
       <table class="metrics-table">
         <caption class="visually-hidden">Chatbot answer validity summary from Supabase</caption>
-        <thead>
-          <tr>
-            <th scope="col">Valid answers</th>
-            <th scope="col">No answers</th>
-            <th scope="col">Classified answers</th>
-            <th scope="col">Valid answer percent</th>
-            <th scope="col">No answer percent</th>
-          </tr>
-        </thead>
+        <thead id="answer-metrics-head"></thead>
         <tbody id="metrics-table-body">
           <tr><td class="metrics-placeholder" colspan="5">Loading metrics…</td></tr>
         </tbody>
@@ -45,7 +37,7 @@
   </section>
 
   <section class="panel metrics-panel metrics-panel-mint metrics-section" aria-labelledby="feedback-table-title">
-    <div class="metrics-panel-heading metrics-panel-toolbar">
+    <div class="metrics-panel-heading">
       <div>
         <h2 id="feedback-table-title">Chat satisfaction summary</h2>
         <p id="feedback-metrics-status" class="muted" role="status" aria-live="polite">Loading feedback metrics…</p>
@@ -91,9 +83,26 @@
   </section>
 
   <section class="panel metrics-panel metrics-panel-coral metrics-section" aria-labelledby="monthly-use-title">
-    <div class="metrics-panel-heading">
-      <h2 id="monthly-use-title">Monthly chatbot usage</h2>
-      <p id="repeat-usage-status" class="muted" role="status" aria-live="polite">Loading repeat usage…</p>
+    <div class="metrics-panel-heading metrics-panel-toolbar">
+      <div>
+        <h2 id="monthly-use-title">Monthly chatbot usage</h2>
+        <p id="repeat-usage-status" class="muted" role="status" aria-live="polite">Loading repeat usage…</p>
+      </div>
+      <details class="metrics-filter" id="repeat-usage-filter">
+        <summary>Filter months</summary>
+        <div class="metrics-filter-content metrics-filter-groups">
+          <div class="metrics-filter-months">
+            <strong>Calendar months</strong>
+            <label><input type="checkbox" id="select-all-usage-months" checked> Select all months</label>
+            <div id="repeat-usage-month-options"></div>
+          </div>
+          <div class="metrics-filter-groups">
+            <strong>Other periods</strong>
+            <label><input type="checkbox" id="include-month-to-date" checked> Month to date</label>
+            <label><input type="checkbox" id="include-last-30-days" checked> Last 30 days</label>
+          </div>
+        </div>
+      </details>
     </div>
     <div class="metrics-table-wrap">
       <table class="metrics-table">
