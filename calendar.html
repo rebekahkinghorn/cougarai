@@ -198,6 +198,28 @@
         required
       >
 
+
+      <!-- Event Start Time -->
+      <label for="suggest-time">Event Start Time *</label>
+      <input
+      type="time"
+      id="suggest-time"
+      name="time"
+      required
+      >
+
+
+      <!-- Event End Time -->
+      <label for="suggest-end-time">Event End Time *</label>
+      <input
+        type="time"
+        id="suggest-end-time"
+        name="end_time"
+        required
+      >
+
+
+
       <!-- Event Category -->
       <label for="suggest-category">Event Category *</label>
       <select id="suggest-category"
@@ -262,10 +284,14 @@
           Cancel
         </button>
 
-        <button type="submit"
-                class="button primary">
-          Submit Suggestion
+        
+        <button
+            type="submit"
+            class="button primary"
+            id="submit-suggest-event">
+            Submit Suggestion
         </button>
+
       </div>
 
     </form>
@@ -988,6 +1014,154 @@ document.addEventListener("DOMContentLoaded", () => {
         "suggest-event-message"
     );
 
+
+    // Get the form's submit button
+    const submitSuggestButton = document.getElementById(
+        "submit-suggest-event"
+    );
+
+    // Reuse the existing Supabase client
+    const supabaseClient = window.cougarAuth?.client;
+
+
+
+// ==========================================
+// EVENT DATE VALIDATION
+// ==========================================
+
+// Get the event date input
+const suggestDate = document.getElementById("suggest-date");
+
+// Get today's date using the user's local time
+function getLocalToday() {
+    const today = new Date();
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+// Prevent users from choosing a past date
+suggestDate.min = getLocalToday();
+
+
+// ==========================================
+// EVENT DATE AND TIME VALIDATION
+// ==========================================
+
+const suggestTime = document.getElementById("suggest-time");
+const suggestEndTime = document.getElementById("suggest-end-time");
+
+// Check whether the selected event is in the future
+
+function validateEventDateTime() {
+
+    const dateValue = suggestDate.value;
+    const startValue = suggestTime.value;
+    const endValue = suggestEndTime.value;
+
+    // Clear previous validation errors
+    suggestDate.setCustomValidity("");
+    suggestTime.setCustomValidity("");
+    suggestEndTime.setCustomValidity("");
+
+    if (!dateValue || !startValue || !endValue) {
+        return;
+    }
+
+    // Combine the event date with both times
+    const startDateTime = new Date(
+        `${dateValue}T${startValue}`
+    );
+
+    const endDateTime = new Date(
+        `${dateValue}T${endValue}`
+    );
+
+    const now = new Date();
+
+    // Check that both date/time values are valid
+    if (
+        Number.isNaN(startDateTime.getTime()) ||
+        Number.isNaN(endDateTime.getTime())
+    ) {
+        suggestTime.setCustomValidity(
+            "Please enter a valid event date and time."
+        );
+        return;
+    }
+
+    // Event must start in the future
+    if (startDateTime <= now) {
+        suggestTime.setCustomValidity(
+            "The event must start in the future."
+        );
+    }
+
+    // Event must end after it starts
+    if (endDateTime <= startDateTime) {
+        suggestEndTime.setCustomValidity(
+            "The end time must be after the start time."
+        );
+    }
+}
+
+
+// Revalidate whenever the date or time changes
+suggestDate.addEventListener("change", validateEventDateTime);
+suggestTime.addEventListener("input", validateEventDateTime);
+suggestEndTime.addEventListener("input", validateEventDateTime);
+
+
+
+// ==========================================
+// PROVO / OREM ZIP CODE VALIDATION
+// ==========================================
+
+// Get the city and ZIP code inputs
+const suggestCity = document.getElementById("suggest-city");
+const suggestZip = document.getElementById("suggest-zip");
+
+// Allowed ZIP codes for each city
+const allowedZipCodes = {
+    Provo: ["84601", "84602", "84604", "84605", "84606"],
+    Orem: ["84057", "84058", "84059", "84097"]
+};
+
+// Check whether the ZIP code matches the city
+function validateZipCode() {
+
+    const city = suggestCity.value;
+    const zip = suggestZip.value.trim();
+
+    // Clear any previous ZIP code error
+    suggestZip.setCustomValidity("");
+
+    // Wait until both fields have values
+    if (!city || !zip) {
+        return;
+    }
+
+    // Check the selected city's allowed ZIP codes
+    if (!allowedZipCodes[city]?.includes(zip)) {
+
+        suggestZip.setCustomValidity(
+            "Please enter a valid ZIP code for " + city + "."
+        );
+
+    }
+}
+
+// Validate when the ZIP code changes
+suggestZip.addEventListener("input", validateZipCode);
+
+// Validate when the selected city changes
+suggestCity.addEventListener("change", validateZipCode);
+
+
+
     // Remember where the user was before opening the popup
     let previousFocus = null;
 
@@ -1058,18 +1232,137 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    // Temporarily handle form submission
-    suggestForm.addEventListener("submit", (event) => {
+    
 
-        // Prevent the page from refreshing
-        event.preventDefault();
+suggestForm.addEventListener("submit", async (event) => {
 
-        suggestMessage.style.color = "var(--blue-dark)";
+    event.preventDefault();
 
+    // Recheck the form before submitting
+    suggestDate.min = getLocalToday();
+    validateEventDateTime();
+    validateZipCode();
+
+    if (!suggestForm.reportValidity()) {
+        return;
+    }
+
+    // Make sure Supabase is available
+    if (!supabaseClient) {
+        suggestMessage.style.color = "#b42318";
         suggestMessage.textContent =
-            "Form completed! Submission functionality is coming next.";
+            "Database connection unavailable. Please try again.";
+        return;
+    }
 
-    });
+    // Check that the user is signed in
+    const { data: userData, error: userError } =
+        await supabaseClient.auth.getUser();
+
+    if (userError || !userData.user) {
+        suggestMessage.style.color = "#b42318";
+        suggestMessage.textContent =
+            "Please sign in before suggesting an event.";
+        return;
+    }
+
+    // Prevent duplicate submissions
+    submitSuggestButton.disabled = true;
+    submitSuggestButton.textContent = "Submitting...";
+
+    try {
+
+        // Collect form values
+        const values = new FormData(suggestForm);
+
+        const title = String(values.get("title")).trim();
+        const date = String(values.get("date"));
+        const startTime = String(values.get("time"));
+        const endTime = String(values.get("end_time"));
+
+        const category = String(values.get("category"));
+        const address = String(values.get("address")).trim();
+        const city = String(values.get("city"));
+        const zip = String(values.get("zip")).trim();
+
+        // Map form categories to database category IDs
+        const categoryIds = {
+            byu: 1,
+            community: 2,
+            arts: 3,
+            wellness: 4
+        };
+
+        const categoryId = categoryIds[category];
+
+        if (!categoryId) {
+            throw new Error("Please select a valid category.");
+        }
+
+        // Combine date and time into timestamps
+        // This assumes the browser is using Utah local time.
+        const startAt = new Date(
+            `${date}T${startTime}`
+        ).toISOString();
+
+        const endAt = new Date(
+            `${date}T${endTime}`
+        ).toISOString();
+
+        // Create the full location string
+        const location =
+            `${address}, ${city}, UT ${zip}`;
+
+        // Build the database record
+        const newEvent = {
+            event_name: title,
+            start_at: startAt,
+            end_at: endAt,
+            location: location,
+            street_address: address,
+            city: city,
+            zip_code: zip,
+            event_category_id: categoryId,
+            user_id: userData.user.id,
+            is_published: false
+        };
+
+        // Insert into the existing Supabase table
+        const { error } = await supabaseClient
+            .from("User_Submitted_Events")
+            .insert(newEvent);
+
+        if (error) {
+            throw error;
+        }
+
+        // Show success only after Supabase confirms
+        suggestMessage.style.color = "#16794a";
+        suggestMessage.textContent =
+            "Your event suggestion was submitted successfully!";
+
+        // Clear the form after successful submission
+        suggestForm.reset();
+
+    } catch (error) {
+
+        console.error("Event submission error:", error);
+
+        suggestMessage.style.color = "#b42318";
+        suggestMessage.textContent =
+            error.message ||
+            "Unable to submit your event. Please try again.";
+
+    } finally {
+
+        submitSuggestButton.disabled = false;
+        submitSuggestButton.textContent = "Submit Suggestion";
+
+    }
+
+});
+
+
 
 });
 </script>
