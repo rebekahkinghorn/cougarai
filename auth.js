@@ -29,9 +29,12 @@
     }
   };
 
-  // Prefer the username chosen at sign up; fall back to the part of the email before the @.
-  const getDisplayName = (user) =>
-    (user?.user_metadata?.username || user?.email?.split("@")[0] || "friend").trim();
+  // Prefer the saved first and last name; retain fallbacks for existing accounts.
+  const getDisplayName = (user) => {
+    const metadata = user?.user_metadata || {};
+    const fullName = [metadata.first_name, metadata.last_name].filter(Boolean).join(" ").trim();
+    return fullName || user?.email?.split("@")[0] || "friend";
+  };
 
   const showGreeting = (user) => {
     updateAdminLinks(user);

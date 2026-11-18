@@ -1,0 +1,430 @@
+[
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions",
+    "url": "https://www.byu.edu/admissions"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Catalog Admissions Policy",
+    "url": "https://catalog.byu.edu/policy/admissions"
+  },
+  {
+    "topic": "housing",
+    "title": "BYU Catalog Housing Policy",
+    "url": "https://catalog.byu.edu/policy/housing"
+  },
+  {
+    "topic": "housing",
+    "title": "BYU On-Campus Housing FAQ",
+    "url": "https://www.byu.edu/housing/oncampushousing/sng_faq.shtml"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid and Scholarships",
+    "url": "https://catalog.byu.edu/policy/financial-aid-and-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Tuition and Fees",
+    "url": "https://catalog.byu.edu/policy/tuition-and-fees"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Dates and Deadlines",
+    "url": "https://catalog.byu.edu/policy/dates-and-deadlines"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registration Policy",
+    "url": "https://policy.byu.edu/view/registration-policy"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Campus Life",
+    "url": "https://www.byu.edu/campus-life"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU First-Year Experience",
+    "url": "https://catalog.byu.edu/pages/department-SHUvhx8EkAwlOCPxRFxt"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Student Success Center",
+    "url": "https://ssc.byu.edu/"
+  },
+  {
+    "topic": "history",
+    "title": "BYU Department of History",
+    "url": "https://history.byu.edu/"
+  },
+  {
+    "topic": "history",
+    "title": "BYU 150 Timeline",
+    "url": "https://150.byu.edu/Timeline"
+  },
+  {
+    "topic": "leadership",
+    "title": "BYU President's Office",
+    "url": "https://president.byu.edu/"
+  },
+  {
+    "topic": "leadership",
+    "title": "BYU Catalog Administration",
+    "url": "https://catalog.byu.edu/about/administration"
+  },
+  {
+    "topic": "leadership",
+    "title": "Becoming BYU",
+    "url": "https://www.byu.edu/becoming"
+  },
+  {
+    "topic": "events",
+    "title": "BYU Events Calendar",
+    "url": "https://calendar.byu.edu/"
+  },
+  {
+    "topic": "events",
+    "title": "BYU Performing Arts Events",
+    "url": "https://pam.byu.edu/events/"
+  },
+  {
+    "topic": "events",
+    "title": "BYU Speeches and Devotionals",
+    "url": "https://speeches.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Accountancy",
+    "url": "https://marriott.byu.edu/acc/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Finance",
+    "url": "https://marriott.byu.edu/bsfin/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Information Systems",
+    "url": "https://marriottschool.byu.edu/infosys/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Experience Design and Management",
+    "url": "https://marriott.byu.edu/exdm/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Entrepreneurial Management",
+    "url": "https://marriott.byu.edu/bsmgt/academics/emphases/entrepreneurship"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Global Supply Chain Management",
+    "url": "https://marriott.byu.edu/gscm/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Human Resource Management",
+    "url": "https://marriottschool.byu.edu/hrm/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Marketing",
+    "url": "https://marriottschool.byu.edu/marketing/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Chemistry and Biochemistry",
+    "url": "https://www.chem.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Computer Science",
+    "url": "https://cs.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Geological Sciences",
+    "url": "https://geology.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Mathematics",
+    "url": "https://math.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Mathematics Education",
+    "url": "https://mathed.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Physics and Astronomy",
+    "url": "https://www.physics.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Statistics",
+    "url": "https://statistics.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Counseling Psychology and Special Education",
+    "url": "https://education.byu.edu/cpse/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Communication Disorders",
+    "url": "https://education.byu.edu/comd/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Educational Leadership and Foundations",
+    "url": "https://education.byu.edu/edlf/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Instructional Psychology and Technology",
+    "url": "https://education.byu.edu/ipt/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Teacher Education",
+    "url": "https://education.byu.edu/ted/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Chemical Engineering",
+    "url": "https://chemicalengineering.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Civil and Construction Engineering",
+    "url": "https://ceen.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Electrical and Computer Engineering",
+    "url": "https://www.ee.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Mechanical Engineering",
+    "url": "https://me.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Manufacturing Engineering",
+    "url": "https://mfgen.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Technology and Engineering Studies",
+    "url": "https://tes.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Economics",
+    "url": "https://economics.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Anthropology",
+    "url": "https://anthropology.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU School of Family Life",
+    "url": "https://familylife.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Geography",
+    "url": "https://geography.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Political Science",
+    "url": "https://politicalscience.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Psychology",
+    "url": "https://psychology.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU School of Social Work",
+    "url": "https://socialwork.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Sociology",
+    "url": "https://sociology.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Women's Studies",
+    "url": "https://womensstudies.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Civic Engagement Leadership",
+    "url": "https://civicengagement.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Communications",
+    "url": "https://comms.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Art",
+    "url": "https://art.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Dance",
+    "url": "https://dance.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Design",
+    "url": "https://designdept.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Music",
+    "url": "https://music.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Theatre and Media Arts",
+    "url": "https://tma.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Asian and Near Eastern Languages",
+    "url": "https://asianneareastern.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Center for Language Studies",
+    "url": "https://cls.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU English",
+    "url": "https://english.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU French and Italian",
+    "url": "https://fi.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU German and Russian",
+    "url": "https://germanrussian.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Comparative Arts and Letters",
+    "url": "https://comparativeartsletters.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Linguistics",
+    "url": "https://ling.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Philosophy",
+    "url": "https://philosophy.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Spanish and Portuguese",
+    "url": "https://sp.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Biology",
+    "url": "https://biology.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Cell Biology and Physiology",
+    "url": "https://cell.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Exercise Sciences",
+    "url": "https://exsc.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Microbiology and Molecular Biology",
+    "url": "https://mmbio.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Neuroscience",
+    "url": "https://neuroscience.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Nutrition, Dietetics, and Food Science",
+    "url": "https://ndfs.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Plant and Wildlife Sciences",
+    "url": "https://pws.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Public Health",
+    "url": "https://ph.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Nursing",
+    "url": "https://nursing.byu.edu/"
+  },
+  {
+    "topic": "departments",
+    "title": "BYU Ancient Scripture",
+    "url": "https://religion.byu.edu/"
+  },
+  {
+    "topic": "dining",
+    "title": "BYU Campus Dining Locations",
+    "url": "https://www.byu.edu/housing/oncampushousing/conf_dining_locations.shtml"
+  },
+  {
+    "topic": "dining",
+    "title": "BYU Housing and Meal Plan Rates",
+    "url": "https://housing.byu.edu/oncampushousing/sng_rates.shtml"
+  }, 
+
+  {
+    "topic": "first-year-experience",
+    "title": "Office of FYE",
+    "url": "https://fye.byu.edu"
+  }, 
+
+  {
+    "topic": "academic-advising",
+    "title": "BYU Academic Advising",
+    "url": "https://advisement.byu.edu/advisement-centers"
+  }, 
+
+  {
+     "topic": "academic-advising",
+    "title": "University Advisement Center",
+    "url": "https://universityadvisement.byu.edu"
+  }
+]

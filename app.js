@@ -352,16 +352,119 @@ document.addEventListener("DOMContentLoaded", async () => {
     }).format(date);
   };
 
+  const appendInlineMarkdown = (parent, text) => {
+    const tokenPattern = /(\[([^\]]+)\]\((https:\/\/[^\s)]+)\)|`([^`\n]+)`|\*\*([^*\n]+)\*\*|__([^_\n]+)__|\*([^*\n]+)\*|_([^_\n]+)_)/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = tokenPattern.exec(text)) !== null) {
+      parent.append(document.createTextNode(text.slice(lastIndex, match.index)));
+
+      if (match[2] && match[3]) {
+        try {
+          const url = new URL(match[3]);
+          if (url.hostname === "byu.edu" || url.hostname.endsWith(".byu.edu")) {
+            const link = document.createElement("a");
+            link.href = url.href;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = match[2];
+            parent.append(link);
+          } else {
+            parent.append(document.createTextNode(match[0]));
+          }
+        } catch {
+          parent.append(document.createTextNode(match[0]));
+        }
+      } else {
+        const element = document.createElement(
+          match[4] ? "code" : match[5] || match[6] ? "strong" : "em"
+        );
+        element.textContent = match[4] || match[5] || match[6] || match[7] || match[8];
+        parent.append(element);
+      }
+
+      lastIndex = tokenPattern.lastIndex;
+    }
+
+    parent.append(document.createTextNode(text.slice(lastIndex)));
+  };
+
+  const renderAssistantMarkdown = (text) => {
+    const content = document.createElement("div");
+    content.className = "message-content";
+    const lines = String(text).replace(/\r\n?/g, "\n").split("\n");
+    let paragraphLines = [];
+    let activeList = null;
+
+    const flushParagraph = () => {
+      if (!paragraphLines.length) return;
+      const paragraph = document.createElement("p");
+      appendInlineMarkdown(paragraph, paragraphLines.join(" "));
+      content.append(paragraph);
+      paragraphLines = [];
+    };
+
+    const closeList = () => {
+      activeList = null;
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushParagraph();
+        closeList();
+        return;
+      }
+
+      const headingMatch = trimmed.match(/^(#{1,3})\s+(.+)$/);
+      if (headingMatch) {
+        flushParagraph();
+        closeList();
+        const heading = document.createElement(`h${headingMatch[1].length + 2}`);
+        appendInlineMarkdown(heading, headingMatch[2]);
+        content.append(heading);
+        return;
+      }
+
+      const unorderedMatch = trimmed.match(/^[-*]\s+(.+)$/);
+      const orderedMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
+      if (unorderedMatch || orderedMatch) {
+        flushParagraph();
+        const listTag = orderedMatch ? "OL" : "UL";
+        if (!activeList || activeList.tagName !== listTag) {
+          activeList = document.createElement(listTag.toLowerCase());
+          content.append(activeList);
+        }
+        const item = document.createElement("li");
+        appendInlineMarkdown(item, (orderedMatch || unorderedMatch)[1]);
+        activeList.append(item);
+        return;
+      }
+
+      closeList();
+      paragraphLines.push(trimmed);
+    });
+
+    flushParagraph();
+    return content;
+  };
+
   const addMessage = (text, type = "bot", timestamp = null) => {
     if (!chatMessages) return;
 
     const message = document.createElement("div");
     message.className = `message${type === "user" ? " user" : ""}`;
-    message.textContent = text;
+    if (type === "user") {
+      message.textContent = text;
+    } else {
+      message.append(renderAssistantMarkdown(text));
+    }
 
     const details = document.createElement("small");
+    details.className = "message-meta";
     const time = formatChatTime(timestamp);
-    details.textContent = `${type === "user" ? "You" : "BYU Guide"}${time ? ` · ${time}` : ""}`;
+    details.textContent = `${type === "user" ? "You" : "CougarAI"}${time ? ` · ${time}` : ""}`;
     message.appendChild(details);
 
     chatMessages.appendChild(message);
@@ -372,7 +475,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!chatMessages) return;
     chatMessages.replaceChildren();
     addMessage(
-      "Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo."
+      "Hi! I’m CougarAI. Ask me anything about getting ready for campus, finding resources, or exploring Provo."
     );
   };
 
@@ -525,7 +628,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const indicator = document.createElement("div");
     indicator.className = "message typing-indicator";
     indicator.setAttribute("role", "status");
-    indicator.setAttribute("aria-label", "BYU Guide is thinking");
+    indicator.setAttribute("aria-label", "CougarAI is thinking");
     indicator.innerHTML = '<span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span>';
     chatMessages.appendChild(indicator);
     chatMessages.scrollTop = chatMessages.scrollHeight;
