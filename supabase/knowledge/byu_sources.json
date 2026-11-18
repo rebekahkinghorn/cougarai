@@ -207,7 +207,7 @@
   {
     "topic": "departments",
     "title": "BYU Electrical and Computer Engineering",
-    "url": "https://www.ee.byu.edu/"
+    "url": "https://ecedev.byu.edu/"
   },
   {
     "topic": "departments",
@@ -426,5 +426,1090 @@
      "topic": "academic-advising",
     "title": "University Advisement Center",
     "url": "https://universityadvisement.byu.edu"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Major Exploration Strategies",
+    "url": "https://universityadvisement.byu.edu/00000174-4b90-da1b-affe-5ffb83770000/major-exploration-strategies"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Major FAQs",
+    "url": "https://universityadvisement.byu.edu/00000174-12b7-d1a3-a5fd-b6f74dbd0000/frequently-asked-questions-majors"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Choosing a Major",
+    "url": "https://universityadvisement.byu.edu/00000173-da4b-d849-a177-dedf92130000/things-to-consider-when-choosing-a-major"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Advisement Resources",
+    "url": "https://catalog.byu.edu/about/advisement-resources"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU College of Family, Home, and Social Sciences Advisement",
+    "url": "https://catalog.byu.edu/colleges/fhss"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Liberal Arts Advisement and Careers",
+    "url": "https://liberalarts.byu.edu/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU College of Humanities Advisement",
+    "url": "https://catalog.byu.edu/colleges/humanities"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU College of Fine Arts and Communications Advisement",
+    "url": "https://catalog.byu.edu/colleges/fine-arts-and-communications"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Fine Arts and Communications Advisement Center",
+    "url": "https://cfacadvise.byu.edu/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU College of Life Sciences Advisement",
+    "url": "https://catalog.byu.edu/colleges/life-sciences"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Life Sciences Advisement",
+    "url": "https://lsa.byu.edu/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Marriott Advisement Contact and Advisor Information",
+    "url": "https://marriott.byu.edu/advisement/center/contact/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU McKay School Majors and Minors Advisement",
+    "url": "https://education.byu.edu/advisement/majors_and_minors"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Computer Science Advisement",
+    "url": "https://cs.byu.edu/advisement/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Electrical and Computer Engineering Advisement",
+    "url": "https://ecedev.byu.edu/undergraduate/electrical-engineering/academic-advising/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Electrical and Computer Engineering Advisors",
+    "url": "https://ecedev.byu.edu/people/advisors/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Pre-Professional Advisement Center",
+    "url": "https://ppa.byu.edu/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Enrollment Services",
+    "url": "https://enrollment.byu.edu/"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Withdrawing from One or All Classes",
+    "url": "https://enrollment.byu.edu/registrar/withdrawing-from-one-vs-all-classes"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Enrollment Services Checklists",
+    "url": "https://enrollment.byu.edu/checklists"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU New Freshman Checklist",
+    "url": "https://enrollment.byu.edu/checklist/new-freshman"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Transfer Student Checklist",
+    "url": "https://enrollment.byu.edu/checklist/transfer-student"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU International Student Checklist",
+    "url": "https://enrollment.byu.edu/checklist/international-student"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Challenge Exams and Placement",
+    "url": "https://enrollment.byu.edu/registrar/challenge-exams"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU AP and IB Credit Guides",
+    "url": "https://enrollment.byu.edu/registrar/ap-ib-guides"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Career Assessments",
+    "url": "https://universityadvisement.byu.edu/career-assessments"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Enrollment Services AP Credit Guide",
+    "url": "https://enrollment.byu.edu/ap-guide-2026"
+  },
+  {
+    "topic": "accessibility",
+    "title": "BYU University Accessibility Center",
+    "url": "https://uac.byu.edu/"
+  },
+  {
+    "topic": "accessibility",
+    "title": "BYU Accommodation of Persons with Disabilities Policy",
+    "url": "https://policy.byu.edu/view/accommodation-of-persons-with-disabilities-at-byu-policy"
+  },
+  {
+    "topic": "accessibility",
+    "title": "BYU Accommodation of Persons with Disabilities Procedures",
+    "url": "https://policy.byu.edu/view/accommodation-of-persons-with-disabilities-at-byu-procedures"
+  },
+  {
+    "topic": "accessibility",
+    "title": "BYU Digital Content Accessibility Policy",
+    "url": "https://policy.byu.edu/view/digital-content-accessibility-policy"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions What We Look For",
+    "url": "https://enrollment.byu.edu/admissions/what-we-look-for"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Essays and Activities",
+    "url": "https://enrollment.byu.edu/admissions/essays-and-activities"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Recommendations",
+    "url": "https://enrollment.byu.edu/admissions/recommendations"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Educational History",
+    "url": "https://enrollment.byu.edu/admissions/educational-history"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Submitting Transcripts",
+    "url": "https://enrollment.byu.edu/admissions/submitting-transcripts-to-byu"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU International Admissions",
+    "url": "https://enrollment.byu.edu/admissions/international"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Church Account Instructions",
+    "url": "https://enrollment.byu.edu/admissions/church-account"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Submitting Transcripts",
+    "url": "https://enrollment.byu.edu/submitting-transcripts-to-byu"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid Checklist",
+    "url": "https://enrollment.byu.edu/financial-aid-checklist"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Departing Missionary Checklist",
+    "url": "https://enrollment.byu.edu/departing-missionary-checklist"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Freshman Applicants",
+    "url": "https://enrollment.byu.edu/freshman-applicants"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Evaluating International Work",
+    "url": "https://enrollment.byu.edu/evaluating-international-work"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Transfer Applicants",
+    "url": "https://enrollment.byu.edu/admissions/transfer-applicants"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU International Students Admissions",
+    "url": "https://enrollment.byu.edu/admissions/international-students"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU How to Apply",
+    "url": "https://enrollment.byu.edu/admissions/how-to-apply"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Undergraduate English Proficiency Requirement",
+    "url": "https://enrollment.byu.edu/admissions/byu-undergraduate-english-proficiency-requirement"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Immigration Information for Applicants",
+    "url": "https://enrollment.byu.edu/admissions/immigration-information"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU International Student Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/international-student-scholarships"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Application Deadlines",
+    "url": "https://enrollment.byu.edu/admissions/application-deadlines"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU International Applicant FAQs",
+    "url": "https://enrollment.byu.edu/international-applicant-faqs"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Entrance Statistics",
+    "url": "https://enrollment.byu.edu/admissions/entrance-stats"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Campus Tours",
+    "url": "https://enrollment.byu.edu/campus-tours"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admissions Preparation Recommendations",
+    "url": "https://enrollment.byu.edu/admissions/preparation-recommendations"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admission Representatives",
+    "url": "https://enrollment.byu.edu/admission-reps"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Request Information",
+    "url": "https://enrollment.byu.edu/request-info"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Applicant Types",
+    "url": "https://enrollment.byu.edu/applicant-types"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Application Help",
+    "url": "https://enrollment.byu.edu/application-help"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU ACT and SAT Scores",
+    "url": "https://enrollment.byu.edu/act-sat-scores"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Recommendations for Applicants",
+    "url": "https://enrollment.byu.edu/recommendations"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Conduct Commitments",
+    "url": "https://enrollment.byu.edu/conduct-commitments"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Essays and Activities for Applicants",
+    "url": "https://enrollment.byu.edu/essays-and-activity"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Application Fee Waivers",
+    "url": "https://enrollment.byu.edu/fee-waivers"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Holistic Admissions Review",
+    "url": "https://enrollment.byu.edu/holistic-review"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Academic Calendar",
+    "url": "https://academiccalendar.byu.edu/"
+  },
+  {
+    "topic": "admissions",
+    "title": "Returning to BYU",
+    "url": "https://enrollment.byu.edu/returning-to-byu"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admission Guide Deadlines",
+    "url": "https://enrollment.byu.edu/admission-guide-deadlines"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admission Guide Majors",
+    "url": "https://enrollment.byu.edu/admission-guide-190-majors"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Admission Guide Paying for School",
+    "url": "https://enrollment.byu.edu/admission-guide-paying-for-school"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admission Guide Checklist",
+    "url": "https://enrollment.byu.edu/admission-guide-admissions-checklist"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admission Guide Inspiring Learning",
+    "url": "https://enrollment.byu.edu/admission-guide-inspiring-learning"
+  },
+  {
+    "topic": "admissions",
+    "title": "BYU Admission Guide International Background",
+    "url": "https://enrollment.byu.edu/admission-guide-international-background"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Missionaries and Enrollment",
+    "url": "https://enrollment.byu.edu/missionaries"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Parent of a Missionary Checklist",
+    "url": "https://enrollment.byu.edu/checklist/parent-of-a-missionary"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Returning Missionary Checklist",
+    "url": "https://enrollment.byu.edu/returning-missionary-checklist"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Missionary Deferment Workshop",
+    "url": "https://enrollment.byu.edu/missionary-deferment-workshop"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Edit or Cancel a Mission Deferment",
+    "url": "https://enrollment.byu.edu/edit-or-cancel-a-mission-deferment"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Departing and Returning Missionaries",
+    "url": "https://enrollment.byu.edu/departing-and-returning-missionaries"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Deferring or Leaving School",
+    "url": "https://enrollment.byu.edu/registrar/deferring-or-leaving-school"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid Loans and Deferments",
+    "url": "https://enrollment.byu.edu/financial-aid/loans-and-deferments"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Mission Deferments for Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/mission-deferments-for-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid",
+    "url": "https://enrollment.byu.edu/financial-aid"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU My Aid Portal",
+    "url": "https://enrollment.byu.edu/my-aid-portal"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU FAFSA Updates for 2026–2027",
+    "url": "https://enrollment.byu.edu/financial-aid/important-updates-to-the-FAFSA-for-2026-2027"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU FAFSA Updates for 2027–2028",
+    "url": "https://enrollment.byu.edu/important-updates-for-2027-28"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Federal Aid Updates",
+    "url": "https://enrollment.byu.edu/federal-aid-updates-one-big-beautiful-bill-act"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "How to Financially Prepare for BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/how-to-financially-prepare-for-byu"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Scholarships",
+    "url": "https://enrollment.byu.edu/scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Applying for BYU Scholarships",
+    "url": "https://enrollment.byu.edu/applying-for-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Scholarship Types",
+    "url": "https://enrollment.byu.edu/scholarship-types"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU New Freshman Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/new-freshman-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Continuing Student Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/former-continuing-student-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Transfer Student Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/transfer-students-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU College and Department Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/byu-college-departmental-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Spring and Summer Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/spring-summer-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Off-Campus Scholarships",
+    "url": "https://enrollment.byu.edu/financial-aid/off-campus-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Scholarship Eligibility",
+    "url": "https://enrollment.byu.edu/financial-aid/eligibility-for-scholarships"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Scholarship FAQs",
+    "url": "https://enrollment.byu.edu/scholarship-faqs"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Applying for Federal Student Aid at BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/applying-for-federal-aid"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "The FAFSA at BYU",
+    "url": "https://enrollment.byu.edu/the-fafsa"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid Verification",
+    "url": "https://enrollment.byu.edu/verification"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Provisional Independent Student Status",
+    "url": "https://enrollment.byu.edu/financial-aid/provisional-independent-student-status"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Homelessness Question on the FAFSA at BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/homeless-question-on-the-fafsa"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Parent Refusal for Federal Aid",
+    "url": "https://enrollment.byu.edu/financial-aid/parent-refusal"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid by Academic Program",
+    "url": "https://enrollment.byu.edu/financial-aid-available-by-academic-program"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Cougar Pell Promise",
+    "url": "https://enrollment.byu.edu/cougar-pell-promise"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Federal Pell Grants at BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/federal-pell-grants"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Federal Subsidized and Unsubsidized Loans",
+    "url": "https://enrollment.byu.edu/federal-subsidized-and-unsubsidized-loans"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Alternative Private Loans at BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/alternative-private-loans"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Federal PLUS Loans at BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/federal-plus-loans"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Military Benefits",
+    "url": "https://enrollment.byu.edu/financial-aid/military-benefits"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Veterans Education Benefits at BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/veterans-education-benefits"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "VA Certification Request Form",
+    "url": "https://enrollment.byu.edu/financial-aid/va-certification-request-form"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Military Tuition Assistance at BYU",
+    "url": "https://enrollment.byu.edu/financial-aid/military-tuition-assistance"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Military Resources and Policies",
+    "url": "https://enrollment.byu.edu/financial-aid/military-resources-and-policies"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Loan Repayment",
+    "url": "https://enrollment.byu.edu/financial-aid/loan-repayment"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Cost of Attendance",
+    "url": "https://enrollment.byu.edu/cost-of-attendance"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid Petitions",
+    "url": "https://enrollment.byu.edu/financial-aid-petitions"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Student Accounts",
+    "url": "https://enrollment.byu.edu/student-accounts"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Tuition Payments",
+    "url": "https://enrollment.byu.edu/tuition"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Forms of Payment",
+    "url": "https://enrollment.byu.edu/forms-of-payment"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Short-Term Loans",
+    "url": "https://enrollment.byu.edu/short-term-loans"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Student Refunds",
+    "url": "https://enrollment.byu.edu/refunds"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Past Due Accounts",
+    "url": "https://enrollment.byu.edu/past-due-accounts"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Form 1098-T",
+    "url": "https://enrollment.byu.edu/1098t"
+  },
+  {
+    "topic": "student-resources",
+    "title": "International Student Deposit",
+    "url": "https://enrollment.byu.edu/international-student-deposit"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU ECSI Long-Term Loans",
+    "url": "https://enrollment.byu.edu/student-financials/byu-ecsi-long-term-loans"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Student Success Resources",
+    "url": "https://enrollment.byu.edu/student-success"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Academic Student Success Resources",
+    "url": "https://enrollment.byu.edu/student-success/academic"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Student Success Resources",
+    "url": "https://enrollment.byu.edu/student-success/financial"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Social Student Success Resources",
+    "url": "https://enrollment.byu.edu/student-success/social"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Mental and Physical Health Student Resources",
+    "url": "https://enrollment.byu.edu/student-success/mental-and-physical-health"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Spiritual Student Success Resources",
+    "url": "https://enrollment.byu.edu/student-success/spiritual"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Student Success Early Alert",
+    "url": "https://enrollment.byu.edu/student-success-early-alert"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar",
+    "url": "https://enrollment.byu.edu/registrar"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Catalog Courses",
+    "url": "https://catalog.byu.edu/courses"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Catalog Programs and Majors",
+    "url": "https://catalog.byu.edu/programs"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU General Education Requirements",
+    "url": "https://catalog.byu.edu/generaleducation"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Academic Tools",
+    "url": "https://enrollment.byu.edu/registrar/academic-tools"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Records and Privacy (FERPA)",
+    "url": "https://enrollment.byu.edu/registrar/records-privacy-ferpa"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Graduation Information",
+    "url": "https://enrollment.byu.edu/graduation"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Graduation Dates and Deadlines",
+    "url": "https://enrollment.byu.edu/registrar/graduation-dates-and-deadlines"
+  },
+  {
+    "topic": "registration",
+    "title": "How to Apply for BYU Graduation",
+    "url": "https://enrollment.byu.edu/how-to-apply-for-graduation"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Graduating with Scholastic Honors",
+    "url": "https://enrollment.byu.edu/registrar/graduating-with-scholastic-honors"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Commencement",
+    "url": "https://enrollment.byu.edu/registrar/commencement"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU College Convocations",
+    "url": "https://enrollment.byu.edu/registrar/convocations"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Graduation FAQs",
+    "url": "https://enrollment.byu.edu/registrar/graduation-faqs"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Records",
+    "url": "https://enrollment.byu.edu/registrar/records"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Diplomas",
+    "url": "https://enrollment.byu.edu/registrar/diplomas"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Grades",
+    "url": "https://enrollment.byu.edu/registrar/grades"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Incomplete Contracts",
+    "url": "https://enrollment.byu.edu/registrar/incomplete-contracts"
+  },
+  {
+    "topic": "registration",
+    "title": "Ordering a BYU Transcript",
+    "url": "https://enrollment.byu.edu/registrar/ordering-a-byu-transcript"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Verifications",
+    "url": "https://enrollment.byu.edu/registrar/verifications"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Registration",
+    "url": "https://enrollment.byu.edu/registrar/registration"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Dropping Classes",
+    "url": "https://enrollment.byu.edu/registrar/dropping-classes"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Final Exams",
+    "url": "https://enrollment.byu.edu/registrar/final-exams"
+  },
+  {
+    "topic": "registration",
+    "title": "Withdrawing from a BYU Semester or Term",
+    "url": "https://enrollment.byu.edu/registrar/withdrawing-from-a-semester-term"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registration Holds",
+    "url": "https://enrollment.byu.edu/registrar/holds"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Instruction Modes",
+    "url": "https://enrollment.byu.edu/registrar/instruction-modes"
+  },
+  {
+    "topic": "registration",
+    "title": "MyMAP Academic Planning",
+    "url": "https://enrollment.byu.edu/registrar/mymap"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registration Cart",
+    "url": "https://enrollment.byu.edu/registrar/registration-cart"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Class Waitlists",
+    "url": "https://enrollment.byu.edu/registrar/waitlists"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU New Registration System",
+    "url": "https://enrollment.byu.edu/registrar/new-registration-system"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Permission to Add Codes",
+    "url": "https://enrollment.byu.edu/permission-to-add-codes"
+  },
+  {
+    "topic": "registration",
+    "title": "Register for BYU Classes",
+    "url": "https://enrollment.byu.edu/registrar/register-for-classes"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registration and Academic Records Petitions",
+    "url": "https://enrollment.byu.edu/registrar/registration-and-academic-records-petitions"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registration Policies",
+    "url": "https://enrollment.byu.edu/registration-policies"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Schedule Builder",
+    "url": "https://enrollment.byu.edu/registrar/schedule-builder"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Spring and Summer Registration",
+    "url": "https://enrollment.byu.edu/registrar/spring-summer"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Registrar Transfer Team",
+    "url": "https://enrollment.byu.edu/registrar/transfer-team"
+  },
+  {
+    "topic": "registration",
+    "title": "Transferring Credits to BYU",
+    "url": "https://enrollment.byu.edu/transfer-team/transferring-credits"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Transfer Credit Policy",
+    "url": "https://enrollment.byu.edu/registrar/transfer-credit-policy"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Transfer Guides",
+    "url": "https://enrollment.byu.edu/transfer-team/transfer-guides"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Transfer Course Planning",
+    "url": "https://enrollment.byu.edu/registrar/transfer-course-planning"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU Reverse Transfer",
+    "url": "https://enrollment.byu.edu/reverse-transfer"
+  },
+  {
+    "topic": "registration",
+    "title": "BYU AP and IB Exam Guides",
+    "url": "https://enrollment.byu.edu/registrar/ap-and-ib-exam-guides"
+  },
+  {
+    "topic": "registration",
+    "title": "Transferring Religion Credit to BYU",
+    "url": "https://enrollment.byu.edu/registrar/transferring-religion-credit"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Transfer Student Welcome to Provo",
+    "url": "https://enrollment.byu.edu/transfer-team/welcome-to-provo"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Transfer Student FAQs",
+    "url": "https://enrollment.byu.edu/transfer-team/transfer-team-faqs"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Major Academic Plans",
+    "url": "https://advisement.byu.edu/major-academic-plans"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Federal Aid Eligibility",
+    "url": "https://enrollment.byu.edu/financial-aid/eligibility-for-federal-aid"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Satisfactory Academic Progress for Financial Aid",
+    "url": "https://enrollment.byu.edu/financial-aid/satisfactory-academic-progress"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Marriage and Federal Aid",
+    "url": "https://enrollment.byu.edu/financial-aid/marriage-and-federal-aid"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "Classes Ineligible for Federal Aid",
+    "url": "https://enrollment.byu.edu/ineligible-classes-for-federal-aid"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Spring and Summer Financial Aid",
+    "url": "https://enrollment.byu.edu/financial-aid/spring-summer-financial-aid"
+  },
+  {
+    "topic": "financial-aid",
+    "title": "BYU Financial Aid Consumer Information",
+    "url": "https://enrollment.byu.edu/financial-aid/consumer-information"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness",
+    "url": "https://enrollment.byu.edu/financial-fitness"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Getting Started",
+    "url": "https://enrollment.byu.edu/financial-fitness/getting-started"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Paying for School",
+    "url": "https://enrollment.byu.edu/financial-fitness/paying-for-school"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Financial Planning",
+    "url": "https://enrollment.byu.edu/financial-fitness/financial-plan"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Planning in Six Steps",
+    "url": "https://enrollment.byu.edu/financial-fitness/financial-planning-in-6-easy-steps"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Budgeting",
+    "url": "https://enrollment.byu.edu/financial-fitness/budgeting"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Debt Management",
+    "url": "https://enrollment.byu.edu/financial-fitness/debt-management"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Debt Repayment",
+    "url": "https://enrollment.byu.edu/financial-fitness/debt-repayment"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Credit Resources",
+    "url": "https://enrollment.byu.edu/financial-fitness/credit"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Establishing Credit",
+    "url": "https://enrollment.byu.edu/financial-fitness/establishing-credit"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Emergency Fund",
+    "url": "https://enrollment.byu.edu/financial-fitness/emergency-fund"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness Smart Spending",
+    "url": "https://enrollment.byu.edu/financial-fitness/smart-spending"
+  },
+  {
+    "topic": "student-resources",
+    "title": "BYU Financial Fitness FAQs",
+    "url": "https://enrollment.byu.edu/financial-fitness/frequently-asked-questions"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Science Advisement",
+    "url": "https://science.byu.edu/advisement"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Kennedy Center Advisement",
+    "url": "https://kennedy.byu.edu/advisement"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU McKay Education Advisement",
+    "url": "https://education.byu.edu/advisement"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU CFAC Advisement",
+    "url": "https://advisement.cfac.byu.edu/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Engineering Academic Advisement",
+    "url": "https://engineering.byu.edu/student-services/academic-advisement"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Life Sciences Advisement Center",
+    "url": "https://lifesciences.byu.edu/Advisement"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Nursing Advisement",
+    "url": "https://advisement.nursing.byu.edu/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Meet the Team",
+    "url": "https://universityadvisement.byu.edu/meet-our-team"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Exploration Point",
+    "url": "https://universityadvisement.byu.edu/exploration-point"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Tools to Use Now",
+    "url": "https://universityadvisement.byu.edu/tools-to-use-now"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center BYU Majors",
+    "url": "https://universityadvisement.byu.edu/byu-majors"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center BYU Minors",
+    "url": "https://universityadvisement.byu.edu/byu-minors"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Major Fair",
+    "url": "https://universityadvisement.byu.edu/major-fair"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Information Sessions",
+    "url": "https://universityadvisement.byu.edu/info-sessions"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center University 101 Sessions",
+    "url": "https://universityadvisement.byu.edu/univ-101-sessions"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "University Advisement Center Blog",
+    "url": "https://universityadvisement.byu.edu/university-advisement-blog"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Honors Program Advisement",
+    "url": "https://honors.byu.edu/"
+  },
+  {
+    "topic": "academic-advising",
+    "title": "BYU Bachelor of General Studies",
+    "url": "https://bgs.byu.edu/"
   }
 ]

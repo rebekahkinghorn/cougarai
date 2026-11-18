@@ -45,7 +45,7 @@ const htmlToText = (html) => decodeEntities(
     .replace(/ *\n */g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim(),
-);
+).replace(/\u0000/g, "");
 
 const pageTitle = (html, fallback) => {
   const match = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
@@ -121,25 +121,40 @@ const sha256 = async (text) => {
 };
 
 const embed = async (text) => {
-  const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
-      body: JSON.stringify({
-        model: "models/gemini-embedding-001",
-        content: { parts: [{ text }] },
-        taskType: "RETRIEVAL_DOCUMENT",
-        outputDimensionality: 768,
-      }),
-      signal: AbortSignal.timeout(30000),
-    },
-  );
-  const result = await response.json();
-  if (!response.ok || !Array.isArray(result.embedding?.values)) {
-    throw new Error(`Gemini embedding failed (${response.status}): ${JSON.stringify(result)}`);
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    let response;
+    try {
+      response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
+          body: JSON.stringify({
+            model: "models/gemini-embedding-001",
+            content: { parts: [{ text }] },
+            taskType: "RETRIEVAL_DOCUMENT",
+            outputDimensionality: 768,
+          }),
+          signal: AbortSignal.timeout(60000),
+        },
+      );
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) {
+        await sleep(attempt * 1000);
+        continue;
+      }
+      throw lastError;
+    }
+
+    const result = await response.json();
+    if (response.ok && Array.isArray(result.embedding?.values)) return result.embedding.values;
+    lastError = new Error(`Gemini embedding failed (${response.status}): ${JSON.stringify(result)}`);
+    if (response.status < 500 && response.status !== 429) throw lastError;
+    if (attempt < 3) await sleep(attempt * 1000);
   }
-  return result.embedding.values;
+  throw lastError;
 };
 
 const supabaseRequest = async (path, options = {}) => {
@@ -236,7 +251,7 @@ for (const source of sources) {
     console.error(`Failed to ingest ${source.url}: ${error.message}`);
   }
 
-  await sleep(1000);
+  if (!dryRun) await sleep(1000);
 }
 
 console.log(dryRun ? "Dry run complete; no data was written." : `Ingestion complete with ${failedSources} failed source(s).`);
