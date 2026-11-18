@@ -54,7 +54,16 @@ const isGratitudeMessage = (message: string) => {
     .replace(/[^\p{L}\p{N}\s]/gu, "")
     .replace(/\s+/g, " ")
     .trim();
-  return GRATITUDE_MESSAGES.has(normalized);
+  if (GRATITUDE_MESSAGES.has(normalized)) return true;
+
+  // Accept natural variations such as "Wow, thank you so much," "thanks for
+  // explaining that," or "that was really helpful" without swallowing a request.
+  const gratitudeOnly = /^(?:(?:wow|oh|well|awesome|great|perfect|amazing|wonderful|fantastic|okay|ok|got it|love it)\s+)*(?:thank you|thanks|thank u|thx|ty|tysm|much appreciated|i appreciate(?: it| that)?|(?:that|this) (?:was )?(?:really )?helpful)\b/;
+  const followUpRequest = /\b(?:can|could|would|will) you\b|\bplease\b|\b(?:tell|help|give|find) me\b|\bwhat about\b|\bwhat (?:is|are|do|does|should|can)\b|\bwhere do i\b|\bwhen (?:is|are|do|does|can|should)\b|\bwho is\b|\bhow (?:do|can|should|does|is)\b|\bwhich\b/;
+
+  return gratitudeOnly.test(normalized) &&
+    !message.includes("?") &&
+    !followUpRequest.test(normalized);
 };
 
 const embedText = async (apiKey: string, text: string, taskType: string) => {
