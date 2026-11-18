@@ -77,26 +77,44 @@ document.addEventListener("DOMContentLoaded", async () => {
   const faqList = document.querySelector("#faq-list");
   const faqFilters = document.querySelector("#faq-filters");
   const faqStatus = document.querySelector("#faq-status");
+  const maxInitialFaqs = 5;
   let faqItems = [];
   let activeFaqCategory = "all";
   const faqEmpty = document.querySelector(".faq-empty");
   const applyFaqFilters = () => {
     const query = faqSearch?.value.trim().toLowerCase() ?? "";
+    let matchingCount = 0;
     let visibleCount = 0;
     faqItems.forEach((item) => {
       const categoryMatches = activeFaqCategory === "all" || item.dataset.category === activeFaqCategory;
       const searchMatches = !query || item.textContent.toLowerCase().includes(query);
-      item.hidden = !(categoryMatches && searchMatches);
+      const matches = categoryMatches && searchMatches;
+      if (matches) matchingCount++;
+
+      // Show five FAQs by default; a search displays every matching result.
+      item.hidden = !matches || (!query && visibleCount >= maxInitialFaqs);
       if (!item.hidden) visibleCount++;
     });
-    faqEmpty?.classList.toggle("show", visibleCount === 0);
+    faqEmpty?.classList.toggle("show", matchingCount === 0);
+
+    if (faqStatus) {
+      if (query) {
+        faqStatus.textContent = matchingCount
+          ? `Showing ${matchingCount} matching ${matchingCount === 1 ? "FAQ" : "FAQs"}.`
+          : "No FAQs match your search. Try another keyword.";
+      } else if (activeFaqCategory !== "all") {
+        faqStatus.textContent = `Showing up to ${maxInitialFaqs} FAQs in this category.`;
+      } else {
+        faqStatus.textContent = "See top FAQs or use the search bar to filter!";
+      }
+    }
   };
 
   const loadFaqs = async () => {
     if (!faqList) return;
     const client = window.cougarAuth?.client;
     if (!client) {
-      faqStatus.textContent = "FAQs could not connect to Supabase. Check that auth.js is loaded and configured.";
+      faqStatus.textContent = "See top FAQs or use the search bar to filter!";
       return;
     }
 
@@ -144,11 +162,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       faqItems = [...faqList.querySelectorAll(".faq-item")];
-      faqStatus.textContent = `Showing ${faqItems.length} ${faqItems.length === 1 ? "FAQ" : "FAQs"}.`;
       applyFaqFilters();
     } catch (error) {
       console.error("FAQ load error:", error);
-      faqStatus.textContent = "Could not load FAQs. Check Supabase table names and public read access.";
+      faqStatus.textContent = "See top FAQs or use the search bar to filter!";
     }
   };
 
