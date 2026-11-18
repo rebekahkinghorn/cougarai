@@ -37,7 +37,7 @@ AI app builder: CODEX
 - Reused the site's shared sign-in form for the admin pages. The Metrics and Approvals & Reports links appear only for accounts with trusted `app_metadata.role = admin`; direct visits to either page prompt for sign-in and keep the admin content hidden unless the account has that role.
 - Admin status must be assigned to the approved Supabase Auth account by a trusted administrator using the Auth Admin API or dashboard `app_metadata`; users cannot grant themselves access. The login checks the trusted `app_metadata.role` claim, never editable `user_metadata`.
 - The page gate controls the dashboard UI, and the `admin-metrics` Edge Function independently verifies the signed-in user's trusted `app_metadata.role` before returning project-wide aggregate results. It reads only the two summary views with the server-side service-role key; that key is never sent to the browser.
-- The admin **Approvals & Reports** page includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for review. Admins can assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. Suggested-event submissions have a placeholder on this page; the form and database connection are not implemented yet. Approval publishes an FAQ through the `approve_faq_suggestion` database function.
+- The admin **Approvals & Reports** page includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for review. Admins can assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. The calendar suggestion form writes pending submissions to `User_Submitted_Events`; the admin-only `admin-event-submissions` Edge Function lists those submissions and, on approval, copies the event into `Event` and marks the submission published. Approved event display on the calendar is a separate task. FAQ approval publishes through the `approve_faq_suggestion` database function.
 
 #### Deploying `admin-issue-reports`
 
@@ -228,9 +228,17 @@ The chatbot shows a one-time five-star helpfulness survey after the second chatb
 
 **Verifying the vertical slice:** Send chatbot questions until the survey appears (or wait 30 seconds after the first question). Select a star and confirm the “Thanks for your feedback!” status. Refresh the page and check the Supabase Table Editor for the saved row in `chat_feedback`, including its rating and conversation ID. The survey is one-time per page load/conversation flow; the persisted rating is confirmed in the table.
 
-### 8. Admin — Suggested event shows up for approval — Not implemented
+### 8. Admin — Suggested event shows up for approval — Implemented locally; Edge Function deployment required
 
-The calendar’s “Suggest an Event” button currently displays a prototype message. There is no event submission form, approval queue, or admin review workflow.
+The calendar suggestion form saves submissions in `User_Submitted_Events` with `is_published = false`. The Approvals & Reports page lists those pending submissions. An admin can approve a submission; the `admin-event-submissions` Edge Function marks it as handled and copies its event details into `Event` with `is_published = true`. Calendar display for rows in `Event` is being handled separately.
+
+Deploy the admin endpoint from the repository root:
+
+```sh
+npx supabase functions deploy admin-event-submissions --project-ref xyyhccpivxxgiatptwko
+```
+
+**Verifying the vertical slice:** Submit an event through the calendar form while signed in. Confirm it appears in `User_Submitted_Events` with `is_published = false`. On **Approvals & Reports**, click **Refresh submissions**, approve it, and confirm it disappears from the pending list and appears in `Event` with `is_published = true`. Refresh the admin page to confirm it stays out of the pending list. This does not connect `Event` to calendar display.
 
 ### 9. Chat feedback summary — Implemented for admins; requires the deployed `admin-metrics` Edge Function
 
