@@ -129,13 +129,13 @@ p { line-height: var(--leading-body); }
 .orb.one { top: 24px; right: 14%; width: 82px; height: 82px; background: var(--gold); opacity: 0.75; }
 .orb.two { right: 2%; bottom: 40px; width: 150px; height: 150px; background: var(--mint); }
 .orb.three { left: 6%; bottom: 9%; width: 42px; height: 42px; background: var(--coral); }
-.phone-card { position: absolute; top: 28px; right: 11%; width: min(350px, 80%); height: 450px; padding: 18px; border: 9px solid var(--navy); border-radius: 38px; background: #f9fbff; box-shadow: 0 28px 70px rgba(0, 46, 93, 0.2); transform: rotate(3deg); }
+.phone-card { position: absolute; top: 28px; right: 11%; overflow: hidden; width: min(350px, 80%); height: 450px; padding: 18px; border: 9px solid var(--navy); border-radius: 38px; background: #f9fbff; box-shadow: 0 28px 70px rgba(0, 46, 93, 0.2); transform: rotate(3deg); }
 .phone-top { display: flex; justify-content: space-between; color: var(--muted); font-size: var(--type-xs); font-weight: var(--weight-bold); }
-.phone-screen { display: flex; flex-direction: column; min-width: 0; gap: 13px; height: calc(100% - 22px); padding: 32px 14px 16px; }
+.phone-screen { display: flex; flex-direction: column; min-width: 0; gap: 13px; height: calc(100% - 22px); padding: 20px 14px 62px; }
 .mini-welcome { padding: 20px; border-radius: 22px; color: white; background: linear-gradient(135deg, var(--blue-dark), var(--blue)); }
 .mini-welcome small { opacity: 0.72; font-weight: var(--weight-semibold); }
 .mini-welcome strong { display: block; margin-top: 9px; font-size: var(--type-xl); line-height: var(--leading-tight); }
-.mini-input { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; margin: auto 0 16px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 15px; color: var(--muted); font-size: var(--type-xs); background: white; }
+.mini-input { position: absolute; right: 32px; bottom: 10px; left: 32px; display: flex; align-items: center; gap: 8px; width: auto; min-width: 0; margin: 0; padding: 10px 11px; border: 1px solid var(--line); border-radius: 15px; color: var(--muted); font-size: var(--type-xs); background: white; }
 .mini-input span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini-input b { display: grid; flex: 0 0 27px; place-items: center; width: 27px; height: 27px; border-radius: 9px; color: white; background: var(--blue); }
 .mini-pill { width: 72%; padding: 11px 13px; border-radius: 14px; color: #526278; font-size: var(--type-xs); line-height: var(--leading-snug); background: var(--sky); }
@@ -432,9 +432,7 @@ p { line-height: var(--leading-body); }
   .page-shell { padding: 36px 0 56px; }
   .hero { min-height: auto; }
   .hero-art { min-height: 520px; margin: 0; }
-  .phone-card { top: 16px; right: 50%; overflow: hidden; width: min(350px, 82%); transform: translateX(50%) rotate(2deg); }
-  .phone-screen { padding-top: 20px; padding-bottom: 62px; }
-  .mini-input { position: absolute; right: 32px; bottom: 10px; left: 32px; width: auto; margin: 0; }
+  .phone-card { top: 16px; right: 50%; width: min(350px, 82%); transform: translateX(50%) rotate(2deg); }
   .section-heading, .page-intro, .callout, .calendar-toolbar, .footer-inner { align-items: start; flex-direction: column; }
   .footer-inner { align-items: center; gap: 10px; text-align: center; }
   .metrics-panel-toolbar { align-items: start; flex-direction: column; }
@@ -961,6 +959,59 @@ button.event-dot:focus-visible {
 
     .suggest-form-actions .button {
         width: 100%;
+    }
+}
+
+/* ==========================================
+   MOBILE CALENDAR HORIZONTAL SCROLL
+   ========================================== */
+
+/* Keep the calendar contained within the page */
+.calendar-scroll {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Mobile calendar adjustments */
+@media (max-width: 700px) {
+
+    /* Allow horizontal scrolling */
+    .calendar-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 16px;
+    }
+
+    /* Prevent the calendar from shrinking too much */
+    .calendar-scroll .calendar-grid {
+        min-width: 770px;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    /* Give each day enough room for event names */
+    .calendar-scroll .day {
+        min-width: 0;
+        min-height: 110px;
+        padding: 9px;
+    }
+
+    /* Keep weekday headings aligned */
+    .calendar-scroll .day-label {
+        min-width: 0;
+        padding: 10px;
+    }
+
+    /* Keep event names within their cells */
+    .calendar-scroll .event-dot {
+        width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    /* Allow multiple events on the same day */
+    .calendar-scroll .event-dot:nth-of-type(n+2) {
+        display: block;
     }
 }
 

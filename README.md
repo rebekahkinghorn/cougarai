@@ -63,7 +63,7 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
 
 - Added a retrieval-augmented generation (RAG) knowledge base. The `chatbot` Edge Function embeds the user's question with Gemini, searches relevant BYU passages in Supabase using pgvector, and gives those passages to Gemini alongside the current conversation history.
 - Answers that cite retrieved material include links to the BYU pages. If the retrieved passages do not support an answer, the chatbot says it could not find enough information instead of presenting an unsupported answer as verified.
-- The curated sources are listed in `supabase/knowledge/byu_sources.json`. The current 82-entry collection covers admissions, housing, financial aid, tuition, registration, deadlines, student resources, BYU history and leadership, events, academic departments, campus dining, and meal plans. This is a reviewed collection, not a crawl of every BYU website.
+- The curated sources are listed in `supabase/knowledge/byu_sources.json`. The current 85-entry collection covers admissions, housing, financial aid, tuition, registration, deadlines, student resources, BYU history and leadership, events, academic departments, campus dining, and meal plans. This is a reviewed collection, not a crawl of every BYU website.
 - `scripts/ingest_byu_sources.mjs` fetches those HTTPS pages, checks their robots.txt rules, extracts and chunks page text, creates Gemini embeddings, and upserts the results into Supabase. It skips unchanged chunks on later runs. The script accepts only `byu.edu` and its subdomains, reports pages disallowed by robots.txt, and exits with an error if a fetch or ingestion fails.
 
 #### Set up and deploy the BYU knowledge base
@@ -145,7 +145,7 @@ The chatbot now makes an embedding request and a text-generation request for eac
 - Removed the separate username field because email is the Supabase login identifier. Existing accounts without saved names fall back to the email prefix in the greeting.
 - Added safe Markdown-style rendering for assistant replies, including short headings, paragraphs, bold and italic text, inline code, lists, and validated BYU links. The chatbot prompt asks for short paragraphs and compact lists when they improve readability.
 - Added friendly handling for standalone gratitude and acknowledgment messages. These replies bypass knowledge retrieval and are excluded from factual answer-validity metrics.
-- Expanded the knowledge-source list to 82 reviewed BYU pages, including history, leadership, events, academic departments, campus dining locations, and meal-plan rates.
+- Expanded the knowledge-source list to 85 reviewed BYU pages, including history, leadership, events, academic departments, campus dining locations, and meal-plan rates.
 - Improved the mobile welcome-page mock phone so its input and conversation stay inside the phone frame.
 
 ## Project Setup
@@ -250,7 +250,7 @@ The metrics dashboard gets `chatbot_answer_validity_summary` through the `admin-
 
 ### 11. Engagement and returning users — Partially implemented; page timing and repeat-use metrics are live
 
-Anonymous engaged-time tracking is implemented for the FAQ, chatbot, and calendar pages. `page-activity.js` counts time only while the page is visible and the visitor has interacted within the previous 30 seconds. It sends anonymous visitor, visit, page, and elapsed-time values to the `track-page-activity` Edge Function; it does not send account IDs or page content. The function upserts visits into `page_session_activity`, and the admin dashboard reads the `page_engagement_weekly_summary` view through `admin-metrics` to show visits, unique visitors, and median and average engaged time. Apply `supabase/migrations/20261116000300_page_session_activity.sql`, deploy `track-page-activity`, and redeploy `admin-metrics` before expecting live page-engagement data.
+Anonymous engaged-time tracking is implemented for the FAQ, chatbot, and calendar pages. `page-activity.js` counts time only while the page is visible and the visitor has interacted within the previous 30 seconds. It sends anonymous visitor, visit, page, and elapsed-time values to the `track-page-activity` Edge Function; it does not send account IDs or page content. The function upserts visits into `page_session_activity`, and the admin dashboard reads the `page_engagement_weekly_summary` view through `admin-metrics` to show visits, unique visitors, and median and average engaged time. Apply `supabase/migrations/20261116000400_page_session_activity.sql`, deploy `track-page-activity`, and redeploy `admin-metrics` before expecting live page-engagement data.
 
 The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users who sent chatbot messages on at least two distinct UTC dates in each period. The repeat-use percentage is light green at or above the 50% goal and light red below it. Popular chatbot-question and external-link-click metrics remain placeholders.
 
@@ -316,6 +316,10 @@ Teammates can use the site without installing Deno. Teammates who edit Edge Func
 
 The Cougar AI Calendar helps BYU students discover upcoming events and activities happening on campus and throughout the Provo community. The calendar provides an easy-to-use interface for exploring campus activities, sporting events, concerts, community gatherings, and wellness opportunities.
 
+Published calendar events are loaded from the Supabase `Event` table when the page opens. The browser requests only rows where `is_published = true`, groups them by their Utah calendar date, and maps `event_category_id` values 1–4 to the BYU, Community, Arts & Culture, and Wellness filters. Dates and times are displayed in the `America/Denver` time zone. The calendar is no longer limited to hardcoded months and supports navigation across month and year boundaries.
+
+Apply `supabase/migrations/20261117000100_calendar_events.sql` to create the reproducible calendar schema when needed, seed the four event categories and 22 original calendar events, and add a public read policy limited to published events. The migration checks event name and start time before inserting seed rows, so rerunning it does not duplicate them. New published rows added to `Event` will appear on the calendar without editing `calendar.html`.
+
 ### How to Use the Calendar
 
 1. **Browse Events:** The calendar automatically displays the current month. Use the left and right arrows to navigate between available months or click "Today" to return to the current month.
@@ -326,6 +330,7 @@ The Cougar AI Calendar helps BYU students discover upcoming events and activitie
 ### Key Features
 
 - Automatically displays the current month.
+- Loads published events dynamically from Supabase.
 - Color-coded events with an easy-to-read legend.
 - Interactive category filtering.
 - Clickable event details.
