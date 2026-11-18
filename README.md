@@ -1,5 +1,3 @@
-export SUPABASE_SERVICE_ROLE_KEYread -s 'GEMINI_API_KEY?Paste the actual Gemini API key: '
-
 # CougarAI
 
 ## App Summary
@@ -63,8 +61,8 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
 
 - Added a retrieval-augmented generation (RAG) knowledge base. The `chatbot` Edge Function embeds the user's question with Gemini, searches relevant BYU passages in Supabase using pgvector, and gives those passages to Gemini alongside the current conversation history.
 - Answers that cite retrieved material include links to the BYU pages. If the retrieved passages do not support an answer, the chatbot says it could not find enough information instead of presenting an unsupported answer as verified.
-- The curated sources are listed in `supabase/knowledge/byu_sources.json`. The current 85-entry collection covers admissions, housing, financial aid, tuition, registration, deadlines, student resources, BYU history and leadership, events, academic departments, campus dining, and meal plans. This is a reviewed collection, not a crawl of every BYU website.
-- `scripts/ingest_byu_sources.mjs` fetches those HTTPS pages, checks their robots.txt rules, extracts and chunks page text, creates Gemini embeddings, and upserts the results into Supabase. It skips unchanged chunks on later runs. The script accepts only `byu.edu` and its subdomains, reports pages disallowed by robots.txt, and exits with an error if a fetch or ingestion fails.
+- The curated sources are listed in `supabase/knowledge/byu_sources.json`. The current 302-entry collection covers admissions, enrollment checklists, financial aid, registration, advising offices, accessibility services, student resources, BYU history and leadership, events, academic departments, campus dining, and meal plans. This is a reviewed collection, not a crawl of every BYU website.
+- `scripts/ingest_byu_sources.mjs` fetches those HTTPS pages, checks their robots.txt rules, extracts and chunks page text, creates Gemini embeddings, and upserts the results into Supabase. It removes NUL characters that Supabase cannot store and retries transient Gemini embedding failures up to three times. On later runs it compares chunk hashes and skips embedding and writing unchanged chunks, though it still fetches each page to check for updates. The script accepts only `byu.edu` and its subdomains, skips pages disallowed by robots.txt, and reports failed pages in its final count.
 
 #### Set up and deploy the BYU knowledge base
 
@@ -145,8 +143,13 @@ The chatbot now makes an embedding request and a text-generation request for eac
 - Removed the separate username field because email is the Supabase login identifier. Existing accounts without saved names fall back to the email prefix in the greeting.
 - Added safe Markdown-style rendering for assistant replies, including short headings, paragraphs, bold and italic text, inline code, lists, and validated BYU links. The chatbot prompt asks for short paragraphs and compact lists when they improve readability.
 - Added friendly handling for standalone gratitude and acknowledgment messages. These replies bypass knowledge retrieval and are excluded from factual answer-validity metrics.
-- Expanded the knowledge-source list to 85 reviewed BYU pages, including history, leadership, events, academic departments, campus dining locations, and meal-plan rates.
+- Expanded the knowledge-source list to 302 reviewed BYU pages, including enrollment and admissions subpages, advising offices, accessibility resources, financial aid, registration, history, leadership, events, academic departments, campus dining locations, and meal-plan rates.
 - Improved the mobile welcome-page mock phone so its input and conversation stay inside the phone frame.
+
+### November 18 — Ingestion reliability
+
+- Replaced the outdated Electrical and Computer Engineering source with the current `ecedev.byu.edu` site and added its advising and advisor pages.
+- Updated the ingester to strip NUL characters from extracted text before Supabase writes and retry transient Gemini embedding failures with a longer timeout. The latest ingestion completed with zero failed sources.
 
 ## Project Setup
 
