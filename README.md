@@ -21,50 +21,49 @@ Front end: HTML, CSS, Javascript
 Database, Backend & Authentication: Supabase
 AI app builder: CODEX
 
-## Recent Work (November 9–17, 2026)
+## Setup and documentation guide
 
-### November 9 — Chat persistence and history
+1. [Set up the project](#project-setup) and connect it to Supabase.
+2. [Set up and deploy the BYU knowledge base](#set-up-and-deploy-the-byu-knowledge-base), then ingest the curated sources.
+3. [Configure the calendar](#cougar-ai-interactive-calendar) and its Supabase event table.
+4. Review [admin setup](#admin-setup-and-operations) and [vertical slice verification](#sprint-vertical-slices).
+5. See [recent work](#recent-work-november-9-18-2026), the [ERD](#erd), the [demo](#demo), and [data flow diagrams](#data-flow-diagrams).
 
-- Fixed the chatbot request so a signed-in user's Supabase access token is sent to the `chatbot` Edge Function. The earlier diagnostic showed the function was treating the request as unauthenticated; after the fix, the user ID was available and saved conversations appeared in history.
-- Chat conversations are listed from `chat_conversations`; selecting one loads its messages from `chat_messages`. The active conversation ID is kept in session storage so the chat can resume after navigating away and returning in the same tab.
-- Starting a new chat clears the visible conversation and starts the next submitted prompt without the previous conversation ID. A conversation is saved when the first message is sent.
-- Signed-in users can sign back in with email and password. The header restores the signed-in greeting and sign-out action from the Supabase session.
+## Project Setup
 
-### November 10 — Admin metrics sign-in
+1. Clone the repository
+   Clone a fresh copy of the code from GitHub to your local machine
+2. Configure Supabase (Backend & Database)
+   The project connects to a Supabase backend for user authentication and database storage.
 
-- Reused the site's shared sign-in form for the admin pages. The Metrics and Approvals & Reports links appear only for accounts with trusted `app_metadata.role = admin`; direct visits to either page prompt for sign-in and keep the admin content hidden unless the account has that role.
-- Admin status must be assigned to the approved Supabase Auth account by a trusted administrator using the Auth Admin API or dashboard `app_metadata`; users cannot grant themselves access. The login checks the trusted `app_metadata.role` claim, never editable `user_metadata`.
-- The page gate controls the dashboard UI, and the `admin-metrics` Edge Function independently verifies the signed-in user's trusted `app_metadata.role` before returning project-wide aggregate results. It reads only the two summary views with the server-side service-role key; that key is never sent to the browser.
-- The admin **Approvals & Reports** page includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for review. Admins can assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. The calendar suggestion form writes pending submissions to `User_Submitted_Events`; the admin-only `admin-event-submissions` Edge Function lists those submissions and, on approval, copies the event into `Event` and marks the submission published. Approved event display on the calendar is a separate task. FAQ approval publishes through the `approve_faq_suggestion` database function.
+- Go to Supabase and sign in or create an account.
 
-#### Deploying `admin-issue-reports`
+  - Click New Project, select your organization, and fill out your project details (name, database password, and region).
+  - Wait a couple of minutes for Supabase to provision your database and project resources.
+- Retrieve Your API Credentials
 
-The **Approvals & Reports** page reads submitted issue descriptions, their status, and the submitter's user ID through this Edge Function. It verifies the signed-in user's trusted admin role before using the server-side service-role key to read or update `issue_report`; never put that key in browser code.
+  - Once your project is ready, navigate to the Project Settings (gear icon on the left sidebar).
+  - Click on API under the project settings menu.
+  - Copy your unique Project URL and your anon / public API key.
+  - Open auth.js in your project codebase and paste these values into the configuration constants. Example below:
+    - const SUPABASE_URL = "YOUR_SUPABASE_URL_HERE";
+    - const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+- Lanching the project locally
 
-Before deploying the updated function, run the SQL in both `supabase/migrations/20261116000100_issue_report_resolution.sql` and `supabase/migrations/20261116000200_issue_report_submitted_at.sql` in the Supabase SQL Editor. They add the stable report ID, resolution timestamp and comment, and submission timestamp to `issue_report`. The submission migration backfills from an existing timestamp column when one is available and sets a default for new reports.
+  - Open the project folder in your code editor (e.g., VS Code), if it isn't already
+  - If you are using VS Code, right-click on index.html and select "Open with Live Server".
+- Test the Vertical Slice (Sign Up & Dynamic Greeting)
 
-From the repository root, deploy it with:
+  - Click the "Sign up" button in the top right navigation bar of the app.
+  - Fill out the modal form with your name, school year, expected graduation year, major, email, and password, then submit.
+  - Supabase stores the profile values in Auth user metadata. After sign-in, the header greets the user by first and last name.
+  - Refresh the browser to confirm the greeting is restored from the Supabase session.
 
-```sh
-npx supabase functions deploy admin-issue-reports --project-ref xyyhccpivxxgiatptwko
-```
+  Link to the video that shows our vertical slice!
 
-On the **Approvals & Reports** page, open reports appear under **Open reports**, including their submission date and time. Select **Mark as resolved**, optionally add a resolution comment, and confirm. The report moves to **Resolved**, where admins can see the comment and the saved resolution date/time. Refresh the page to confirm the status and resolution details persist.
+  https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing
 
-### November 10 — Shared layout and metrics dashboard
-
-- Replaced repeated page headers and footers on the main pages with `partials/header.html` and `partials/footer.html`, loaded by `layout.js`. The shared navigation includes a link to `metrics.html`.
-- Fixed a duplicated block and unmatched `catch` in `app.js` that caused a JavaScript syntax error and prevented that script from running.
-- Added a styled metrics dashboard with live tables for `chatbot_answer_validity_summary` and `chat_feedback_summary`, plus one **Refresh all metrics** button.
-
-### November 16 — BYU information retrieval for the chatbot
-
-- Added a retrieval-augmented generation (RAG) knowledge base. The `chatbot` Edge Function embeds the user's question with Gemini, searches relevant BYU passages in Supabase using pgvector, and gives those passages to Gemini alongside the current conversation history.
-- Answers that cite retrieved material include links to the BYU pages. If the retrieved passages do not support an answer, the chatbot says it could not find enough information instead of presenting an unsupported answer as verified.
-- The curated sources are listed in `supabase/knowledge/byu_sources.json`. The current 302-entry collection covers admissions, enrollment checklists, financial aid, registration, advising offices, accessibility services, student resources, BYU history and leadership, events, academic departments, campus dining, and meal plans. This is a reviewed collection, not a crawl of every BYU website.
-- `scripts/ingest_byu_sources.mjs` fetches those HTTPS pages, checks their robots.txt rules, extracts and chunks page text, creates Gemini embeddings, and upserts the results into Supabase. It removes NUL characters that Supabase cannot store and retries transient Gemini embedding failures up to three times. On later runs it compares chunk hashes and skips embedding and writing unchanged chunks, though it still fetches each page to check for updates. The script accepts only `byu.edu` and its subdomains, skips pages disallowed by robots.txt, and reports failed pages in its final count.
-
-#### Set up and deploy the BYU knowledge base
+## Set up and deploy the BYU knowledge base
 
 1. Apply `supabase/migrations/20261116000300_byu_knowledge_base.sql` in the Supabase SQL Editor. This creates the vector table and a service-role-only similarity-search function. The browser cannot read the knowledge table directly.
 2. Confirm the chatbot's Gemini secret is set in **Supabase Dashboard → Edge Functions → Secrets**. The secret name must be exactly `gemini_api_key`; the value is the actual Gemini API key. The dashboard will not reveal a saved secret value ([Supabase secrets guide](https://supabase.com/docs/guides/functions/secrets)). If the original key is unavailable, create a key in the team's [Google AI Studio project](https://aistudio.google.com/app/apikey), then set that value as `gemini_api_key`. Supabase makes changed function secrets available without redeploying.
@@ -137,53 +136,107 @@ On the **Approvals & Reports** page, open reports appear under **Open reports**,
 
 The chatbot now makes an embedding request and a text-generation request for each question, so Gemini usage can increase. Supabase stores the chunk text and 768-dimensional vectors. The source list is intentionally curated and the extractor handles public HTML pages; it does not crawl an entire BYU domain, process authenticated pages, or extract PDF contents.
 
-### November 17 — Profiles, readable replies, and expanded sources
+## 📅 Cougar AI Interactive Calendar
 
-- Expanded signup metadata to collect first name, last name, school year, expected graduation year, and major. Supabase Auth stores these values in `raw_user_meta_data`, and the signed-in greeting uses the saved first and last name.
-- Removed the separate username field because email is the Supabase login identifier. Existing accounts without saved names fall back to the email prefix in the greeting.
-- Added safe Markdown-style rendering for assistant replies, including short headings, paragraphs, bold and italic text, inline code, lists, and validated BYU links. The chatbot prompt asks for short paragraphs and compact lists when they improve readability.
-- Added friendly handling for standalone gratitude and acknowledgment messages. These replies bypass knowledge retrieval and are excluded from factual answer-validity metrics.
-- Expanded the knowledge-source list to 302 reviewed BYU pages, including enrollment and admissions subpages, advising offices, accessibility resources, financial aid, registration, history, leadership, events, academic departments, campus dining locations, and meal-plan rates.
-- Improved the mobile welcome-page mock phone so its input and conversation stay inside the phone frame.
+The Cougar AI Calendar helps BYU students discover upcoming events and activities happening on campus and throughout the Provo community. The calendar provides an easy-to-use interface for exploring campus activities, sporting events, concerts, community gatherings, and wellness opportunities.
 
-### November 18 — Ingestion reliability
+Published calendar events are loaded from the Supabase `Event` table when the page opens. The browser requests only rows where `is_published = true`, groups them by their Utah calendar date, and maps `event_category_id` values 1–4 to the BYU, Community, Arts & Culture, and Wellness filters. Dates and times are displayed in the `America/Denver` time zone. The calendar is no longer limited to hardcoded months and supports navigation across month and year boundaries.
 
-- Replaced the outdated Electrical and Computer Engineering source with the current `ecedev.byu.edu` site and added its advising and advisor pages.
-- Updated the ingester to strip NUL characters from extracted text before Supabase writes and retry transient Gemini embedding failures with a longer timeout. The latest ingestion completed with zero failed sources.
+Apply `supabase/migrations/20261117000100_calendar_events.sql` to create the reproducible calendar schema when needed, seed the four event categories and 22 original calendar events, and add a public read policy limited to published events. The migration checks event name and start time before inserting seed rows, so rerunning it does not duplicate them. New published rows added to `Event` will appear on the calendar without editing `calendar.html`.
 
-## Project Setup
+### How to Use the Calendar
 
-1. Clone the repository
-   Clone a fresh copy of the code from GitHub to your local machine
-2. Configure Supabase (Backend & Database)
-   The project connects to a Supabase backend for user authentication and database storage.
+1. **Browse Events:** The calendar automatically displays the current month. Use the left and right arrows to navigate between available months or click "Today" to return to the current month.
+2. **Filter by Category:** Select BYU (Blue), Community (Gold), Arts & Culture (Coral), or Wellness (Green) to display events that match your interests. Select "All Events" to view everything.
+3. **View Event Details:** Click any event on the calendar to open a popup displaying its date, time, location, category, and description.
+4. **Explore Upcoming Events:** Scroll below the calendar to view event cards that automatically update based on the selected month and category. Click a card for additional details.
 
-- Go to Supabase and sign in or create an account.
+### Key Features
 
-  - Click New Project, select your organization, and fill out your project details (name, database password, and region).
-  - Wait a couple of minutes for Supabase to provision your database and project resources.
-- Retrieve Your API Credentials
+- Automatically displays the current month.
+- Loads published events dynamically from Supabase.
+- Color-coded events with an easy-to-read legend.
+- Interactive category filtering.
+- Clickable event details.
+- Dynamically updated event cards.
+- Responsive design for desktop and mobile devices.
 
-  - Once your project is ready, navigate to the Project Settings (gear icon on the left sidebar).
-  - Click on API under the project settings menu.
-  - Copy your unique Project URL and your anon / public API key.
-  - Open auth.js in your project codebase and paste these values into the configuration constants. Example below:
-    - const SUPABASE_URL = "YOUR_SUPABASE_URL_HERE";
-    - const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
-- Lanching the project locally
+The Cougar AI Calendar is designed to help students stay connected, discover new experiences, and make the most of their time at BYU.
 
-  - Open the project folder in your code editor (e.g., VS Code), if it isn't already
-  - If you are using VS Code, right-click on index.html and select "Open with Live Server".
-- Test the Vertical Slice (Sign Up & Dynamic Greeting)
+## Admin Setup and Operations
 
-  - Click the "Sign up" button in the top right navigation bar of the app.
-  - Fill out the modal form with your name, school year, expected graduation year, major, email, and password, then submit.
-  - Supabase stores the profile values in Auth user metadata. After sign-in, the header greets the user by first and last name.
-  - Refresh the browser to confirm the greeting is restored from the Supabase session.
+### Deploying `admin-issue-reports`
 
-  Link to the video that shows our vertical slice!
+The **Approvals & Reports** page reads submitted issue descriptions, their status, and the submitter's user ID through this Edge Function. It verifies the signed-in user's trusted admin role before using the server-side service-role key to read or update `issue_report`; never put that key in browser code.
 
-  https://drive.google.com/file/d/1BjYv-1bu54aDe3vI3Q5nayR7s9FfJUaN/view?usp=sharing
+Before deploying the updated function, run the SQL in both `supabase/migrations/20261116000100_issue_report_resolution.sql` and `supabase/migrations/20261116000200_issue_report_submitted_at.sql` in the Supabase SQL Editor. They add the stable report ID, resolution timestamp and comment, and submission timestamp to `issue_report`. The submission migration backfills from an existing timestamp column when one is available and sets a default for new reports.
+
+From the repository root, deploy it with:
+
+```sh
+npx supabase functions deploy admin-issue-reports --project-ref xyyhccpivxxgiatptwko
+```
+
+On the **Approvals & Reports** page, open reports appear under **Open reports**, including their submission date and time. Select **Mark as resolved**, optionally add a resolution comment, and confirm. The report moves to **Resolved**, where admins can see the comment and the saved resolution date/time. Refresh the page to confirm the status and resolution details persist.
+
+
+### How admin login works
+
+- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, monthly repeat-use, and weekly page-engagement summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app.
+- The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
+- Both Supabase summary views use `security_invoker=on`. Direct browser queries therefore follow the signed-in user's RLS access to the underlying tables. Project-wide aggregate access is now routed through the admin-only `admin-metrics` Edge Function.
+
+#### Add another admin account
+
+1. In the Supabase Dashboard, open **Authentication → Users** and find the account by email. If the person does not have an account yet, select **Add user → Send invitation** and have them finish setting it up.
+2. Open **SQL Editor → New query**. Replace `admin@example.com` in this read-only query with the account's email, run it, and confirm it returns the intended user:
+
+   ```sql
+   select
+     id,
+     email,
+     role as supabase_role,
+     raw_app_meta_data ->> 'role' as cougarai_role
+   from auth.users
+   where lower(email) = lower('admin@example.com');
+   ```
+3. To grant the CougarAI admin role, replace the example email in this query and run it:
+
+   ```sql
+   update auth.users
+   set raw_app_meta_data =
+     coalesce(raw_app_meta_data, '{}'::jsonb)
+     || jsonb_build_object('role', 'admin')
+   where lower(email) = lower('admin@example.com')
+   returning
+     email,
+     role as supabase_role,
+     raw_app_meta_data ->> 'role' as cougarai_role;
+   ```
+
+   Confirm one row is returned with `cougarai_role` equal to `admin` and `supabase_role` still equal to `authenticated`. Do not change the top-level `auth.users.role`; that is Supabase's database role, not CougarAI's admin role.
+
+   Have the admin sign out and sign back in, then open **Metrics**. The Metrics links appear only for accounts whose `app_metadata.role` is `admin`; the dashboard also checks the role when opened directly.
+
+   This is a one-off change in the Supabase SQL Editor. For production user provisioning, use Supabase's Auth Admin API from a trusted server; never put a Supabase secret/service-role key in browser code. [Supabase `updateUserById` guidance](https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid)
+
+#### How the admin metrics Edge Function works
+
+The browser calls `supabase/functions/admin-metrics/index.ts` through `client.functions.invoke("admin-metrics")` and sends the current Supabase login session. The function verifies that session with Supabase Auth, then checks the trusted `app_metadata.role` value. Requests from users without `role: "admin"` receive HTTP 403. The browser-side page check controls navigation and visibility; the Edge Function performs the server-side authorization that protects the data.
+
+After the role check, the function uses its server-side service-role key to query only the summary views and returns aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying activity, chat, or feedback tables. The Supabase project configuration keeps JWT verification enabled for this admin-only function.
+
+#### Greg Project admin site
+
+The signed-in Cougar AI **Admin → Approvals & Reports** page includes a link to the [Greg Project admin site](https://403project.vercel.app/). The link opens in the same tab. Greg Project is a companion full-stack admin app for the IS 403 project. It can maintain Supabase Authentication users and create, read, update, and delete rows in public.greg_table.
+
+Both apps use the same Supabase project and administrator account. Greg Project has its own site session, so an administrator signs in again when moving from Cougar AI to Greg Project. Greg Project checks admin access on its server and keeps the Supabase secret key server-side.
+
+#### Deno and editing Edge Functions
+
+Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-compatible Edge Runtime. Deno is the runtime and toolchain behind APIs used here, such as `Deno.serve()` and `Deno.env.get()`. The Deno VS Code extension provides editor support (including type information and diagnostics); `.vscode/settings.json` enables it for `supabase/functions` only, so the regular website files continue using VS Code's normal JavaScript/TypeScript support.
+
+Teammates can use the site without installing Deno. Teammates who edit Edge Function code should install the Deno VS Code extension. The separate Deno command-line executable is useful for Deno-specific CLI tools; Supabase CLI uses its own Edge Runtime to serve functions locally. If VS Code reports that it cannot resolve the Deno executable, the extension needs the Deno CLI available on PATH or configured with its `deno.path` setting. To deploy this function to the linked Supabase project, use `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` from the repository root.
 
 ## Sprint Vertical Slices
 
@@ -257,90 +310,48 @@ Anonymous engaged-time tracking is implemented for the FAQ, chatbot, and calenda
 
 The monthly repeat-use panel reads the admin-only `chatbot_monthly_repeat_usage_summary` view. It lists 13 prior calendar months plus the current month to date, then the rolling last 30 days; months display oldest to newest. At each month change, the oldest month rolls off. It counts signed-in users with user messages in at least two distinct chatbot conversations during each period. Two conversations in the same month count as repeat use even when they happen on the same date. Apply `supabase/migrations/20261117000200_chatbot_repeat_conversation_usage.sql` in the Supabase SQL Editor to update the view. The repeat-use percentage is light green at or above the 50% goal and light red below it. Popular chatbot-question and external-link-click metrics remain placeholders.
 
-### How admin login works
+## Recent Work (November 9–18, 2026)
 
-- The browser invokes `supabase/functions/admin-metrics/index.ts` with its current Supabase session; the function verifies the user's account and admin role, then returns the answer-validity, chat-feedback, monthly repeat-use, and weekly page-engagement summaries. Deploy it with `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` before expecting live metrics in the hosted app.
-- The `chatbot_monthly_repeat_usage_summary` view supplies 14 calendar-month rows (13 prior months plus the current month to date), followed by a rolling last-30-days row. The repeat-use percentage is highlighted light green when it meets the 50% target and light red when it does not.
-- Both Supabase summary views use `security_invoker=on`. Direct browser queries therefore follow the signed-in user's RLS access to the underlying tables. Project-wide aggregate access is now routed through the admin-only `admin-metrics` Edge Function.
+### November 9 — Chat persistence and history
 
-#### Add another admin account
+- Fixed the chatbot request so a signed-in user's Supabase access token is sent to the `chatbot` Edge Function. The earlier diagnostic showed the function was treating the request as unauthenticated; after the fix, the user ID was available and saved conversations appeared in history.
+- Chat conversations are listed from `chat_conversations`; selecting one loads its messages from `chat_messages`. The active conversation ID is kept in session storage so the chat can resume after navigating away and returning in the same tab.
+- Starting a new chat clears the visible conversation and starts the next submitted prompt without the previous conversation ID. A conversation is saved when the first message is sent.
+- Signed-in users can sign back in with email and password. The header restores the signed-in greeting and sign-out action from the Supabase session.
 
-1. In the Supabase Dashboard, open **Authentication → Users** and find the account by email. If the person does not have an account yet, select **Add user → Send invitation** and have them finish setting it up.
-2. Open **SQL Editor → New query**. Replace `admin@example.com` in this read-only query with the account's email, run it, and confirm it returns the intended user:
+### November 10 — Admin metrics sign-in
 
-   ```sql
-   select
-     id,
-     email,
-     role as supabase_role,
-     raw_app_meta_data ->> 'role' as cougarai_role
-   from auth.users
-   where lower(email) = lower('admin@example.com');
-   ```
-3. To grant the CougarAI admin role, replace the example email in this query and run it:
+- Reused the site's shared sign-in form for the admin pages. The Metrics and Approvals & Reports links appear only for accounts with trusted `app_metadata.role = admin`; direct visits to either page prompt for sign-in and keep the admin content hidden unless the account has that role.
+- Admin status must be assigned to the approved Supabase Auth account by a trusted administrator using the Auth Admin API or dashboard `app_metadata`; users cannot grant themselves access. The login checks the trusted `app_metadata.role` claim, never editable `user_metadata`.
+- The page gate controls the dashboard UI, and the `admin-metrics` Edge Function independently verifies the signed-in user's trusted `app_metadata.role` before returning project-wide aggregate results. It reads only the two summary views with the server-side service-role key; that key is never sent to the browser.
+- The admin **Approvals & Reports** page includes a **Generate FAQ drafts** button that runs the existing `dynamic-function`. It analyzes valid chatbot question-and-answer pairs from the last 30 days with Gemini, compares suggestions against published FAQs and existing suggestions, and saves new drafts to `faq_suggestions` for review. Admins can assign or create a category, approve or reject each draft, and see questions already covered by an existing FAQ. The calendar suggestion form writes pending submissions to `User_Submitted_Events`; the admin-only `admin-event-submissions` Edge Function lists those submissions and, on approval, copies the event into `Event` and marks the submission published. Approved event display on the calendar is a separate task. FAQ approval publishes through the `approve_faq_suggestion` database function.
 
-   ```sql
-   update auth.users
-   set raw_app_meta_data =
-     coalesce(raw_app_meta_data, '{}'::jsonb)
-     || jsonb_build_object('role', 'admin')
-   where lower(email) = lower('admin@example.com')
-   returning
-     email,
-     role as supabase_role,
-     raw_app_meta_data ->> 'role' as cougarai_role;
-   ```
+### November 10 — Shared layout and metrics dashboard
 
-   Confirm one row is returned with `cougarai_role` equal to `admin` and `supabase_role` still equal to `authenticated`. Do not change the top-level `auth.users.role`; that is Supabase's database role, not CougarAI's admin role.
+- Replaced repeated page headers and footers on the main pages with `partials/header.html` and `partials/footer.html`, loaded by `layout.js`. The shared navigation includes a link to `metrics.html`.
+- Fixed a duplicated block and unmatched `catch` in `app.js` that caused a JavaScript syntax error and prevented that script from running.
+- Added a styled metrics dashboard with live tables for `chatbot_answer_validity_summary` and `chat_feedback_summary`, plus one **Refresh all metrics** button.
 
-   Have the admin sign out and sign back in, then open **Metrics**. The Metrics links appear only for accounts whose `app_metadata.role` is `admin`; the dashboard also checks the role when opened directly.
+### November 16 — BYU information retrieval for the chatbot
 
-   This is a one-off change in the Supabase SQL Editor. For production user provisioning, use Supabase's Auth Admin API from a trusted server; never put a Supabase secret/service-role key in browser code. [Supabase `updateUserById` guidance](https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid)
+- Added a retrieval-augmented generation (RAG) knowledge base. The `chatbot` Edge Function embeds the user's question with Gemini, searches relevant BYU passages in Supabase using pgvector, and gives those passages to Gemini alongside the current conversation history.
+- Answers that cite retrieved material include links to the BYU pages. If the retrieved passages do not support an answer, the chatbot says it could not find enough information instead of presenting an unsupported answer as verified.
+- The curated sources are listed in `supabase/knowledge/byu_sources.json`. The current 302-entry collection covers admissions, enrollment checklists, financial aid, registration, advising offices, accessibility services, student resources, BYU history and leadership, events, academic departments, campus dining, and meal plans. This is a reviewed collection, not a crawl of every BYU website.
+- `scripts/ingest_byu_sources.mjs` fetches those HTTPS pages, checks their robots.txt rules, extracts and chunks page text, creates Gemini embeddings, and upserts the results into Supabase. It removes NUL characters that Supabase cannot store and retries transient Gemini embedding failures up to three times. On later runs it compares chunk hashes and skips embedding and writing unchanged chunks, though it still fetches each page to check for updates. The script accepts only `byu.edu` and its subdomains, skips pages disallowed by robots.txt, and reports failed pages in its final count.
 
-#### How the admin metrics Edge Function works
+### November 17 — Profiles, readable replies, and expanded sources
 
-The browser calls `supabase/functions/admin-metrics/index.ts` through `client.functions.invoke("admin-metrics")` and sends the current Supabase login session. The function verifies that session with Supabase Auth, then checks the trusted `app_metadata.role` value. Requests from users without `role: "admin"` receive HTTP 403. The browser-side page check controls navigation and visibility; the Edge Function performs the server-side authorization that protects the data.
+- Expanded signup metadata to collect first name, last name, school year, expected graduation year, and major. Supabase Auth stores these values in `raw_user_meta_data`, and the signed-in greeting uses the saved first and last name.
+- Removed the separate username field because email is the Supabase login identifier. Existing accounts without saved names fall back to the email prefix in the greeting.
+- Added safe Markdown-style rendering for assistant replies, including short headings, paragraphs, bold and italic text, inline code, lists, and validated BYU links. The chatbot prompt asks for short paragraphs and compact lists when they improve readability.
+- Added friendly handling for standalone gratitude and acknowledgment messages. These replies bypass knowledge retrieval and are excluded from factual answer-validity metrics.
+- Expanded the knowledge-source list to 302 reviewed BYU pages, including enrollment and admissions subpages, advising offices, accessibility resources, financial aid, registration, history, leadership, events, academic departments, campus dining locations, and meal-plan rates.
+- Improved the mobile welcome-page mock phone so its input and conversation stay inside the phone frame.
 
-After the role check, the function uses its server-side service-role key to query only the summary views and returns aggregate fields to the admin page. The key is provided as a server environment secret and must never be added to browser code, committed to the repository, or shared in chat. The function does not expose the underlying activity, chat, or feedback tables. The Supabase project configuration keeps JWT verification enabled for this admin-only function.
+### November 18 — Ingestion reliability
 
-#### Greg Project admin site
-
-The signed-in Cougar AI **Admin → Approvals & Reports** page includes a link to the [Greg Project admin site](https://403project.vercel.app/). The link opens in the same tab. Greg Project is a companion full-stack admin app for the IS 403 project. It can maintain Supabase Authentication users and create, read, update, and delete rows in public.greg_table.
-
-Both apps use the same Supabase project and administrator account. Greg Project has its own site session, so an administrator signs in again when moving from Cougar AI to Greg Project. Greg Project checks admin access on its server and keeps the Supabase secret key server-side.
-
-#### Deno and editing Edge Functions
-
-Supabase Edge Functions are TypeScript functions that run in Supabase's Deno-compatible Edge Runtime. Deno is the runtime and toolchain behind APIs used here, such as `Deno.serve()` and `Deno.env.get()`. The Deno VS Code extension provides editor support (including type information and diagnostics); `.vscode/settings.json` enables it for `supabase/functions` only, so the regular website files continue using VS Code's normal JavaScript/TypeScript support.
-
-Teammates can use the site without installing Deno. Teammates who edit Edge Function code should install the Deno VS Code extension. The separate Deno command-line executable is useful for Deno-specific CLI tools; Supabase CLI uses its own Edge Runtime to serve functions locally. If VS Code reports that it cannot resolve the Deno executable, the extension needs the Deno CLI available on PATH or configured with its `deno.path` setting. To deploy this function to the linked Supabase project, use `supabase functions deploy admin-metrics --project-ref xyyhccpivxxgiatptwko` from the repository root.
-
-## 📅 Cougar AI Interactive Calendar
-
-The Cougar AI Calendar helps BYU students discover upcoming events and activities happening on campus and throughout the Provo community. The calendar provides an easy-to-use interface for exploring campus activities, sporting events, concerts, community gatherings, and wellness opportunities.
-
-Published calendar events are loaded from the Supabase `Event` table when the page opens. The browser requests only rows where `is_published = true`, groups them by their Utah calendar date, and maps `event_category_id` values 1–4 to the BYU, Community, Arts & Culture, and Wellness filters. Dates and times are displayed in the `America/Denver` time zone. The calendar is no longer limited to hardcoded months and supports navigation across month and year boundaries.
-
-Apply `supabase/migrations/20261117000100_calendar_events.sql` to create the reproducible calendar schema when needed, seed the four event categories and 22 original calendar events, and add a public read policy limited to published events. The migration checks event name and start time before inserting seed rows, so rerunning it does not duplicate them. New published rows added to `Event` will appear on the calendar without editing `calendar.html`.
-
-### How to Use the Calendar
-
-1. **Browse Events:** The calendar automatically displays the current month. Use the left and right arrows to navigate between available months or click "Today" to return to the current month.
-2. **Filter by Category:** Select BYU (Blue), Community (Gold), Arts & Culture (Coral), or Wellness (Green) to display events that match your interests. Select "All Events" to view everything.
-3. **View Event Details:** Click any event on the calendar to open a popup displaying its date, time, location, category, and description.
-4. **Explore Upcoming Events:** Scroll below the calendar to view event cards that automatically update based on the selected month and category. Click a card for additional details.
-
-### Key Features
-
-- Automatically displays the current month.
-- Loads published events dynamically from Supabase.
-- Color-coded events with an easy-to-read legend.
-- Interactive category filtering.
-- Clickable event details.
-- Dynamically updated event cards.
-- Responsive design for desktop and mobile devices.
-
-The Cougar AI Calendar is designed to help students stay connected, discover new experiences, and make the most of their time at BYU.
+- Replaced the outdated Electrical and Computer Engineering source with the current `ecedev.byu.edu` site and added its advising and advisor pages.
+- Updated the ingester to strip NUL characters from extracted text before Supabase writes and retry transient Gemini embedding failures with a longer timeout. The latest ingestion completed with zero failed sources.
 
 ## ERD
 
