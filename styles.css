@@ -961,3 +961,56 @@ button.event-dot:focus-visible {
         width: 100%;
     }
 }
+
+/* ==========================================
+   MOBILE CALENDAR HORIZONTAL SCROLL
+   ========================================== */
+
+/* Keep the calendar contained within the page */
+.calendar-scroll {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Mobile calendar adjustments */
+@media (max-width: 700px) {
+
+    /* Allow horizontal scrolling */
+    .calendar-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 16px;
+    }
+
+    /* Prevent the calendar from shrinking too much */
+    .calendar-scroll .calendar-grid {
+        min-width: 770px;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    /* Give each day enough room for event names */
+    .calendar-scroll .day {
+        min-width: 0;
+        min-height: 110px;
+        padding: 9px;
+    }
+
+    /* Keep weekday headings aligned */
+    .calendar-scroll .day-label {
+        min-width: 0;
+        padding: 10px;
+    }
+
+    /* Keep event names within their cells */
+    .calendar-scroll .event-dot {
+        width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    /* Allow multiple events on the same day */
+    .calendar-scroll .event-dot:nth-of-type(n+2) {
+        display: block;
+    }
+}

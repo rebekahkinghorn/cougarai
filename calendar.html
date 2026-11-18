@@ -102,9 +102,20 @@
 
 
       
-<div class="calendar-grid" id="calendar-grid" aria-label="September 2026 calendar">
-  <!-- JavaScript will generate the dates here -->
+
+<!-- Scrollable calendar for mobile devices -->
+<div class="calendar-scroll">
+
+    <div class="calendar-grid"
+         id="calendar-grid"
+         aria-label="September 2026 calendar">
+
+        <!-- JavaScript will generate the dates here -->
+
+    </div>
+
 </div>
+
 
 
       
@@ -1181,7 +1192,7 @@ suggestCity.addEventListener("change", validateZipCode);
 suggestForm.addEventListener("submit", async (event) => {
 
     console.log("SUGGEST EVENT FORM SUBMITTED!");
-    
+
     event.preventDefault();
 
     // Recheck the form before submitting
