@@ -183,4 +183,16 @@
       }
     });
   });
+
+  // Pages without an embedded signup form (such as FAQs and admin dashboards)
+  // route the shared header button to the homepage signup modal.
+  document.addEventListener("DOMContentLoaded", async () => {
+    await window.siteLayoutReady;
+    if (document.querySelector(".signup-backdrop")) return;
+    document.querySelectorAll("[data-open-signup]").forEach((button) => {
+      button.addEventListener("click", () => {
+        location.href = "index.html#signup";
+      });
+    });
+  });
 })();
