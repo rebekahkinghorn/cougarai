@@ -36,11 +36,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   modalBackdrop?.addEventListener("click", (event) => {
     if (event.target === modalBackdrop) closeModal();
   });
-  document.querySelector(".modal-form")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    closeModal();
-    showToast("Thanks—your issue was recorded for the prototype.");
-    event.target.reset();
+
+  document.querySelectorAll("[data-issue-form]").forEach((issueForm) => {
+    issueForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const client = window.cougarAuth?.client;
+      const description = issueForm.querySelector("#issue-description")?.value.trim();
+      if (!client) {
+        showToast("Database connection not available. Please refresh and try again.");
+        return;
+      }
+      if (!description) return;
+
+      const submitButton = issueForm.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
+      try {
+        const { data: sessionData, error: sessionError } = await client.auth.getSession();
+        if (sessionError) throw sessionError;
+        const userId = sessionData?.session?.user?.id || null;
+        const { error } = await client.from("issue_report").insert({
+          description,
+          user_id: userId,
+          status: "Pending",
+        });
+        if (error) throw error;
+
+        issueForm.reset();
+        closeModal();
+        showToast("Your issue report was successfully submitted!");
+      } catch (error) {
+        console.error("Issue submission error:", error);
+        showToast(`Could not submit issue report: ${error.message || "Please try again."}`);
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
+    });
   });
 
   const faqSearch = document.querySelector("#faq-search");
@@ -148,6 +178,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   const chatInput = document.querySelector("#chat-input");
   const chatHistory = document.querySelector("#chat-history");
   const chatHistoryStatus = document.querySelector("#chat-history-status");
+  const chatLayout = document.querySelector(".chat-layout");
+  const historyToggle = document.querySelector("[data-toggle-history]");
+  const mobileChatLayout = window.matchMedia("(max-width: 700px)");
+  const setHistoryOpen = (open) => {
+    if (!chatLayout || !historyToggle) return;
+    if (mobileChatLayout.matches) {
+      chatLayout.classList.toggle("history-open", open);
+    } else {
+      chatLayout.classList.toggle("history-collapsed", !open);
+    }
+    historyToggle.setAttribute("aria-expanded", String(open));
+    historyToggle.textContent = open ? "Hide history" : "Show history";
+  };
+  setHistoryOpen(!mobileChatLayout.matches);
+  historyToggle?.addEventListener("click", () => {
+    setHistoryOpen(historyToggle.getAttribute("aria-expanded") !== "true");
+  });
+  document.querySelector(".history-backdrop")?.addEventListener("click", () => {
+    setHistoryOpen(false);
+  });
+  mobileChatLayout.addEventListener("change", (event) => {
+    setHistoryOpen(!event.matches);
+  });
   let historyStorageKey = null;
   let historyLoadVersion = 0;
   let chatRequestVersion = 0;
@@ -392,6 +445,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const openConversation = async (conversation) => {
+    if (mobileChatLayout.matches) setHistoryOpen(false);
     const client = window.cougarAuth?.client;
     if (!client || !historyStorageKey) return;
 
@@ -587,6 +641,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const startNewChat = async () => {
+    if (mobileChatLayout.matches) setHistoryOpen(false);
     chatRequestVersion += 1;
     historyLoadVersion += 1;
     activeConversationId = null;
@@ -661,7 +716,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  if (chatMessages && chatHistory) initializeChatHistory();
+  if (chatMessages && chatHistory) {
+    // Login happens in a modal without reloading the page. Refresh the saved
+    // history as soon as Supabase reports the new authenticated session.
+    window.cougarAuth?.client?.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        void initializeChatHistory();
+      }
+    });
+    initializeChatHistory();
+  }
 
   const categoryButtons = document.querySelectorAll(".category-filter");
   const eventCards = document.querySelectorAll(".event-card");
