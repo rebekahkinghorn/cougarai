@@ -408,5 +408,23 @@
     "topic": "dining",
     "title": "BYU Housing and Meal Plan Rates",
     "url": "https://housing.byu.edu/oncampushousing/sng_rates.shtml"
+  }, 
+
+  {
+    "topic": "first-year-experience",
+    "title": "Office of FYE",
+    "url": "https://fye.byu.edu"
+  }, 
+
+  {
+    "topic": "academic-advising",
+    "title": "BYU Academic Advising",
+    "url": "https://advisement.byu.edu/advisement-centers"
+  }, 
+
+  {
+     "topic": "academic-advising",
+    "title": "University Advisement Center",
+    "url": "https://universityadvisement.byu.edu"
   }
 ]
