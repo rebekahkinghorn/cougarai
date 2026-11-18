@@ -8,6 +8,54 @@ const KNOWLEDGE_MIN_SIMILARITY = 0.45;
 const MAX_HISTORY_MESSAGES = 20;
 const NO_ANSWER_REPLY =
   "I couldn’t find enough information in the BYU sources I have to answer confidently. Try rephrasing your question or check the linked BYU resources.";
+const GRATITUDE_MESSAGES = new Set([
+  "thank you",
+  "thanks",
+  "thank you so much",
+  "thanks so much",
+  "thank you very much",
+  "thanks a lot",
+  "many thanks",
+  "thank u",
+  "thx",
+  "ty",
+  "tysm",
+  "thank you for your help",
+  "thanks for your help",
+  "thank you for the help",
+  "thanks for the help",
+  "much appreciated",
+  "appreciate it",
+  "i appreciate it",
+  "that was helpful",
+  "that is helpful",
+  "thats helpful",
+  "that helped",
+  "that helps",
+  "this was helpful",
+  "this is helpful",
+  "awesome thank you",
+  "awesome thanks",
+  "great thank you",
+  "great thanks",
+  "perfect thank you",
+  "perfect thanks",
+  "okay thank you",
+  "okay thanks",
+  "ok thank you",
+  "ok thanks",
+  "got it thank you",
+  "got it thanks",
+]);
+
+const isGratitudeMessage = (message: string) => {
+  const normalized = message
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return GRATITUDE_MESSAGES.has(normalized);
+};
 
 const embedText = async (apiKey: string, text: string, taskType: string) => {
   const response = await fetch(
@@ -175,6 +223,51 @@ export default {
         );
       }
 
+      if (isGratitudeMessage(message)) {
+        const reply =
+          "You’re welcome! I’m glad I could help. Feel free to ask another BYU question anytime.";
+
+        if (isNewConversation) {
+          conversationTitle = "Quick Thanks";
+          const { error: titleError } = await db
+            .from("chat_conversations")
+            .update({ conversation_title: conversationTitle })
+            .eq("conversation_id", conversationId);
+
+          if (titleError) {
+            console.error("Could not save conversation title:", titleError);
+            return Response.json(
+              { error: "Could not save the conversation title." },
+              { status: 500 },
+            );
+          }
+        }
+
+        const { error: gratitudeMessageError } = await db
+          .from("chat_messages")
+          .insert({
+            conversation_id: conversationId,
+            sender: "gemini",
+            content: reply,
+            response_code: null,
+          });
+
+        if (gratitudeMessageError) {
+          console.error("Could not save gratitude reply:", gratitudeMessageError);
+          return Response.json(
+            { error: "The reply was generated but could not be saved." },
+            { status: 500 },
+          );
+        }
+
+        return Response.json({
+          reply,
+          response_code: "conversation",
+          conversation_id: conversationId,
+          conversation_title: conversationTitle,
+        });
+      }
+
       const apiKey = Deno.env.get("gemini_api_key");
 
       if (!apiKey) {
@@ -282,6 +375,12 @@ export default {
                   "BYU answers, rely only on retrieved BYU source passages. " +
                   "Use the conversation history to understand follow-ups, but " +
                   "do not treat earlier assistant answers as evidence. Use " +
+                  "concise Markdown in the reply when it improves readability. " +
+                  "Keep paragraphs to one to three sentences and use a compact " +
+                  "bulleted or numbered list for multi-part answers so replies " +
+                  "do not become walls of text. You may also use short headings, " +
+                  "bold, italics, and inline code. Do not over-format a simple " +
+                  "answer, and do not return HTML. " +
                   "valid_answer only when the sources support the answer; use " +
                   "no_answer when they do not or the question is unrelated. " +
                   "source_indexes must contain the 1-based numbers of passages " +
