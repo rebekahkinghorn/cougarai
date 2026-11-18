@@ -276,7 +276,7 @@ export default {
             systemInstruction: {
               parts: [{
                 text:
-                  "You are BYU Guide. Help students prepare for BYU. " +
+                  "You are CougarAI. Help students prepare for BYU. " +
                   "Return a concise title of 2 to 6 words for the user's chat, " +
                   "a reply, a response_code, and source_indexes. For factual " +
                   "BYU answers, rely only on retrieved BYU source passages. " +

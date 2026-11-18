@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const details = document.createElement("small");
     const time = formatChatTime(timestamp);
-    details.textContent = `${type === "user" ? "You" : "BYU Guide"}${time ? ` · ${time}` : ""}`;
+    details.textContent = `${type === "user" ? "You" : "CougarAI"}${time ? ` · ${time}` : ""}`;
     message.appendChild(details);
 
     chatMessages.appendChild(message);
@@ -399,7 +399,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!chatMessages) return;
     chatMessages.replaceChildren();
     addMessage(
-      "Hi! I’m your BYU Guide. Ask me anything about getting ready for campus, finding resources, or exploring Provo."
+      "Hi! I’m CougarAI. Ask me anything about getting ready for campus, finding resources, or exploring Provo."
     );
   };
 
@@ -552,7 +552,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const indicator = document.createElement("div");
     indicator.className = "message typing-indicator";
     indicator.setAttribute("role", "status");
-    indicator.setAttribute("aria-label", "BYU Guide is thinking");
+    indicator.setAttribute("aria-label", "CougarAI is thinking");
     indicator.innerHTML = '<span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span><span aria-hidden="true">🐾</span>';
     chatMessages.appendChild(indicator);
     chatMessages.scrollTop = chatMessages.scrollHeight;
