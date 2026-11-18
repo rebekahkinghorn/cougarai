@@ -28,16 +28,18 @@
             type="search"
             placeholder="Search questions, like housing or MyMap..."
             aria-label="Search frequently asked questions"
+            autocomplete="off"
           >
         </div>
-        <a class="button primary" href="chatbot.html">Ask the guide</a>
+        <a class="button secondary" href="chatbot.html">Ask the guide</a>
       </div>
 
       <div class="filter-row" id="faq-filters" aria-label="Filter FAQs">
         <button class="filter active" data-filter="all">All questions</button>
       </div>
 
-      <p id="faq-status" class="muted" role="status" aria-live="polite">Loading FAQs…</p>
+      <p id="faq-status" class="muted" role="status" aria-live="polite">See top FAQs or use the search bar to find answers!</p>
+      <div id="faq-search-results" class="faq-search-results" aria-live="polite" hidden></div>
       <div class="faq-list" id="faq-list"></div>
 
       <div class="faq-empty" id="faq-empty">

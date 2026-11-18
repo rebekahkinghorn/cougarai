@@ -75,27 +75,101 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const faqSearch = document.querySelector("#faq-search");
   const faqList = document.querySelector("#faq-list");
+  const faqSearchResults = document.querySelector("#faq-search-results");
   const faqFilters = document.querySelector("#faq-filters");
   const faqStatus = document.querySelector("#faq-status");
+  const maxInitialFaqs = 5;
   let faqItems = [];
+  let faqDataLoaded = false;
+  let faqLoadFailed = false;
   let activeFaqCategory = "all";
   const faqEmpty = document.querySelector(".faq-empty");
+  const categoryFamilies = [
+    {
+      searchTerms: ["academic", "academics", "class", "classes", "course", "courses", "mymap", "advising", "advisor", "registration", "major"],
+      categoryTerms: ["academic", "class", "course", "mymap", "advis", "registration", "major"],
+    },
+    {
+      searchTerms: ["housing", "residence", "dorm", "apartment"],
+      categoryTerms: ["housing", "residence", "dorm", "apartment"],
+    },
+    {
+      searchTerms: ["campus", "event", "events", "club", "clubs", "activity", "activities", "provo"],
+      categoryTerms: ["campus", "event", "club", "activit", "provo", "student life"],
+    },
+  ];
+  const normalizeFaqText = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
   const applyFaqFilters = () => {
-    const query = faqSearch?.value.trim().toLowerCase() ?? "";
+    let matchingCount = 0;
     let visibleCount = 0;
     faqItems.forEach((item) => {
       const categoryMatches = activeFaqCategory === "all" || item.dataset.category === activeFaqCategory;
-      const searchMatches = !query || item.textContent.toLowerCase().includes(query);
-      item.hidden = !(categoryMatches && searchMatches);
+      if (categoryMatches) matchingCount++;
+      item.hidden = !categoryMatches || visibleCount >= maxInitialFaqs;
       if (!item.hidden) visibleCount++;
     });
-    faqEmpty?.classList.toggle("show", visibleCount === 0);
+
+    faqEmpty?.classList.toggle("show", matchingCount === 0);
+    faqList.hidden = false;
+    faqSearchResults.hidden = true;
+    faqSearchResults.replaceChildren();
+    if (faqStatus) {
+      faqStatus.textContent = activeFaqCategory === "all"
+        ? "See top FAQs or use the search bar to find answers!"
+        : "Showing up to " + maxInitialFaqs + " FAQs in this category.";
+    }
+  };
+
+  const performFaqSearch = () => {
+    const rawQuery = faqSearch?.value.trim() ?? "";
+    const query = normalizeFaqText(rawQuery);
+    if (!query) {
+      applyFaqFilters();
+      return;
+    }
+    if (!faqDataLoaded) {
+      if (faqStatus) faqStatus.textContent = faqLoadFailed
+        ? "FAQs could not load. Please try again later."
+        : "FAQs are still loading. Try again in a moment.";
+      return;
+    }
+
+    const queryTokens = query.split(" ").filter(Boolean);
+    const matchingFamily = categoryFamilies.find((family) => family.searchTerms.some((term) =>
+      queryTokens.some((token) => token === term || (token.length >= 4 && term.startsWith(token)))
+    ));
+    const matches = faqItems.filter((item) => {
+      const questionAndAnswerMatch = normalizeFaqText(item.textContent).includes(query);
+      const categoryName = normalizeFaqText(item.dataset.categoryName || "");
+      const categoryNameMatch = categoryName.includes(query) || query.includes(categoryName);
+      const categoryFamilyMatch = matchingFamily && matchingFamily.categoryTerms.some((term) => categoryName.includes(term));
+      return questionAndAnswerMatch || categoryNameMatch || categoryFamilyMatch;
+    });
+
+    faqList.hidden = true;
+    faqEmpty?.classList.toggle("show", matches.length === 0);
+    faqSearchResults.replaceChildren();
+    matches.forEach((item) => {
+      const result = item.cloneNode(true);
+      result.hidden = false;
+      result.classList.remove("open");
+      result.querySelector(".faq-question")?.setAttribute("aria-expanded", "false");
+      faqSearchResults.appendChild(result);
+    });
+    faqSearchResults.hidden = matches.length === 0;
+    if (faqStatus) {
+      faqStatus.textContent = matches.length
+        ? "Found " + matches.length + (matches.length === 1 ? " matching question." : " matching questions.")
+        : "No FAQs matched “" + rawQuery + "”. Try a different word.";
+    }
   };
 
   const loadFaqs = async () => {
     if (!faqList) return;
     const client = window.cougarAuth?.client;
     if (!client) {
+      faqLoadFailed = true;
       faqStatus.textContent = "FAQs could not connect to Supabase. Check that auth.js is loaded and configured.";
       return;
     }
@@ -108,6 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (faqResult.error) throw faqResult.error;
       if (categoryResult.error) throw categoryResult.error;
 
+      const categoryNames = new Map((categoryResult.data ?? []).map((category) => [String(category.faq_category_id), category.faq_category_name]));
       const allFilter = faqFilters.querySelector('[data-filter="all"]');
       faqFilters.replaceChildren(allFilter);
       (categoryResult.data ?? []).forEach((category) => {
@@ -123,7 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const item = document.createElement("article");
         item.className = "faq-item";
         item.dataset.category = faq.faq_category_id == null ? "uncategorized" : String(faq.faq_category_id);
-
+        item.dataset.categoryName = categoryNames.get(item.dataset.category) || "";
         const questionButton = document.createElement("button");
         questionButton.className = "faq-question";
         questionButton.type = "button";
@@ -134,31 +209,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         toggleIcon.setAttribute("aria-hidden", "true");
         toggleIcon.textContent = "+";
         questionButton.append(questionText, toggleIcon);
-
         const answer = document.createElement("div");
         answer.className = "faq-answer";
         answer.textContent = faq.faq_answer || "No answer has been added yet.";
-
         item.append(questionButton, answer);
         faqList.appendChild(item);
       });
 
       faqItems = [...faqList.querySelectorAll(".faq-item")];
-      faqStatus.textContent = `Showing ${faqItems.length} ${faqItems.length === 1 ? "FAQ" : "FAQs"}.`;
-      applyFaqFilters();
+      faqDataLoaded = true;
+      faqLoadFailed = false;
+      if (faqSearch?.value.trim()) performFaqSearch();
+      else applyFaqFilters();
     } catch (error) {
       console.error("FAQ load error:", error);
+      faqLoadFailed = true;
       faqStatus.textContent = "Could not load FAQs. Check Supabase table names and public read access.";
     }
   };
 
-  faqList?.addEventListener("click", (event) => {
+  const toggleFaqQuestion = (event) => {
     const button = event.target.closest(".faq-question");
     if (!button) return;
     const item = button.closest(".faq-item");
     const isOpen = item.classList.toggle("open");
     button.setAttribute("aria-expanded", String(isOpen));
-  });
+  };
+  faqList?.addEventListener("click", toggleFaqQuestion);
+  faqSearchResults?.addEventListener("click", toggleFaqQuestion);
 
   faqFilters?.addEventListener("click", (event) => {
     const filter = event.target.closest(".filter[data-filter]");
@@ -166,10 +244,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     faqFilters.querySelectorAll(".filter").forEach((button) => button.classList.remove("active"));
     filter.classList.add("active");
     activeFaqCategory = filter.dataset.filter;
+    faqSearch.value = "";
     applyFaqFilters();
   });
 
-  faqSearch?.addEventListener("input", applyFaqFilters);
+  faqSearch?.addEventListener("input", performFaqSearch);
   loadFaqs();
 
   // Set up chatbot elements and common example responses.
