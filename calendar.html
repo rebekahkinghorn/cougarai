@@ -128,10 +128,6 @@
 </div>
 
         
-<!-- JavaScript will automatically generate event cards -->
-<div class="event-list" id="upcoming-events"></div>
-
-        
     </section>
     <!-- Suggest an Event Button -->
       <div class="suggest-event-action">
@@ -466,160 +462,83 @@ document.addEventListener("DOMContentLoaded", async () => {
   const nextButton = document.getElementById("next-month");
   const todayButton = document.getElementById("today-button");
 
-  // September through December 2026
-  // September through December 2026
-const minMonth = 8;
-const maxMonth = 11;
-const year = 2026;
-
-// Get the actual current date
 const today = new Date();
+let currentMonth = today.getMonth();
+let currentYear = today.getFullYear();
+let events = {};
+let eventLoadError = "";
 
-// Default to the current month if within our calendar range
-let currentMonth;
+const categoriesById = {
+    1: "byu",
+    2: "community",
+    3: "arts",
+    4: "wellness"
+};
 
-if (
-    today.getFullYear() === year &&
-    today.getMonth() >= minMonth &&
-    today.getMonth() <= maxMonth
-) {
-    currentMonth = today.getMonth();
-} else {
-    currentMonth = minMonth;
-}
+const getUtahDateKey = (value) => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Denver",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(value);
+    const values = Object.fromEntries(
+        parts.filter(part => part.type !== "literal")
+            .map(part => [part.type, part.value])
+    );
+    return `${values.year}-${values.month}-${values.day}`;
+};
 
-  // Preserve the existing September calendar events.
-  
-const events = {
-  // SEPTEMBER 2026 - Existing events
-  "2026-09-02": [{ name: "Club fair", color: "green" }],
-  "2026-09-04": [{ name: "Food trucks", color: "gold" }],
-  "2026-09-07": [{ name: "Study group", color: "" }],
-  "2026-09-09": [{ name: "Art night", color: "coral" }],
-  "2026-09-11": [{ name: "Game night", color: "green" }],
-  "2026-09-14": [{ name: "Volunteer", color: "" }],
-  "2026-09-17": [{ name: "Farmers market", color: "gold" }],
-  "2026-09-21": [{ name: "Open mic", color: "green" }],
-  "2026-09-25": [{ name: "Cougar kickoff", color: "coral" }],
+const formatEventTime = (startAt, endAt) => {
+    const start = new Date(startAt);
+    const end = endAt ? new Date(endAt) : null;
 
-  // NOVEMBER 2026
-  "2026-11-10": [{
-    name: "BYU Basketball vs. Queens",
-    color: "green",
-    category: "byu",
-    time: "7:00 PM",
-    location: "Marriott Center",
-    description: "BYU men's basketball takes on Queens."
-  }],
+    if (end && start.getTime() === end.getTime()) return "Time TBD";
 
-  "2026-11-11": [{
-    name: "Veterans Day Concert",
-    color: "green",
-    category: "arts",
-    time: "7:30 PM",
-    location: "BYU Music Building",
-    description: "BYU Wind Symphony featuring Laura Osnes."
-  }],
+    const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Denver",
+        hour: "numeric",
+        minute: "2-digit"
+    });
+    const startTime = formatter.format(start);
+    if (end && end.getTime() - start.getTime() < 60_000) return startTime;
+    return end ? `${startTime} - ${formatter.format(end)}` : startTime;
+};
 
-  "2026-11-14": [{
-    name: "BYU Football vs. Baylor",
-    color: "green",
-    category: "byu",
-    time: "TBD",
-    location: "LaVell Edwards Stadium",
-    description: "BYU football hosts Baylor."
-  }],
+const loadEvents = async () => {
+    const supabaseClient = window.cougarAuth?.client;
+    if (!supabaseClient) {
+        eventLoadError = "The event calendar could not connect to Supabase.";
+        return;
+    }
 
-  "2026-11-16": [{
-    name: "Orchard Christmas Lighting",
-    color: "gold",
-    category: "community",
-    time: "6:00 PM - 8:00 PM",
-    location: "University Place, Orem",
-    description: "Holiday lights, fireworks, and a Christmas market."
-  }],
+    const { data, error } = await supabaseClient
+        .from("Event")
+        .select("event_id,event_name,description,start_at,end_at,location,event_category_id,registration_url")
+        .eq("is_published", true)
+        .order("start_at", { ascending: true });
 
-  "2026-11-21": [{
-    name: "Winter Farmers Market",
-    color: "gold",
-    category: "community",
-    time: "10:00 AM - 3:00 PM",
-    location: "Provo Towne Centre",
-    description: "Opening day of Provo's indoor winter farmers market."
-  }],
+    if (error) {
+        console.error("Could not load calendar events:", error);
+        eventLoadError = "Events could not be loaded. Please try again later.";
+        return;
+    }
 
-  "2026-11-30": [{
-    name: "BYU Christmas Tree Lighting",
-    color: "green",
-    category: "byu",
-    time: "6:00 PM - 8:00 PM",
-    location: "Brigham Square, BYU",
-    description: "Celebrate the start of the Christmas season on campus."
-  }],
-
-  // DECEMBER 2026
-  "2026-12-02": [{
-    name: "Joy of Christmas Concert",
-    color: "green",
-    category: "arts",
-    time: "7:30 PM",
-    location: "BYU Music Building",
-    description: "Christmas music from the BYU Symphony Orchestra."
-  }],
-
-  "2026-12-04": [{
-    name: "Christmas Around the World",
-    color: "green",
-    category: "arts",
-    time: "7:30 PM",
-    location: "Marriott Center",
-    description: "International folk dance and Christmas music."
-  }],
-
-  "2026-12-05": [{
-    name: "Provo Christmas Tree Lighting",
-    color: "gold",
-    category: "community",
-    time: "4:00 PM - 7:30 PM",
-    location: "Pioneer Park, Provo",
-    description: "Christmas market, entertainment, Santa, and tree lighting."
-  }],
-
-  "2026-12-09": [{
-    name: "BYU Basketball vs. Utah State",
-    color: "green",
-    category: "byu",
-    time: "8:00 PM",
-    location: "Marriott Center",
-    description: "BYU hosts in-state rival Utah State."
-  }],
-
-  "2026-12-10": [{
-    name: "Christkindlmarkt",
-    color: "gold",
-    category: "community",
-    time: "12:00 PM - 9:00 PM",
-    location: "Provo Historic Courthouse",
-    description: "German-inspired Christmas market, December 10-12."
-  }],
-
-  "2026-12-11": [{
-    name: "The Nutcracker",
-    color: "coral",
-    category: "arts",
-    time: "See performance schedule",
-    location: "Covey Center for the Arts",
-    description: "Utah Metropolitan Ballet performs December 11-21."
-  }],
-
-  "2026-12-14": [{
-    name: "Live Nativity",
-    color: "gold",
-    category: "community",
-    time: "6:00 PM - 8:00 PM",
-    location: "University Place, Orem",
-    description: "Community nativity with holiday treats."
-  }]
+    events = {};
+    (data || []).forEach(row => {
+        const dateKey = getUtahDateKey(new Date(row.start_at));
+        const event = {
+            id: row.event_id,
+            name: row.event_name,
+            category: categoriesById[row.event_category_id] || "uncategorized",
+            time: formatEventTime(row.start_at, row.end_at),
+            location: row.location,
+            description: row.description,
+            registrationUrl: row.registration_url
+        };
+        if (!events[dateKey]) events[dateKey] = [];
+        events[dateKey].push(event);
+    });
 };
 
 
@@ -636,8 +555,8 @@ let activeCategory = "all";
   function renderCalendar() {
     calendarGrid.innerHTML = "";
 
-    const firstDay = new Date(year, currentMonth, 1);
-    const daysInMonth = new Date(year, currentMonth + 1, 0).getDate();
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const startingDay = firstDay.getDay();
 
     const monthName = firstDay.toLocaleString("en-US", {
@@ -663,7 +582,7 @@ let activeCategory = "all";
 
     for (let i = 0; i < totalCells; i++) {
       const dayNumber = i - startingDay + 1;
-      const date = new Date(year, currentMonth, dayNumber);
+      const date = new Date(currentYear, currentMonth, dayNumber);
 
       const dayCell = document.createElement("div");
       dayCell.className = "day";
@@ -734,10 +653,6 @@ calendarGrid.appendChild(dayCell);
 
 } // Closes the calendar's for loop
 
-// Disable navigation at the September/December boundaries
-prevButton.disabled = currentMonth === minMonth;
-nextButton.disabled = currentMonth === maxMonth;
-
 // Update the event cards whenever the calendar changes
 renderUpcomingEvents();
 
@@ -752,16 +667,24 @@ function renderUpcomingEvents() {
 
     upcomingEventsContainer.innerHTML = "";
 
+    if (eventLoadError) {
+        const message = document.createElement("p");
+        message.className = "muted";
+        message.textContent = eventLoadError;
+        upcomingEventsContainer.appendChild(message);
+        return;
+    }
+
     // Get the events for the selected month
     const monthlyEvents = [];
 
     Object.keys(events).forEach(dateKey => {
 
-        const eventDate = new Date(dateKey + "T12:00:00");
+        const [eventYear, eventMonth] = dateKey.split("-").map(Number);
 
         if (
-            eventDate.getFullYear() === year &&
-            eventDate.getMonth() === currentMonth
+            eventYear === currentYear &&
+            eventMonth - 1 === currentMonth
         ) {
             events[dateKey].forEach(event => {
 
@@ -858,29 +781,28 @@ function renderUpcomingEvents() {
 
 
   nextButton.addEventListener("click", () => {
-    if (currentMonth < maxMonth) {
-      currentMonth++;
-      renderCalendar();
+    currentMonth++;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
     }
+    renderCalendar();
   });
 
   prevButton.addEventListener("click", () => {
-    if (currentMonth > minMonth) {
-      currentMonth--;
-      renderCalendar();
+    currentMonth--;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
     }
+    renderCalendar();
   });
 
   todayButton.addEventListener("click", () => {
     const today = new Date();
 
-    if (today.getFullYear() === year &&
-        today.getMonth() >= minMonth &&
-        today.getMonth() <= maxMonth) {
-      currentMonth = today.getMonth();
-    } else {
-      currentMonth = minMonth;
-    }
+    currentMonth = today.getMonth();
+    currentYear = today.getFullYear();
 
     renderCalendar();
   });
@@ -996,7 +918,8 @@ function renderUpcomingEvents() {
 
     });
 
-    // Display the current month when the page loads
+    // Load published Supabase events before the first render.
+    await loadEvents();
     renderCalendar();
   });
 
